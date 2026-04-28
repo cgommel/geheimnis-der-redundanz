@@ -1,0 +1,29 @@
+# Build-Artefakte
+pdf/
+*.aux
+*.log
+*.out
+*.toc
+*.idx
+*.ilg
+*.ind
+*.glo
+*.gls
+*.glg
+body.tex
+main.tex
+main.pdf
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# OS-Krimskrams
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# Editor
+.vscode/
+.idea/
+*.iml
