@@ -1,0 +1,370 @@
+\chapter{Tag 6 — Polynome über GF($2^3$) und die Reed-Solomon-Idee}
+
+\begin{quote}
+Gestern hast du GF($2^3$) gebaut — einen Körper mit acht Elementen,
+in dem du addieren, multiplizieren und auch dividieren kannst. Heute
+nutzen wir diesen Körper, um \textbf{Polynome darüber} zu betrachten.
+Genauer: Polynome, deren Koeffizienten GF($2^3$)-Elemente sind. Daraus
+ergibt sich — fast wie von selbst — die zentrale Idee von
+\textbf{Reed-Solomon}: ein Verfahren, das aus weniger als der Hälfte
+aller übertragenen Werte das Original rekonstruieren kann.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 6 kannst du \dots
+
+\begin{itemize}
+\item Polynome mit Koeffizienten aus GF($2^3$) addieren, multiplizieren
+  und an einer Stelle auswerten
+\item das Theorem zur Stützstellen-Eindeutigkeit nennen und an einem
+  konkreten Beispiel anwenden („zwei Punkte $\to$ Gerade")
+\item die \textbf{Reed-Solomon-Idee} erklären: Daten als Polynom
+  interpretieren, an mehr Stellen auswerten, als für die Rekonstruktion
+  nötig sind
+\item ein RS$(n, k)$-Codewort von Hand berechnen (für ein kleines
+  Beispiel über GF($2^3$))
+\item in Python eine \texttt{Polynom}-Klasse über GF($2^3$) bauen und
+  damit einen einfachen RS-Encoder schreiben
+\end{itemize}
+
+Material: Bleistift, kariertes Papier, deine GF($2^3$)-Multiplikationstafel
+aus Tag 5 (Bleistiftübung 6 — falls du sie noch nicht hast, ab und zu
+nachschlagen!), Thonny.
+
+% =============================================================
+\section{Polynome — diesmal mit Koeffizienten aus GF($2^3$) \normalfont(\textit{$\approx$ 25 min})}
+% =============================================================
+
+\subsection*{Erst eine Notations-Sache}
+
+Bei Tag 5 haben wir die GF($2^3$)-Elemente als Polynome geschrieben:
+$x^2 + x + 1$, $x + 1$ und so weiter. Das war eine \emph{Implementierungs-Sicht}
+— so haben wir den Körper überhaupt erst gebaut.
+
+Ab heute wechseln wir die Brille: \textbf{ein GF($2^3$)-Element ist
+einfach eine Zahl zwischen 0 und 7 (oder eine 3-Bit-Folge), mit den
+besonderen Rechenregeln aus Tag 5.} Die Polynom-Schreibweise von
+gestern brauchen wir nur noch ab und zu zur Erinnerung; wir schreiben
+\texttt{3} statt $x+1$, \texttt{5} statt $x^2+1$, \texttt{0} bleibt $0$.
+
+Warum die Umstellung? Weil wir heute \emph{neue} Polynome bauen, deren
+Variable \emph{unabhängig} von der GF-internen Notation ist. Damit wir
+nicht zweimal mit „$x$" durcheinanderkommen.
+
+\subsection*{Polynome über GF($2^3$): die Definition}
+
+Ein Polynom über GF($2^3$) ist ein Ausdruck der Form
+\[
+  f(x) \;=\; a_0 + a_1 x + a_2 x^2 + \dots + a_{k-1} x^{k-1}
+\]
+wobei jeder \textbf{Koeffizient $a_i$ ein Element von GF($2^3$)} ist
+— also eine Zahl aus $\{0, 1, 2, 3, 4, 5, 6, 7\}$.
+
+\textbf{Achtung:} das $x$ ist hier nichts Konkretes — es ist nur ein
+Platzhalter. Beim Auswerten setzt du für $x$ irgendein
+GF($2^3$)-Element ein, und alle Rechnungen ($+$, $\cdot$) finden in
+GF($2^3$) statt.
+
+\subsection*{Wie addiert man zwei solche Polynome?}
+
+Genauso wie in der Schule: koeffizientenweise. Nur dass die Addition
+in GF($2^3$) eben \textbf{XOR} ist.
+
+\textit{Beispiel:}
+\begin{align*}
+  f(x) &= 3 + 5x + 2x^2 \\
+  g(x) &= 1 + 7x + 2x^2 \\
+  f(x) + g(x) &= (3 \oplus 1) + (5 \oplus 7) \cdot x + (2 \oplus 2) \cdot x^2 \\
+              &= 2 + 2x + 0 = 2 + 2x
+\end{align*}
+
+\subsection*{Wie multipliziert man?}
+
+Wieder wie in der Schule: jeder Term mit jedem, dann die
+gleichgradigen Terme zusammenfassen. Nur eben \emph{mit
+GF($2^3$)-Arithmetik} statt der gewohnten Schul-Arithmetik.
+
+\textit{Beispiel:}
+\begin{align*}
+  (1 + 2x) \cdot (1 + 3x)
+    &= 1 \cdot 1 + 1 \cdot 3x + 2x \cdot 1 + 2x \cdot 3x \\
+    &= 1 + 3x + 2x + (2 \cdot 3) x^2 \\
+    &= 1 + (3 \oplus 2) x + 6 x^2 \\
+    &= 1 + x + 6 x^2
+\end{align*}
+
+(Aus der Multiplikationstafel von Tag 5: $2 \cdot 3 = 6$, denn
+$x \cdot (x+1) = x^2 + x = 6$.)
+
+\begin{bleistiftuebung}{1}{Polynome rechnen}
+Halte deine GF($2^3$)-Multiplikationstafel aus Tag 5 bereit.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item $f(x) = 4 + 3x + x^2$, $g(x) = 5 + 6x$. Berechne $f(x) + g(x)$.
+\item Berechne $(1 + x) \cdot (1 + x)$ — also $(1 + x)^2$ — über
+  GF($2^3$). Vergleiche mit der „normalen" Algebra.
+\item Berechne $(2 + x) \cdot (3 + x^2)$ und bringe das Ergebnis in die
+  Standardform $a_0 + a_1 x + a_2 x^2 + a_3 x^3$.
+\end{enumerate}
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Polynome auswerten — und die Magie der Stützstellen \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+\subsection*{Auswerten}
+
+\textbf{Auswerten} heißt: setze für $x$ ein konkretes
+GF($2^3$)-Element ein und rechne den ganzen Ausdruck aus.
+
+\textit{Beispiel:} $f(x) = 3 + 5x + 2x^2$, ausgewertet an $x = 2$:
+\begin{align*}
+  f(2) &= 3 + 5 \cdot 2 + 2 \cdot 2^2 \\
+       &= 3 + 1 + 2 \cdot 4 \quad\quad (\text{denn } 5 \cdot 2 = 1, \; 2 \cdot 2 = 4) \\
+       &= 3 + 1 + 3 \quad\quad\quad\;\, (\text{denn } 2 \cdot 4 = 3) \\
+       &= 3 \oplus 1 \oplus 3 = 1
+\end{align*}
+
+\subsection*{Das zentrale Theorem}
+
+Hier ist die mathematische Aussage, die alles weitere trägt:
+
+\begin{quote}
+\textbf{Ein Polynom vom Grad kleiner als $k$ ist eindeutig bestimmt
+durch $k$ verschiedene Auswertungen.}
+\end{quote}
+
+Anschaulich:
+\begin{itemize}
+\item Eine Gerade ($f(x) = a_0 + a_1 x$, also Grad $< 2$) ist durch
+  \textbf{2} Punkte eindeutig festgelegt.
+\item Eine Parabel (Grad $< 3$) ist durch \textbf{3} Punkte eindeutig
+  festgelegt.
+\item Allgemein: Polynom Grad $< k$ $\to$ $k$ Punkte reichen zur
+  vollständigen Rekonstruktion.
+\end{itemize}
+
+Das gilt nicht nur für reelle Zahlen, das gilt für \textbf{jeden
+Körper} — also auch für GF($2^3$).
+
+\subsection*{Warum ist das wahr?}
+
+(Skizze, kein vollständiger Beweis.) Angenommen, es gäbe zwei
+verschiedene Polynome $f$ und $g$, beide vom Grad $< k$, die an $k$
+Stellen $x_1, \dots, x_k$ \emph{dieselben} Werte annehmen. Dann hätte
+das Differenzpolynom $h(x) = f(x) - g(x)$ an diesen $k$ Stellen
+jeweils den Wert $0$ — also $k$ Nullstellen. Aber: ein Polynom vom
+Grad $< k$, das nicht das Nullpolynom ist, kann höchstens $k - 1$
+Nullstellen haben. Widerspruch! Also muss $h \equiv 0$, also $f = g$.
+
+\begin{bleistiftuebung}{2}{Gerade durch zwei Punkte}
+Du hast zwei Auswertungen einer unbekannten Geraden $f(x) = a_0 + a_1 x$
+über GF($2^3$):
+\[
+  f(1) = 4, \qquad f(2) = 7.
+\]
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Stelle das Gleichungssystem für $a_0$ und $a_1$ auf. (Zwei
+  Gleichungen, zwei Unbekannte.)
+\item Löse es \emph{in GF($2^3$)}. Tipp: Subtraktion ist Addition
+  ($a - b = a + b$), und Division ist Multiplikation mit dem
+  Inversen.
+\item Welches Polynom ist es? Verifiziere durch Auswertung an $x = 1$
+  und $x = 2$.
+\end{enumerate}
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Die Reed-Solomon-Idee \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+Jetzt wird's spannend. Die ganze Vorbereitung der letzten zwei Tage
+zahlt sich aus.
+
+\subsection*{Das Spiel}
+
+\begin{enumerate}
+\item Du hast $k$ \textbf{Datensymbole} $a_0, a_1, \dots, a_{k-1}$,
+  jedes ein GF($2^3$)-Element. Interpretiere sie als die Koeffizienten
+  eines Polynoms:
+  \[
+    f(x) = a_0 + a_1 x + a_2 x^2 + \dots + a_{k-1} x^{k-1}.
+  \]
+\item Wähle $n > k$ \textbf{verschiedene Stützstellen}
+  $x_1, x_2, \dots, x_n$ in GF($2^3$). (Bei GF($2^3$) gibt es nur 8
+  Elemente, also höchstens $n = 8$.)
+\item \textbf{Sende:} die $n$ Auswertungen $f(x_1), f(x_2), \dots,
+  f(x_n)$. Das ist dein \textbf{Codewort}.
+\item Beim Empfänger: Wenn höchstens $n - k$ der Werte verloren oder
+  verfälscht sind, kann er das ursprüngliche $f$ rekonstruieren — und
+  damit auch die Datensymbole.
+\end{enumerate}
+
+\subsection*{Warum funktioniert das?}
+
+Weil das Theorem aus dem vorigen Abschnitt sagt: $k$ korrekte
+Auswertungen reichen zur Rekonstruktion. Wenn du also $n$ sendest und
+maximal $n - k$ verloren gehen, sind immer noch $k$ übrig. Aus denen
+rekonstruierst du $f$ und liest die Koeffizienten als Datensymbole
+zurück.
+
+\subsection*{Wie viele Fehler korrigieren?}
+
+Hier wird's etwas subtiler:
+
+\begin{itemize}
+\item \textbf{Auslöschungen} (\emph{erasures}, du weißt \emph{wo}
+  Werte fehlen): bis zu $n - k$ Auslöschungen sind machbar — das ist
+  genau das, was wir gerade gesagt haben.
+\item \textbf{Fehler} (\emph{errors}, du weißt \emph{nicht}, welche
+  Werte verfälscht sind): nur bis zu $\lfloor (n - k) / 2 \rfloor$.
+\end{itemize}
+
+Das ist dieselbe Aufteilung wie bei der Hamming-Distanz von Tag 2:
+für die Korrektur \emph{ohne Positionswissen} brauchst du etwa doppelt
+so viel Redundanz wie für die Erkennung mit Positionswissen.
+
+\begin{bleistiftuebung}{3}{Ein RS$(5, 3)$-Codewort von Hand}
+Wir bauen einen Reed-Solomon-Code mit $k = 3$ Datensymbolen und
+$n = 5$ Auswertungen über GF($2^3$). Datenpolynom:
+\[
+  f(x) = 3 + 5x + 2x^2.
+\]
+Stützstellen: $1, 2, 3, 4, 5$.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Berechne $f(1), f(2), f(3), f(4), f(5)$. Das ist das Codewort.
+  (Tipp: $f(2)$ haben wir oben schon ausgerechnet — als
+  Plausibilitäts-Check.)
+
+\item Aus 5 Werten dürfen $5 - 3 = 2$ \emph{Auslöschungen} korrigiert
+  werden. Behaupte: aus den drei Werten $f(1), f(3), f(5)$ allein
+  könntest du das Datenpolynom rekonstruieren — die Werte $f(2)$ und
+  $f(4)$ sind \emph{verloren}, aber du weißt das.
+
+  Beschreibe in eigenen Worten (kein Rechnen nötig, nur das Prinzip),
+  wie der Empfänger vorgeht.
+
+\item Wie viele \emph{nicht-lokalisierte Fehler} (also Verfälschungen
+  ohne Positionswissen) kann RS$(5, 3)$ korrigieren?
+\end{enumerate}
+\end{bleistiftuebung}
+
+\subsection*{Brücke zu früher Gelerntem}
+
+Diese RS-Idee ist die direkte Verallgemeinerung von zwei Sachen, die
+wir schon kennen:
+
+\begin{itemize}
+\item \textbf{ISBN-10-Detektivarbeit (Tag 2):} dort hast du eine
+  einzelne fehlende Ziffer aus den anderen rekonstruiert — sofern du
+  wusstest, \emph{welche} fehlt. Genau das ist Auslöschungs-Decodierung
+  in $\mathbb{Z}/11\mathbb{Z}$.
+\item \textbf{Hamming-Code (Tag 3):} dort haben wir zusätzliche
+  Prüfbits an cleveren Positionen eingestreut, sodass die Prüfsummen
+  die \emph{Position} eines Fehlers ergaben. Bei RS machen wir es
+  anders — wir sampeln das Daten-Polynom an mehr Stellen, als nötig
+  wäre, und holen die Position über die mathematische Konsistenz
+  zurück.
+\end{itemize}
+
+% =============================================================
+\section{Python-Werkstatt: Polynom-Klasse und ein RS-Encoder \normalfont(\textit{$\approx$ 35 min})}
+% =============================================================
+
+Wir bauen jetzt eine \texttt{Polynom}-Klasse über GF($2^3$). Sie
+nutzt die \texttt{GF8}-Klasse aus Tag 5 (lege beide Dateien in
+denselben Ordner).
+
+\begin{pythoneinheit}{1}{Polynom-Klasse über GF($2^3$)}
+Lege eine neue Datei \texttt{polynom\_gf8.py} an:
+
+\pythoncodeteil{tag6/polynom_gf8.py}{klasse}
+
+Die Methode \texttt{auswerten} fehlt noch — wir benutzen das
+\textbf{Horner-Schema}: das ist die effiziente Form, ein Polynom
+auszurechnen, ohne mehrfach Potenzen zu bilden. Schau es dir genau
+an:
+
+\pythoncodeteil{tag6/polynom_gf8.py}{auswerten}
+
+\paragraph{Aufgabe 1.1 — Verstehen.}
+Erkläre kurz (zwei, drei Sätze), warum das Horner-Schema
+funktioniert. Tipp: schreibe $a_0 + a_1 x + a_2 x^2 = a_0 + x(a_1 +
+x \cdot a_2)$ aus.
+
+\paragraph{Aufgabe 1.2 — Mit der Bleistiftrechnung vergleichen.}
+Hast du Bleistiftübung 3 (a) ausgerechnet? Vergleiche dein Ergebnis
+mit dem, was Python ausspuckt. Wenn etwas abweicht: liegt der Fehler
+auf Papier oder im Code? Beim Debuggen lohnt es sich, ein konkretes
+\texttt{f(2)} parallel von Hand und in Python zu rechnen.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{2}{RS-Encoder durch Auswertung}
+Mit der \texttt{Polynom}-Klasse und der \texttt{auswerten}-Methode
+ist ein Reed-Solomon-Encoder fast schon trivial:
+
+\pythoncodeteil{tag6/polynom_gf8.py}{rs-encode}
+
+\paragraph{Aufgabe 2.1 — Andere Daten.}
+Verändere \texttt{daten} und \texttt{stuetzstellen} und schau, wie
+sich das Codewort ändert. Was passiert, wenn du eine Stützstelle
+zweimal angibst? (Mathematisch: das ist eine schlechte Idee — warum?)
+
+\paragraph{Aufgabe 2.2 — Fehler einbauen.}
+Nimm das Codewort, kippe ein Symbol (etwa: ersetze \texttt{codewort[2]}
+durch ein anderes GF8-Element) und überlege: welche Information
+fehlt dem Empfänger jetzt, um das Datenpolynom zurückzubekommen?
+Welcher der beiden Decoder-Fälle aus dem Bleistiftblock ist das —
+Auslöschung oder echter Fehler?
+\end{pythoneinheit}
+
+% =============================================================
+\section{Reflexion und Brücke zu Tag 7 \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+\subsection*{Was wir heute gelernt haben}
+
+\begin{itemize}
+\item Polynome funktionieren über jedem Körper — auch über GF($2^3$).
+  Addition, Multiplikation, Auswertung sind genau wie in der Schule,
+  nur mit anderer Arithmetik in den Koeffizienten.
+\item \textbf{Stützstellen-Eindeutigkeit:} ein Polynom Grad $< k$ ist
+  durch $k$ Auswertungen eindeutig bestimmt.
+\item \textbf{Reed-Solomon} (in seiner einfachsten Form): Daten als
+  Polynom, $n > k$ Auswertungen verschicken, Empfänger braucht nur
+  irgendwelche $k$ davon.
+\item Auslöschungen und Fehler sind unterschiedlich teuer:
+  $n - k$ Auslöschungen vs.\ $\lfloor (n - k) / 2 \rfloor$ Fehler.
+\end{itemize}
+
+\subsection*{Drei Fragen zum Mitnehmen}
+
+\begin{enumerate}
+\item Wir haben heute mit GF($2^3$) und maximal 8 Stützstellen
+  gearbeitet. Ein Datamatrix-Code rechnet in GF($2^8$) mit 256
+  Elementen. Welche Konsequenz hat die Körpergröße für die maximale
+  Codewort-Länge?
+
+\item RS-Encoder durch Auswertung ist konzeptionell glasklar. In der
+  Praxis nutzt man oft eine \emph{andere} Form: das Datenpolynom wird
+  mit einem festen \textbf{Generator-Polynom} multipliziert, sodass
+  das Codewort durch das Generator-Polynom teilbar ist (analog zu CRC
+  von Tag 4). Ahnst du, warum der Encoder dann einfacher wird?
+
+\item Beim Decoder hast du zwei Aufgaben: \emph{wo} sind die Fehler,
+  und \emph{wie groß} sind sie. Welche der beiden ist die
+  schwierigere? (Spoiler für Tag 8.)
+\end{enumerate}
+
+\subsection*{Vorschau Tag 7}
+
+Morgen bauen wir den \textbf{Reed-Solomon-Encoder in seiner
+gebräuchlichen Form}: mit Generator-Polynom und systematischer
+Codierung. „Systematisch" heißt: das Codewort enthält die
+Datensymbole \emph{wörtlich}, nur ein paar Prüfsymbole werden
+angehängt — sehr ähnlich zum CRC-Verfahren von Tag 4. Damit ist die
+Encoder-Seite für ein Datamatrix-Symbol abgehakt. Den Decoder schauen
+wir uns dann an Tag 8 an.
