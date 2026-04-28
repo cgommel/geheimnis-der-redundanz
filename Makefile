@@ -1,11 +1,11 @@
 # Build-Targets für das Buchprojekt.
 #
-# `make`        baut das LaTeX-Buch nach pdf/latex/buch.pdf.
-# `make alt`    baut die alten markdown-basierten Tageshefte (Brücke).
-# `make clean`  räumt LaTeX-Build-Artefakte auf.
-# `make shell`  öffnet eine Subshell im latex/-Verzeichnis (für ad-hoc latexmk).
+# `make`            baut das LaTeX-Buch nach pdf/latex/buch.pdf.
+# `make test-code`  prüft alle Python-Snippets syntaktisch.
+# `make clean`      räumt LaTeX-Build-Artefakte auf.
+# `make shell`      öffnet eine Subshell im latex/-Verzeichnis (für ad-hoc latexmk).
 
-.PHONY: all alt clean shell tag1 tag2 tag3 tag4 tag5 test-code
+.PHONY: all buch clean shell test-code
 
 LATEX_DIR := latex
 CODE_DIR := $(LATEX_DIR)/code
@@ -22,14 +22,6 @@ test-code:
 	@find $(CODE_DIR) -name "*.py" -type f -print0 \
 	    | xargs -0 -I {} python3 -B -m py_compile {}
 	@echo "✓ Alle Python-Snippets syntaktisch sauber"
-
-# Alte Markdown-Toolchain (Brücke, wird mit M8 entfernt).
-alt:
-	./build/build.sh all
-
-# Einzelne alte Tageshefte (Brücke).
-tag1 tag2 tag3 tag4 tag5:
-	./build/build.sh $@
 
 clean:
 	cd $(LATEX_DIR) && latexmk -C

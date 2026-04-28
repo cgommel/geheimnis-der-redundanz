@@ -1,6 +1,9 @@
-# Inhaltsplan – Tage 5 bis 10
+# Inhaltsplan – Tage 1 bis 10
 
-> Tag 1 bis 4 sind als Markdown-Hefte fertig. Hier ist der **rote Faden** der noch ausstehenden Tage 5–10. Der Plan ist eine *Skizze* — feinjustiert wird basierend auf Greta-Feedback und je nach Tempo.
+> Tag 1 bis 5 sind als LaTeX-Kapitel im Buch (`pdf/latex/buch.pdf`).
+> Hier ist der **rote Faden** der noch ausstehenden Tage 6–10. Der
+> Plan ist eine *Skizze* — feinjustiert wird basierend auf
+> Greta-Feedback und je nach Tempo.
 
 ## Roter Faden des Gesamtwerks
 
@@ -114,11 +117,14 @@ Wenn Greta in den ersten Tagen langsamer ist als erwartet (z. B. weil der Mathe-
 - Tag 7 + 8 sind die schwierigsten — hier ist Vorsicht angesagt
 - Tag 9 + 10 können auch entfallen, wenn die Zeit knapp wird; dann ist das „Buch" eben „bis Reed-Solomon" und Datamatrix ist Ausblick
 
-## Was Claude Code mit dem Plan macht
+## Wie der Plan benutzt wird
 
-Der Plan ist **bewusst grob**. Er soll als Orientierung dienen, nicht als Drehbuch. Vor jedem neuen Tag:
+Der Plan ist **bewusst grob** — Orientierung, kein Drehbuch. Vor
+jedem neuen Tag:
+
 1. Greta-Feedback aus `feedback-greta.md` konsultieren
 2. Tempo des Vortags prüfen
-3. Einen Vorschlag für den nächsten Tag erstellen (im Stil der bisherigen Skizzen, siehe z. B. die Skizze für Tag 2/3 in der Konversation, falls sie noch da ist)
-4. Den Vorschlag mit dem Onkel abstimmen
-5. Erst dann das Heft ausschreiben.
+3. Skizze für den nächsten Tag erstellen, mit dem Onkel abstimmen
+4. Erst dann das Kapitel ausschreiben (`latex/kapitel/tagN.tex`,
+   plus Code-Snippets in `latex/code/tagN/`, plus Lösungen in
+   `latex/loesungen/tagN.tex`).

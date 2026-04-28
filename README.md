@@ -1,108 +1,108 @@
 # Das Geheimnis der Redundanz
+
 ## Von der Prüfziffer zum Datamatrix
 
-> **Wichtigstes Dokument für den Wechsel zu Claude Code.** Dieses README ist der vollständige Kontext, den ein neuer Claude (oder Mensch) braucht, um an dem Projekt sinnvoll weiterarbeiten zu können.
+Ein Buchprojekt, das aus einem zweiwöchigen Schülerpraktikum hervorgeht.
+Die Hauptperson ist **Greta** (10. Klasse Gymnasium); jedes Tageskapitel
+führt einen Schritt weiter — Fehlererkennung, Fehlerkorrektur, endliche
+Körper, Reed-Solomon, Datamatrix. Bleistift-Übungen auf Karopapier
+wechseln sich mit Python-Einheiten in Thonny ab.
 
-## Worum geht's?
+## Aktueller Stand
 
-Ein Buchprojekt, das aus einem zweiwöchigen Schülerpraktikum-Tutorial hervorgeht. Die Hauptperson ist **Greta** (10. Klasse Gymnasium); die Tagestouren werden **Schritt für Schritt** zu einem tiefen Verständnis von **Datamatrix-2D-Codes** geführt. Roter Faden: Fehlererkennung → Fehlerkorrektur → endliche Körper → Reed-Solomon → Datamatrix.
+| Tag | Thema                                              | Status        | Greta |
+|-----|----------------------------------------------------|---------------|-------|
+| 1   | Prüfziffern: Parität, EAN-13                       | ✅ migriert   | ✅ ≈ 2 h |
+| 2   | ISBN-10, Luhn, Hamming-Distanz                     | ✅ migriert   | ✅      |
+| 3   | Hamming-Code (7,4)                                 | ✅ migriert   | offen   |
+| 4   | SECDED, Bündelfehler, Interleaving, CRC            | ✅ migriert   | ✅ ≈ 75 min |
+| 5   | Endliche Körper GF(2^n) — die neue Mathematik      | ✅ migriert   | offen   |
+| 6   | Polynome über GF(2^n), Reed-Solomon-Idee           | offen         |         |
+| 7   | Reed-Solomon: Encoder                              | offen         |         |
+| 8   | Reed-Solomon: Decoder                              | offen         |         |
+| 9   | Datamatrix-Symbol: Layout, Module, ECC-200         | offen         |         |
+| 10  | Datamatrix selbst zeichnen / decodieren            | offen         |         |
 
-Das Buch wird in **Tageshefte** aufgeteilt (10 Tage geplant). Jedes Heft kombiniert **Bleistiftübungen** auf Karopapier mit **Python-Übungen** in Thonny.
-
-Das Projekt wird vom Onkel/Mentor (= der Nutzer) in Iterationen mit Claude entwickelt; Greta arbeitet die Hefte durch und gibt Feedback.
-
-## Aktueller Stand (Stand: Übergabe an Claude Code)
-
-| Tag | Thema                                          | Markdown | PDF | Bemerkung                |
-|-----|------------------------------------------------|:--------:|:---:|--------------------------|
-| 1   | Prüfziffern: Parität, EAN-13                   | ✓        | ✓   | von Greta durchgearbeitet (≈ 2 h, „alles gefallen") |
-| 2   | ISBN-10, Luhn, Hamming-Distanz                 | ✓        | ✓   | von Greta durchgearbeitet, kein Detail-Feedback |
-| 3   | Hamming-Code (7,4)                             | ✓        | ✓   | noch nicht von Greta bearbeitet |
-| 4   | SECDED, Bündelfehler, Interleaving, CRC        | ✓        | ✓   | von Greta durchgearbeitet (≈ 75 min) |
-| 5   | Endliche Körper GF(2^n) – die neue Mathematik  | ✓        | ✓   | noch nicht von Greta bearbeitet |
-| 6   | Polynome über GF(2^n), Reed-Solomon-Idee       | offen    |     |                          |
-| 7   | Reed-Solomon: Encoder                          | offen    |     |                          |
-| 8   | Reed-Solomon: Decoder                          | offen    |     |                          |
-| 9   | Datamatrix-Symbol: Layout, Module, ECC-200     | offen    |     |                          |
-| 10  | Datamatrix selbst zeichnen / decodieren        | offen    |     |                          |
+Lösungen liegen im Anhang A. Aktueller Buchumfang: 72 Seiten.
 
 ## Verzeichnisstruktur
 
-```
+```text
 .
 ├── README.md                       ← diese Datei
-├── markdown/                       ← Quellen der Tageshefte (Single Source of Truth)
-│   ├── tag1_pruefziffern.md
-│   ├── tag2_isbn_luhn_hamming.md
-│   ├── tag3_hamming_code.md
-│   └── tag4_secded_crc_interleaving.md
-├── vorlage/                        ← LaTeX-Vorlage und Build-Hilfsskript
-│   ├── vorlage_koma.tex            (KOMA-Script-basiertes Layout mit Marginalien)
-│   └── marginalien_postprocess.py  (wandelt Aufgaben-Headings in Marginalien-Marker)
-├── build/                          ← Build-Skripte
-│   └── build.sh                    (baut ein einzelnes Heft oder alle)
+├── Makefile                        ← Build-Targets (make / make test-code / make clean)
+├── latex/                          ← Single Source of Truth (LaTeX-native)
+│   ├── buch.tex                    Master, scrbook twoside
+│   ├── praeambel.tex               Pakete, Geometrie, Schriften, Header
+│   ├── farben.tex                  CMYK-Farbset für die Aufgabentypen
+│   ├── befehle.tex                 Aufgaben-Umgebungen, Code-Snippet-Wrapper
+│   ├── kapitel/tagN.tex            Kapitel pro Tag (Aufgaben + Erklärtext)
+│   ├── loesungen/tagN.tex          Lösungen pro Tag (eingebunden in den Anhang)
+│   ├── anhang_loesungen.tex        Anhang-Master, bündelt loesungen/*.tex
+│   ├── code/tagN/*.py              Eigenständig lauffähige Python-Snippets
+│   │                               mit Region-Markern (# region NAME / # endregion)
+│   ├── scripts/extract_region.py   Schneidet Regionen zur Build-Zeit aus
+│   └── .latexmkrc                  XeLaTeX + shell-escape, Output nach ../pdf/latex/
 ├── doku/                           ← Redaktionelle Dokumentation
-│   ├── schreibstil.md              (Tonalität, Sprache, didaktische Prinzipien)
-│   ├── inhaltsplan.md              (Detailskizze Tag 5–10, Lernziele, Übergänge)
-│   ├── zielpublikum.md             (Wer ist Greta, was kann sie, was nicht)
-│   ├── layout-konzept.md           (aktuelles Layout, geplante Erweiterungen)
-│   ├── feedback-greta.md           (gesammeltes Feedback, leer / wachsend)
-│   └── claude-code-prompt.md       (Vorschlag, wie man Claude Code prompten kann)
-├── layout-konzepte/                ← PDFs zu Layout-Iterationen (Diskussionsmaterial)
-│   └── marginalien_doppelseitig.pdf
-└── referenz-pdfs/                  ← Aktueller Output zu Vergleichszwecken
-    ├── tag1_pruefziffern.pdf
-    ├── tag2_isbn_luhn_hamming.pdf
-    ├── tag3_hamming_code.pdf
-    └── tag4_secded_crc_interleaving.pdf
+│   ├── zielpublikum.md             Wer ist Greta
+│   ├── schreibstil.md              Tonalität, Konventionen
+│   ├── inhaltsplan.md              Roter Faden Tag 1–10
+│   ├── feedback-greta.md           Greta-Feedback je Tag
+│   ├── LAYOUT_BRIEFING.md          Designentscheidungen für das doppelseitige Layout
+│   └── WIP.md                      Aktueller Arbeitsstand
+├── layout-konzepte/                ← Demo-PDF zum Layout-Briefing
+└── pdf/                            ← Build-Output (gitignored)
+    └── latex/buch.pdf
 ```
 
-## Der Wechsel zu Claude Code – warum
-
-Das Projekt ist groß genug geworden, dass es ein **echtes Buchprojekt** werden soll. Das bedeutet:
-
-- Versionskontrolle (Git) statt PDFs in einem Cloud-Ordner
-- Inkrementelle Builds (Makefile)
-- Mittelfristig: Wechsel von Markdown zu nativ LaTeX (für bessere Querverweise, Index, Glossar, automatische Nummerierung – wichtig spätestens ab Tag 5, wenn die Mathematik dichter wird)
-- Möglichkeit, dass der Nutzer auch zwischen Sessions selbst Hand anlegt
-
-## Geplante Migration nach LaTeX
-
-Aktuell: **Markdown → pandoc → LaTeX-Body → Postprozessor → xelatex → PDF**
-
-Geplant (in Claude Code):
-
-1. Pandoc nutzen, um die vier vorhandenen Markdown-Dateien als Startpunkt nach LaTeX zu konvertieren
-2. Buchstruktur einführen: `\documentclass{scrbook}`, `\chapter{...}` pro Tag, `\include{tag1}` etc.
-3. Eigene Befehle in `befehle.tex` definieren: `\bleistiftuebung{nr}{titel}`, `\pythoneinheit{nr}{titel}`, `\werkzeugcheck{titel}` (ersetzen heutige Marginalien-Logik)
-4. Lösungen aus den einzelnen Tagen herauslösen und in einen gemeinsamen Anhang (`anhang_loesungen.tex`) verschieben, mit Querverweisen
-5. Index und Glossar hinzufügen (`makeindex`, `glossaries`-Paket)
-6. Doppelseitiges Layout final umsetzen (siehe `layout-konzepte/marginalien_doppelseitig.pdf`)
-
-## Schnelleinstieg für einen neuen Claude
-
-1. Lies `doku/zielpublikum.md` (eine Seite, definiert Greta)
-2. Lies `doku/schreibstil.md` (zwei Seiten, definiert die Tonalität)
-3. Lies `doku/inhaltsplan.md` (definiert, was inhaltlich noch ansteht)
-4. Schau in eines der Markdown-Dokumente (z. B. `markdown/tag3_hamming_code.md`), um den Stil zu sehen
-5. Schau ins zugehörige PDF in `referenz-pdfs/`, um den Output zu sehen
-6. Ab dann: legen wir los.
-
-## Build (aktuell)
-
-Im Verzeichnis `build/`:
+## Bauen
 
 ```bash
-./build.sh tag3   # baut nur Tag 3
-./build.sh all    # baut alle vier Tage
+make           # baut das Buch nach pdf/latex/buch.pdf
+make test-code # prüft die Python-Snippets syntaktisch
+make clean     # entfernt Build-Artefakte
 ```
 
-Voraussetzungen: `pandoc`, `xelatex`, `python3`, DejaVu-Fonts. Siehe `build/build.sh`.
+### Voraussetzungen lokal
+
+```bash
+# TeX-Pakete (TeX Live):
+sudo tlmgr install fvextra framed newunicodechar latexmk \
+                   tcolorbox changepage tikzfill pdfcol \
+                   collection-latexextra
+# Schriften:
+brew install --cask font-dejavu        # macOS / Homebrew
+# minted-Backend:
+brew install pygments                  # macOS / Homebrew
+```
+
+Der Container-Build (kommt als nächste Phase) löst das ab und kapselt
+die ganze Toolchain.
+
+## Layout-Eigenschaften
+
+- `scrbook` zweiseitig, A4, 11 pt, KOMA-Headings
+- DejaVu Serif/Sans/Sans Mono
+- Aufgaben-Umgebungen mit farbigem Strich auf der jeweils äußeren
+  Seite (CMYK-Pastellfarben: Bleistift-Orange, Python-Blau,
+  Werkzeug-Grün), page-aware (wechselt korrekt mit der
+  Seitenparität, auch bei Aufgaben über Page-Breaks)
+- Marginalie spiegelt mit, Symbol + Kapitälchen-Bezeichnung in der
+  Aufgaben-Farbe
+- Code-Highlighting via `minted` mit Tango-Style
+- TikZ für Diagramme (z. B. das Hamming-Venn-Diagramm in Tag 3)
+
+Begründungen und alle Designentscheidungen stehen in
+`doku/LAYOUT_BRIEFING.md`.
 
 ## Wer entscheidet was?
 
-- **Inhaltliche Stoffauswahl** (was wird in welchem Tag behandelt): Onkel/Nutzer entscheidet, Claude schlägt vor.
-- **Didaktische Reihenfolge und Tempo:** Claude schlägt vor, Onkel/Nutzer korrigiert anhand von Greta-Feedback.
-- **Schreibstil und Wortwahl:** Claude schreibt, Onkel/Nutzer redigiert.
-- **Layout und Build:** Claude implementiert, Onkel/Nutzer entscheidet das große Bild.
-- **Greta-Feedback:** wandert in `doku/feedback-greta.md`, wird vor jeder neuen Tagesplanung konsultiert.
+- **Inhaltliche Stoffauswahl:** Onkel/Nutzer entscheidet, Claude
+  schlägt vor.
+- **Didaktische Reihenfolge und Tempo:** Claude schlägt vor, Onkel
+  korrigiert anhand von Greta-Feedback.
+- **Schreibstil und Wortwahl:** Claude schreibt, Onkel redigiert.
+- **Layout und Build:** Claude implementiert, Onkel entscheidet das
+  große Bild.
+- **Greta-Feedback** wandert in `doku/feedback-greta.md` und wird vor
+  jeder neuen Tagesplanung konsultiert.
