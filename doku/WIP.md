@@ -2,76 +2,52 @@
 
 > Aktueller Arbeitsstand und nächste Schritte.
 
-## Phase 1 — LaTeX-native Migration: ✅ abgeschlossen
+## Stand: Ende des Polish-Sprint-Anlaufs (2026-04-29)
 
-| Schritt | Inhalt | Status |
-|---------|--------|--------|
-| M1 | Skelett & Layout (scrbook, tcolorbox, page-aware Strich) | ✅ |
-| M2 | Python-Snippet-Infrastruktur (minted, Region-Marker) | ✅ |
-| M3 | Tag 3 migriert | ✅ |
-| M4 | Tag 1, 2, 4 migriert | ✅ |
-| M4½ | Tag 5 importiert und migriert | ✅ |
-| M5 | Lösungen in den Anhang ausgelagert | ✅ |
-| M8 | Aufräumen, Merge nach `main` | 🟡 |
+`main` enthält Tag 1–6, Container-Build, GitHub-Actions, Glossar,
+Index (leer), Vorwort, Titelseite plus den ersten Layout-Fix (LY-01,
+Marginalie verwaist nach Page-Break per `\needspace`).
 
-Aktueller Stand: 72 Seiten, Tag 1–5 vollständig, Lösungen im Anhang A
-(eine Datei pro Tag in `latex/loesungen/`, gebündelt durch
-`latex/anhang_loesungen.tex`).
+**Releases:**
+- `v2026.04.29` — Tag 1–6, Polish noch offen.
+- `v2026.04.29.1` — Polish-Infrastruktur (M6 + M7) + LY-01-Fix.
+  Tag-Push war gepusht, Release-Workflow lief beim Schließen der
+  Sitzung noch (Image-Bau mit erweitertem Dockerfile dauert).
 
-**Auf Eis (Polish-Sprint nach dem Buch-Review):**
+## Nächste Schritte
 
-- M6 — Glossar & Index
-- M7 — Front-/Back-Matter
+1. **Release-Run abchecken**: `gh run list --workflow release.yml
+   --limit 1` und ggf. `gh release view v2026.04.29.1`. Falls grün:
+   PDF-Asset prüfen.
+2. **Mängelliste abarbeiten** (`doku/MAENGEL.md`, 13 offene Layout-
+   Punkte). Reihenfolge der Sichtbarkeit: LY-05 (Tag-2-Tabelle 72 pt
+   zu breit), LY-02 (TikZ-Diagramm EAN-13), LY-04+LY-06 zusammen
+   (`\sectionmitzeit`), LY-09 / LY-11 / LY-10 / LY-12, dann LY-08 +
+   LY-13 + LY-03 ganz am Ende (Microtype-Mikropolish — verschiebt
+   sich bei jeder Textänderung).
+3. **Inhaltliches Review** durchs ganze Buch nach Polish — eigene
+   Sektion in `MAENGEL.md` füllen.
+4. **Tag 7** (Reed-Solomon-Encoder mit Generator-Polynom) als
+   `feature/tag7`-Branch.
 
-## Phase 2 — Container-Build lokal: ✅
+## Konventionen, die wir uns gesetzt haben
 
-`build/Dockerfile` (Debian Trixie + TeX Live + DejaVu + Pygments)
-und `build/in-container.sh` (Engine-Detection: Apple `container` →
-Docker → Fehler), `make container` baut das Buch. Container und
-lokal bauen beide 72 Seiten — kein Versions-Drift.
-
-## Phase 3 — CI/Release auf GitHub: 🟡
-
-`.github/workflows/build.yml` (PR-/Push-Build mit PDF-Artefakt),
-`.github/workflows/release.yml` (Tag-getrieben `v*`, GitHub-Release
-mit PDF-Asset). Beide nutzen das `build/Dockerfile` mit
-buildx-Layer-Cache (`type=gha`).
-
-## Anstehende Phasen
-
-| Phase | Inhalt | Branch |
-|-------|--------|--------|
-| 4 | Tag 6 (Polynome über GF(2^n), Reed-Solomon-Idee) | `feature/tag6` |
-| 5 (opt.) | Tag 7 (Reed-Solomon-Encoder) | `feature/tag7` |
-| Review | Mängel- und Vorschlagsliste übers ganze Buch | gesondert |
-| Polish | M6, M7, Review-Punkte abarbeiten | gesondert |
-
-## Stolperfallen für Folgemigrationen
-
-- **Anführungszeichen:** `babel[ngerman]` macht aus `"u` ein `ü`. Vor
-  jedem Build: `grep '"' latex/kapitel/tagN.tex` und ASCII-`"` durch
-  Unicode-`"` ersetzen. ABER: in `\begin{verbatim}`-Blöcken
-  (Code-Beispiele wie `print("Hallo Greta")`) müssen die Quotes ASCII
-  bleiben, sonst tippt Greta etwas Falsches ab.
-- **Tabellen:** Standardmäßig `lll`-Spalten brechen aus dem
-  Aufgabenblock heraus, wenn Inhalt zu lang. Bei textlastiger letzter
-  Spalte: `p{Xcm}` verwenden.
-- **`\checkmark`** braucht `amssymb` (in Präambel geladen).
-- **`\write18`-Snippets** brauchen das Verzeichnis `latex/.snippets/`,
-  das das Makefile-Target `buch` per `mkdir -p` anlegt.
-- **Aufgaben-Strich nach Page-Break:** wird per `overlay` in der
-  `aufgabebox` pro Page-Part neu gezeichnet (page-aware via
-  `\strictpagecheck` + `\checkoddpage`/`\ifoddpage`); nicht zurück
-  auf zwei separate Recto/Verso-Boxen umstellen.
+- Erst sammeln in `doku/MAENGEL.md`, dann systematisch fixen — keine
+  Hotfixes ohne Eintrag.
+- Nach jedem Push: `gh run list` schauen, ob CI grün ist (lokale
+  und Container-Welt können driften).
+- Commit-Messages ohne Claude-Spuren.
+- Farben in CMYK, Anführungszeichen Unicode (Babel-`"`-Shorthand ist
+  global abgeschaltet).
 
 ## Lokale Voraussetzungen
 
 ```bash
 sudo tlmgr install fvextra framed newunicodechar latexmk \
                    tcolorbox changepage tikzfill pdfcol \
-                   collection-latexextra
+                   needspace collection-latexextra
 brew install --cask font-dejavu
 brew install pygments
 ```
 
-Phase 2 (Container) kapselt das in ein Dockerfile.
+Im Container ist alles drin (`build/Dockerfile` mit Debian Trixie).
