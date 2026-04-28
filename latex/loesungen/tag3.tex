@@ -1,0 +1,160 @@
+\section{Tag 3 — Hamming-Codes}
+
+\subsection*{Bleistiftübung 1 — Hamming-Schranke}
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Ungleichung: $\mathbf{2^k \cdot (n + 1) \le 2^n}$, mit $n = k + r$.
+\item Umgeformt für $r$: $\mathbf{2^r \ge k + r + 1}$.
+\item Tabelle:
+
+  \begin{center}
+  \begin{tabular}{ccc}
+    \toprule
+    $k$ & $n$ (min.) & $r$ \\
+    \midrule
+    1 & 3  & 2 \\
+    2 & 5  & 3 \\
+    3 & 6  & 3 \\
+    4 & 7  & 3 \\
+    5 & 9  & 4 \\
+    6 & 10 & 4 \\
+    7 & 11 & 4 \\
+    8 & 12 & 4 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  Rechenweg z.\,B.\ für $k = 4$: probiere $r = 1, 2, 3, \dots$ und
+  prüfe, ob $2^r \ge k + r + 1$:
+  \begin{itemize}
+  \item $r = 2$: $2^2 = 4$, aber $k + r + 1 = 7$ → reicht nicht.
+  \item $r = 3$: $2^3 = 8$, $k + r + 1 = 8$ → passt \textbf{genau}.
+  \end{itemize}
+
+\item Besonders gut „passt“ die Schranke bei $k = 1$
+  ($n = 3 \to 2^1 \cdot 4 = 8 = 2^3$), $k = 4$
+  ($n = 7 \to 2^4 \cdot 8 = 128 = 2^7$), $k = 11$ ($n = 15$), \dots\
+  Diese sind die „perfekten“ Hamming-Codes.
+\end{enumerate}
+
+\subsection*{Bleistiftübung 2 — Codewort \texttt{1011}}
+
+Datenbits: $d_1 = 1$, $d_2 = 0$, $d_3 = 1$, $d_4 = 1$, also Positionen
+3, 5, 6, 7 mit Werten 1, 0, 1, 1.
+
+Berechnung der Prüfbits (gerade Parität):
+
+\begin{itemize}
+\item $p_1$ überwacht Positionen 1, 3, 5, 7 = $p_1$, 1, 0, 1 → Summe
+  der Daten $1+0+1 = 2$, also $p_1 = \mathbf{0}$ (damit Gesamtsumme
+  gerade).
+\item $p_2$ überwacht Positionen 2, 3, 6, 7 = $p_2$, 1, 1, 1 → Summe
+  $1+1+1 = 3$, also $p_2 = \mathbf{1}$.
+\item $p_3$ überwacht Positionen 4, 5, 6, 7 = $p_3$, 0, 1, 1 → Summe
+  $0+1+1 = 2$, also $p_3 = \mathbf{0}$.
+\end{itemize}
+
+Codewort:
+
+\begin{verbatim}
+Position:    1    2    3    4    5    6    7
+Codewort:    0    1    1    0    0    1    1
+\end{verbatim}
+
+\subsection*{Bleistiftübung 3 — Mehr Codewörter}
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  $d_1\, d_2\, d_3\, d_4$ & $p_1$ & $p_2$ & $p_3$ & Codewort (Position 1–7) \\
+  \midrule
+  0 0 0 0 & 0 & 0 & 0 & 0 0 0 0 0 0 0 \\
+  1 1 1 1 & 1 & 1 & 1 & 1 1 1 1 1 1 1 \\
+  1 0 0 0 & 1 & 1 & 0 & 1 1 1 0 0 0 0 \\
+  0 1 1 0 & 1 & 0 & 0 & 1 0 0 0 1 1 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+(Die ersten zwei sind besonders schön: das Null-Codewort und das
+Eins-Codewort. Letzteres hat Hamming-Distanz \textbf{7} zum ersten —
+der Code hat also Mindestdistanz mindestens 7? Nein, das ist nicht die
+Mindestdistanz; die ist 3. Andere Paare können kleinere Distanzen
+haben. Greta darf das gerne überprüfen — lass dafür alle 16 Codewörter
+generieren und finde die kleinste paarweise Hamming-Distanz.)
+
+\subsection*{Bleistiftübung 4 — Decodieren}
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Empfangen: \texttt{0 0 1 0 0 1 1}.
+  \begin{itemize}
+  \item $s_1 = b_1+b_3+b_5+b_7 \bmod 2 = 0+1+0+1 \bmod 2 = 2 \bmod 2
+    = \mathbf{0}$
+  \item $s_2 = b_2+b_3+b_6+b_7 \bmod 2 = 0+1+1+1 \bmod 2 = 3 \bmod 2
+    = \mathbf{1}$
+  \item $s_3 = b_4+b_5+b_6+b_7 \bmod 2 = 0+0+1+1 \bmod 2 = 2 \bmod 2
+    = \mathbf{0}$
+  \end{itemize}
+\item $s_3\, s_2\, s_1 = 0\, 1\, 0$ binär $= \mathbf{2}$ dezimal.
+  Fehler an Position \textbf{2}.
+\item Korrigiert: Position 2 kippen → \texttt{0 1 1 0 0 1 1}.
+  Datenbits an Positionen 3, 5, 6, 7 = \texttt{1, 0, 1, 1}.
+  Ursprüngliches Datenwort: \textbf{1 0 1 1}. \checkmark
+\item Empfangen: \texttt{1 1 0 0 1 1 0}.
+  \begin{itemize}
+  \item $s_1 = 1+0+1+0 = 2 \bmod 2 = \mathbf{0}$
+  \item $s_2 = 1+0+1+0 = 2 \bmod 2 = \mathbf{0}$
+  \item $s_3 = 0+1+1+0 = 2 \bmod 2 = \mathbf{0}$
+  \end{itemize}
+  Alle Prüfsummen 0 → \textbf{kein Fehler erkannt}. Datenbits =
+  Positionen 3, 5, 6, 7 = \texttt{0, 1, 1, 0}. Datenwort:
+  \textbf{0 1 1 0}.
+
+  (Gemein: kein Fehler! Hat Greta das gemerkt?)
+\end{enumerate}
+
+\subsection*{Aufgabe 3.1 — Doppelfehler-Test}
+
+Erwartete Ausgabe (sinngemäß):
+
+\begin{verbatim}
+Doppelfehler: 0/336 zufällig richtig, 336/336 falsch
+\end{verbatim}
+
+Erklärung: bei einem Doppelfehler ergeben die drei Prüfsummen genau
+die XOR-Summe der zwei gekippten Positionen (binär). Diese ist nie 0
+(außer bei zwei \emph{gleichen} Positionen, was nicht zählt) und
+entspricht einer \textbf{gültigen Position 1–7} — also wird der
+Decoder einen \emph{dritten}, falschen Bit kippen. Resultat: 3 Bits
+gekippt insgesamt → Datenwort fast immer falsch.
+
+Genau das motiviert SECDED: ein achtes Bit als „Gesamt-Parität“ über
+alle 7 Bits erkennt zuverlässig, ob die Anzahl der Fehler ungerade
+(1) oder gerade (0, 2, 4, \dots) ist. Damit lässt sich zwischen
+Einzel- und Doppelfehler unterscheiden.
+
+\subsection*{Antworten zu den drei Reflexionsfragen}
+
+\begin{enumerate}
+\item \textbf{8 statt 7 Bits:} ja, das ist genau der \textbf{erweiterte
+  Hamming-Code (8,4)} oder allgemein \textbf{SECDED}. Mit einem
+  zusätzlichen Paritätsbit kann man Doppelfehler \emph{erkennen} (aber
+  immer noch nicht korrigieren). In ECC-RAM sind das (72, 64) — 64
+  Datenbits, 8 Prüfbits, korrigiert 1 Fehler, erkennt 2.
+
+\item \textbf{Bündelfehler:} Hamming-Code hilft hier nicht. Wenn 2
+  oder mehr benachbarte Bits gleichzeitig kippen, wird der Code
+  falsch „korrigieren“. Die Lösung: entweder die Daten
+  \textbf{verteilen} (Interleaving), sodass benachbarte
+  Übertragungsfehler nicht zu benachbarten Codebits werden — oder
+  \textbf{stärkere Codes} mit größerer Korrekturkraft, z.\,B.\
+  Reed-Solomon.
+
+\item \textbf{Byte-Parität:} ja, das ist genau die Idee von
+  Reed-Solomon. Statt mit Bits (0/1) rechnet man mit Bytes (0–255),
+  und die „Modulo-Arithmetik“ wird durch \emph{Polynomarithmetik in
+  einem endlichen Körper} ersetzt. Damit kann man pro Prüfbyte einen
+  Bytefehler korrigieren — und ein einziger Bytefehler kann bis zu 8
+  Bitfehler abdecken (wenn alle in dasselbe Byte fallen). Genau diese
+  Eigenschaft macht Reed-Solomon ideal für Bündelfehler.
+\end{enumerate}
