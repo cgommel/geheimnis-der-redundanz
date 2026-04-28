@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         texlive-lang-german \
         texlive-pictures \
         texlive-science \
+        texlive-plain-generic \
+        texlive-extra-utils \
         latexmk \
         python3 \
         python3-pygments \
