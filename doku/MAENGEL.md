@@ -125,6 +125,30 @@
 - **Lösungsidee**: in `\KOMAoptions{headings=…}` übersetzen oder
   einfach entfernen.
 
+### LY-12 — DejaVu Serif hat keine echten Kapitälchen 🟥
+- **Schwere**: kosmetisch (unsichtbar bisher, weil Fallback brauchbar
+  aussieht)
+- **Befund**: `LaTeX Font Warning: Font shape 'TU/DejaVuSerif(0)/m/sc'
+  undefined ... using 'TU/DejaVuSerif(0)/m/n' instead` (4×). Wir
+  nutzen `\textsc{...}` in den Marginalien-Bezeichnungen
+  („Bleistift-Übung 1" usw.); LaTeX fällt auf den Standardschnitt
+  zurück — also keine echten Kapitälchen.
+- **Lösungsidee**: entweder andere Schrift mit `\setmainfont[…SmallCaps…]`
+  per fontspec, oder einen eigenen Befehl `\fakesmallcaps{...}`, der
+  via `\MakeUppercase` plus reduzierter Schriftgröße simuliert. Dritte
+  Option: für die Marginalie auf `\textsc` ganz verzichten und stattdessen
+  „Bleistift-Übung 1" einfach in `\textit` oder `\sffamily` setzen.
+
+### LY-13 — Detail-Lokalisierung der Underfull-/Overfull-Stellen 🟥
+- **Schwere**: Polish (Sammelpunkt für LY-08 und LY-09)
+- **Befund**: Log-Liste mit relativen Zeilennummern, aber ohne klaren
+  Datei-Verweis (außer für die zwei bekannten Overfulls). Höchste
+  Badness 10000 in einer Underfull-Box (lines 203--205 — Datei zur
+  Zeit unklar) und 4024 (lines 70--72).
+- **Lösungsidee**: bei der Microtype-Polish-Phase pro Eintrag über
+  die `[N]`-Page-Marker im Log auf die Datei zurückrechnen, dann
+  vor Ort umformulieren oder `\hyphenation`-Hilfe einsetzen.
+
 ### LY-04 — Section-Titel mit `\normalfont`-Zeitangabe 🟥
 - **Schwere**: kosmetisch
 - **Stelle**: alle Tag-Kapitel, z. B. „1.3 Das Paritätsbit — die
