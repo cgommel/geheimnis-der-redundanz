@@ -17,9 +17,10 @@ buch: test-code
 	cd $(LATEX_DIR) && latexmk
 
 # Syntaxprüfung aller Code-Snippets vor dem LaTeX-Build.
+# -B unterdrückt das Schreiben von .pyc-Dateien.
 test-code:
 	@find $(CODE_DIR) -name "*.py" -type f -print0 \
-	    | xargs -0 -I {} python3 -m py_compile {}
+	    | xargs -0 -I {} python3 -B -m py_compile {}
 	@echo "✓ Alle Python-Snippets syntaktisch sauber"
 
 # Alte Markdown-Toolchain (Brücke, wird mit M8 entfernt).
