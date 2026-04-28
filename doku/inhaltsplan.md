@@ -21,9 +21,14 @@ Tag 10: Datamatrix selbst
         zeichnen / decodieren ← die finale Synthese
 ```
 
-## Tag 5 – Endliche Körper GF(2^n)
+## Tag 5 – Endliche Körper GF(2^n) — *Status: fertig*
 
 **Ziel:** Greta versteht, was ein endlicher Körper ist und kann in GF(2^3) oder GF(2^4) addieren und multiplizieren.
+
+> Hinweis: Tag 5 wurde mit GF(2³) als konkretem Beispiel umgesetzt
+> (Variante (c) aus der Vorplanung), mit dem expliziten Bezug zu den
+> CRC-Polynomen aus Tag 4. GF(2⁸) wird als Ausblick angerissen, aber
+> nicht von Hand ausgerechnet — das wandert in Tag 6/7.
 
 **Anker zum Vortag:** Tag 4 endete mit der Frage „Wie überträgt man Modulo auf Bytes?" Die Antwort: Polynom­arithmetik modulo eines irreduziblen Polynoms.
 

@@ -5,7 +5,7 @@
 # `make clean`  räumt LaTeX-Build-Artefakte auf.
 # `make shell`  öffnet eine Subshell im latex/-Verzeichnis (für ad-hoc latexmk).
 
-.PHONY: all alt clean shell tag1 tag2 tag3 tag4 test-code
+.PHONY: all alt clean shell tag1 tag2 tag3 tag4 tag5 test-code
 
 LATEX_DIR := latex
 CODE_DIR := $(LATEX_DIR)/code
@@ -28,7 +28,7 @@ alt:
 	./build/build.sh all
 
 # Einzelne alte Tageshefte (Brücke).
-tag1 tag2 tag3 tag4:
+tag1 tag2 tag3 tag4 tag5:
 	./build/build.sh $@
 
 clean:

@@ -18,8 +18,8 @@ Das Projekt wird vom Onkel/Mentor (= der Nutzer) in Iterationen mit Claude entwi
 | 1   | Prüfziffern: Parität, EAN-13                   | ✓        | ✓   | von Greta durchgearbeitet (≈ 2 h, „alles gefallen") |
 | 2   | ISBN-10, Luhn, Hamming-Distanz                 | ✓        | ✓   | von Greta durchgearbeitet, kein Detail-Feedback |
 | 3   | Hamming-Code (7,4)                             | ✓        | ✓   | noch nicht von Greta bearbeitet |
-| 4   | SECDED, Bündelfehler, Interleaving, CRC        | ✓        | ✓   | noch nicht von Greta bearbeitet |
-| 5   | Endliche Körper GF(2^n) – die neue Mathematik  | offen    |     | siehe `inhaltsplan.md`   |
+| 4   | SECDED, Bündelfehler, Interleaving, CRC        | ✓        | ✓   | von Greta durchgearbeitet (≈ 75 min) |
+| 5   | Endliche Körper GF(2^n) – die neue Mathematik  | ✓        | ✓   | noch nicht von Greta bearbeitet |
 | 6   | Polynome über GF(2^n), Reed-Solomon-Idee       | offen    |     |                          |
 | 7   | Reed-Solomon: Encoder                          | offen    |     |                          |
 | 8   | Reed-Solomon: Decoder                          | offen    |     |                          |

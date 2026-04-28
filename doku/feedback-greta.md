@@ -21,7 +21,15 @@
 
 ## Tag 4 – SECDED, Bündelfehler, Interleaving, CRC
 
-- noch nicht bearbeitet
+- **Bearbeitungsdauer:** ca. 75 Minuten (deutlich schneller als Tag 1)
+- **Onkel-Beobachtung:** Greta wird sicherer im Stoff. Tag 5 wurde
+  daher mit etwas mehr Substanz angelegt, um wieder Richtung 2h-Marke
+  zu kommen.
+
+## Tag 5 – Endliche Körper GF(2^n)
+
+- **Bearbeitungsdauer:** offen (noch nicht bearbeitet)
+- **Allgemeines Feedback:** offen
 
 ---
 

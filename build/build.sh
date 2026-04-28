@@ -24,12 +24,14 @@ TAG_DATEI[tag1]="tag1_pruefziffern.md"
 TAG_DATEI[tag2]="tag2_isbn_luhn_hamming.md"
 TAG_DATEI[tag3]="tag3_hamming_code.md"
 TAG_DATEI[tag4]="tag4_secded_crc_interleaving.md"
+TAG_DATEI[tag5]="tag5_endliche_koerper.md"
 
 declare -A TAG_TITEL
 TAG_TITEL[tag1]="Tag 1 \\textperiodcentered{} Prüfziffern und Fehlererkennung"
 TAG_TITEL[tag2]="Tag 2 \\textperiodcentered{} Cleverere Prüfziffern \\& Hamming-Distanz"
 TAG_TITEL[tag3]="Tag 3 \\textperiodcentered{} Hamming-Codes: erstes echtes Korrigieren"
 TAG_TITEL[tag4]="Tag 4 \\textperiodcentered{} Bündelfehler, Interleaving, CRC"
+TAG_TITEL[tag5]="Tag 5 \\textperiodcentered{} Eine neue Mathematik: endliche Körper"
 
 build_tag() {
     local tag="$1"
@@ -90,7 +92,7 @@ case "${1:-}" in
         exit 1
         ;;
     all)
-        for tag in tag1 tag2 tag3 tag4; do
+        for tag in tag1 tag2 tag3 tag4 tag5; do
             build_tag "$tag"
         done
         ;;
