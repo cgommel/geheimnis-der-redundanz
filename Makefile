@@ -13,7 +13,7 @@ CODE_DIR := $(LATEX_DIR)/code
 all: buch
 
 buch: test-code
-	mkdir -p pdf/latex/kapitel
+	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
 	cd $(LATEX_DIR) && latexmk
 
 # Syntaxprüfung aller Code-Snippets vor dem LaTeX-Build.
@@ -33,7 +33,7 @@ tag1 tag2 tag3 tag4:
 
 clean:
 	cd $(LATEX_DIR) && latexmk -C
-	rm -rf pdf/latex
+	rm -rf pdf/latex $(LATEX_DIR)/.snippets
 
 shell:
 	cd $(LATEX_DIR) && exec $$SHELL

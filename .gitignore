@@ -22,6 +22,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Snippet-Cache (von \pythoncodeteil zur Build-Zeit erzeugt)
+latex/.snippets/
+
 # OS-Krimskrams
 .DS_Store
 Thumbs.db

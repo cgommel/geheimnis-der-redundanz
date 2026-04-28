@@ -4,7 +4,9 @@
 # Output (PDF und Build-Artefakte) landet in ../pdf/latex/.
 
 $pdf_mode = 5;        # XeLaTeX
-$pdflatex = 'xelatex -interaction=nonstopmode -synctex=1 -shell-escape -file-line-error %O %S';
+# Bei $pdf_mode = 5 wird $xelatex (nicht $pdflatex) verwendet.
+# -shell-escape ist nötig für minted (Pygments) und unseren \pythoncodeteil.
+$xelatex = 'xelatex -interaction=nonstopmode -synctex=1 -shell-escape -file-line-error %O %S';
 
 $out_dir = '../pdf/latex';
 

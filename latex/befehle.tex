@@ -98,3 +98,25 @@
 % Pfad ist relativ zu latex/code/. Die .py-Dateien sind eigenständig
 % lauffähig, sodass Greta sie 1:1 in Thonny verwenden kann.
 \newcommand{\pythoncode}[1]{\inputminted{python}{code/#1}}
+
+% \pythoncodeteil{tagN/file.py}{regionname} zeigt nur eine Region
+% aus einer Datei. Region-Marker in der Quelle:
+%     # region <name>
+%     ... Code ...
+%     # endregion
+% Greta tippt die Datei sukzessive auf, im Buch zeigen wir pro
+% Python-Einheit jeweils nur das aktuell relevante Stück.
+%
+% Implementierung: extract_region.py schneidet die Region zur
+% Build-Zeit in eine temporäre Datei, die minted dann einbindet.
+% Der Counter sorgt dafür, dass jede Einbindung ihre eigene Datei
+% bekommt — nötig, weil minted das Snippet zur Build-Zeit cached.
+\newcounter{snippetcntr}
+\makeatletter
+\newcommand{\pythoncodeteil}[2]{%
+  \stepcounter{snippetcntr}%
+  \protected@edef\@snippetfile{.snippets/snippet-\arabic{snippetcntr}.py}%
+  \immediate\write18{python3 scripts/extract_region.py code/#1 #2 > \@snippetfile}%
+  \inputminted{python}{\@snippetfile}%
+}
+\makeatother

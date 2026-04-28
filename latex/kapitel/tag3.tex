@@ -1,34 +1,632 @@
 \chapter{Tag 3 — Hamming-Codes}
 
-Stub-Kapitel für M1. Inhalte folgen in M3.
+\begin{quote}
+Heute baust du selbst einen Code, der Fehler nicht nur findet, sondern
+repariert. Mit Bleistift, drei überlappenden Kreisen und Python. Am Ende
+kannst du \textbf{4 Datenbits in 7 Bits codieren}, und dein Decoder
+zeigt dir nicht nur, \emph{dass} ein Fehler passiert ist, sondern
+\textbf{an welcher Position} — und korrigiert ihn automatisch.
+\end{quote}
 
-\clearpage
+\section*{Lernziele für heute}
 
-\begin{bleistiftuebung}{1}{Aufgabe direkt am Seitenanfang}
-Dies ist \emph{Szenario 5} aus dem Briefing: die erste Aufgabe steht
-ganz oben auf einer Seite. Das vertikale Alignment der Marginalie darf
-durch das fehlende vorhergehende Element nicht gestört werden.
+Am Ende von Tag 3 kannst du \dots
 
-Datenwort: \texttt{1011}. Bestimme das Codewort des
-\((7,4)\)-Hamming-Codes.
+\begin{itemize}
+\item die \textbf{Hamming-Schranke} ableiten und damit ausrechnen, wie
+  viele Prüfbits du für $k$ Datenbits brauchst
+\item den \textbf{(7,4)-Hamming-Code} mit drei überlappenden Kreisen
+  konstruieren
+\item erklären, warum die binäre Position eines Bits darüber entscheidet,
+  von welchen Prüfbits es überwacht wird
+\item ein 4-Bit-Datenwort in 7 Bits \textbf{codieren} und ein
+  7-Bit-Codewort \textbf{dekodieren}
+\item bei einem Bitfehler die fehlerhafte Position \textbf{berechnen}
+  und korrigieren
+\item den Code in Python implementieren und systematisch testen
+\end{itemize}
+
+Material: Bleistift, kariertes Papier, Buntstifte (drei verschiedene
+Farben sind hilfreich für die Kreise!), Thonny.
+
+% =============================================================
+\section{Wie viele Prüfbits brauchen wir mindestens? \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+Erinnere dich an die Knobelaufgabe vom Vortag: \emph{Du hast 4
+Datenbits. Wie viele Prüfbits brauchst du mindestens, damit du jeden
+Einzel-Bitfehler korrigieren kannst?}
+
+Lass uns das systematisch angehen.
+
+\subsection*{Die Idee: jedes Codewort braucht „Platz“ um sich herum}
+
+Bei $n$ Bits insgesamt gibt es $2^n$ mögliche Wörter. Jedes davon kann
+entweder ein gültiges Codewort sein oder ein „verzerrtes“ Codewort
+(nach einem Fehler).
+
+Wir wollen, dass jedes empfangene 7-Bit-Wort eindeutig zu \textbf{einem}
+Codewort gehört — auch wenn unterwegs ein Bit gekippt ist. Das heißt:
+
+\begin{itemize}
+\item Jedes gültige Codewort belegt \textbf{eine Position} im Raum
+  aller $2^n$ Wörter.
+\item Plus seine \textbf{$n$ direkten Nachbarn} (für jeden möglichen
+  Einzelfehler eine Position).
+\item Macht \textbf{$n+1$ Positionen pro Codewort}, die ihm „gehören“
+  müssen.
+\end{itemize}
+
+\begin{bleistiftuebung}{1}{Die Hamming-Schranke}
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Wir haben $2^k$ Datenwörter (für $k = 4$ also 16 Stück), und
+  jedes Codewort braucht $n+1$ Positionen für sich. Stelle die
+  Ungleichung auf, die erfüllt sein muss, damit alle Codewörter und
+  ihre Nachbarn nicht überlappen.
+
+  \begin{quote}
+  Tipp: $2^k$ Codewörter mal $(n+1)$ Positionen $\le$ Gesamtzahl der
+  Wörter.
+  \end{quote}
+
+\item Diese Ungleichung heißt \textbf{Hamming-Schranke} (engl.\ \emph{Hamming
+  bound}). Sie sagt: Mit weniger als so vielen Bits kann es prinzipiell
+  \textbf{keinen} Code geben, der alle Einzelfehler korrigiert.
+
+\item Fülle die Tabelle aus: Für jedes $k$ von 1 bis 8 das kleinste
+  $n$, das die Schranke erfüllt. Daraus ergibt sich die Anzahl
+  Prüfbits $r = n - k$.
+
+  \begin{center}
+  \begin{tabular}{ccc}
+    \toprule
+    Datenbits $k$ & Codelänge $n$ (min.) & Prüfbits $r = n - k$ \\
+    \midrule
+    1 & & \\
+    2 & & \\
+    3 & & \\
+    4 & & \\
+    5 & & \\
+    6 & & \\
+    7 & & \\
+    8 & & \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+\item Was fällt dir auf? Bei welchen $k$ „passt“ die Schranke besonders
+  gut (also ist die Ungleichung fast eine Gleichung)?
+\end{enumerate}
 \end{bleistiftuebung}
 
-\begin{werkzeugcheck}{Buntstifte für die drei Kreise}
-Halte drei Buntstifte in Orange, Blau und Grün bereit — du wirst sie
-im nächsten Block für das Hamming-Venn-Diagramm brauchen.
-\end{werkzeugcheck}
+\subsection*{Das Ergebnis für $k = 4$}
 
-Eine kleine TikZ-Skizze, damit später bestätigt werden kann, dass die
-Diagramme weiterhin sauber rendern:
+Wenn du die Tabelle richtig ausgefüllt hast, ist für $k = 4$ das
+minimale $n = \mathbf{7}$, also \textbf{3 Prüfbits}. Genauer:
+$2^4 \cdot (7+1) = 16 \cdot 8 = \mathbf{128 = 2^7}$. Die
+Hamming-Schranke ist \textbf{exakt} erreicht — kein einziges Bit zu
+viel!
+
+Das ist der \textbf{(7,4)-Hamming-Code}, den wir heute bauen. Er ist
+ein „perfekter Code“ in dem Sinn, dass er die Hamming-Schranke mit
+Gleichheit erreicht.
+
+\subsection*{Wer war Hamming?}
+
+Richard Hamming arbeitete in den späten 1940ern an den Bell Labs an
+einem Computer mit Lochkarten. Seine Programme liefen über das
+Wochenende — und wenn auch nur eine Karte einen Lesefehler hatte, brach
+das ganze Programm ab. Der Computer \textbf{erkannte} den Fehler (mit
+einer einfachen Parität pro Spalte), aber er konnte ihn nicht
+\textbf{korrigieren}. Hamming musste dann am Montagmorgen von Hand alles
+neu starten.
+
+Der berühmte Hamming-Ausspruch dazu: \emph{„Wenn die Maschine den Fehler
+erkennen kann — warum kann sie ihn dann nicht auch korrigieren?“} Aus
+dieser Frustration entstand 1950 sein Code.
+
+% =============================================================
+\section{Den (7,4)-Hamming-Code selbst konstruieren \normalfont(\textit{$\approx$ 60 min})}
+% =============================================================
+
+Jetzt wird's konkret. Wir nummerieren die 7 Bits mit den Positionen
+\textbf{1 bis 7}:
+
+\begin{verbatim}
+Position:    1   2   3   4   5   6   7
+\end{verbatim}
+
+Beachte: Wir starten bei 1, nicht bei 0. Das hat einen tiefen
+mathematischen Grund, der gleich klar wird.
+
+\subsection*{Wer ist Datenbit, wer Prüfbit?}
+
+\textbf{Hamming hatte die geniale Idee, die Prüfbits an die Positionen
+zu setzen, die Zweierpotenzen sind:} Position 1 ($= 2^0$), Position 2
+($= 2^1$) und Position 4 ($= 2^2$). Die übrigen Positionen 3, 5, 6, 7
+bekommen die Datenbits.
+
+\begin{verbatim}
+Position:    1    2    3    4    5    6    7
+Rolle:       p1   p2   d1   p3   d2   d3   d4
+              ↑    ↑         ↑
+           Prüfbits an Zweierpotenz-Positionen
+\end{verbatim}
+
+\subsection*{Welches Prüfbit überwacht welche Positionen?}
+
+Jetzt kommt der eigentliche Trick. Schreibe jede Position \textbf{als
+Binärzahl} auf:
 
 \begin{center}
-\begin{tikzpicture}[scale=0.7]
-  \def\R{1.6}
+\begin{tabular}{ccc}
+  \toprule
+  Position & Binär & „passt zu“ Prüfbit \dots \\
+  \midrule
+  1 & 001 & $p_1$ \\
+  2 & 010 & $p_2$ \\
+  3 & 011 & $p_1, p_2$ \\
+  4 & 100 & $p_3$ \\
+  5 & 101 & $p_1, p_3$ \\
+  6 & 110 & $p_2, p_3$ \\
+  7 & 111 & $p_1, p_2, p_3$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Regel:} Prüfbit $p_j$ überwacht alle Positionen, deren
+Binärdarstellung an der $j$-ten Stelle eine 1 hat.
+
+\begin{itemize}
+\item $p_1$ (steht selbst auf Position 1 = \texttt{001}) überwacht alle
+  Positionen mit \texttt{*** ***1} → Positionen 1, 3, 5, 7
+\item $p_2$ (steht selbst auf Position 2 = \texttt{010}) überwacht alle
+  Positionen mit \texttt{*** **1*} → Positionen 2, 3, 6, 7
+\item $p_3$ (steht selbst auf Position 4 = \texttt{100}) überwacht alle
+  Positionen mit \texttt{*** *1**} → Positionen 4, 5, 6, 7
+\end{itemize}
+
+Jedes Prüfbit wird so gesetzt, dass die \textbf{Anzahl der Einsen in
+seiner Gruppe gerade} ist (also gerade Parität wie an Tag 1). Beachte:
+das Prüfbit selbst gehört zu seiner Gruppe!
+
+\subsection*{Die drei magischen Kreise}
+
+Wenn man das aufzeichnet, ergibt sich das berühmte
+Hamming-Venn-Diagramm: drei sich überlappende Kreise, jeder steht für
+ein Prüfbit und enthält die Positionen, die er kontrolliert.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+  \def\R{2.2}
   \draw[thick, draw=cBleistift, fill=cBleistift, fill opacity=0.25]
-        (-0.8, 0.5) circle (\R);
+        (-1.0, 0.6) circle (\R);
   \draw[thick, draw=cPython,    fill=cPython,    fill opacity=0.25]
-        ( 0.8, 0.5) circle (\R);
+        ( 1.0, 0.6) circle (\R);
   \draw[thick, draw=cWerkzeug,  fill=cWerkzeug,  fill opacity=0.25]
-        ( 0.0,-0.9) circle (\R);
+        ( 0.0,-1.1) circle (\R);
+  \node[font=\bfseries, color=cBleistift!70!black] at (-3.2, 2.5) {Kreis 1: $p_1$};
+  \node[font=\bfseries, color=cPython!70!black]    at ( 3.2, 2.5) {Kreis 2: $p_2$};
+  \node[font=\bfseries, color=cWerkzeug!50!black]  at ( 0.0,-3.6) {Kreis 3: $p_3$};
+  \node[font=\large\bfseries] at (-2.0, 1.5) {1};
+  \node[font=\large\bfseries] at ( 2.0, 1.5) {2};
+  \node[font=\large\bfseries] at ( 0.0, 1.7) {3};
+  \node[font=\large\bfseries] at ( 0.0,-2.6) {4};
+  \node[font=\large\bfseries] at (-1.6,-1.2) {5};
+  \node[font=\large\bfseries] at ( 1.6,-1.2) {6};
+  \node[font=\large\bfseries] at ( 0.0, 0.0) {7};
 \end{tikzpicture}
 \end{center}
+
+\textbf{Übertrag das auf ein eigenes Karoblatt} — am besten mit drei
+verschiedenen Farben, eine pro Kreis. Markiere dir, welche Position in
+welchen Kreisen liegt. Position 7 zum Beispiel liegt in \emph{allen
+drei} Kreisen, Position 4 nur in Kreis 3, und so weiter.
+
+\begin{bleistiftuebung}{2}{Codewort von Hand bauen}
+Datenwort: $\mathbf{d_1\, d_2\, d_3\, d_4 = 1\, 0\, 1\, 1}$ (das ist
+der Buchstabe „K“ in 4-Bit-ASCII, naja, fast).
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Setze die Datenbits in die richtigen Positionen ein:
+
+  \begin{verbatim}
+Position:    1    2    3    4    5    6    7
+Inhalt:      ?    ?    1    ?    0    1    1
+              ↑    ↑         ↑
+           p1   p2        p3
+  \end{verbatim}
+
+\item Berechne $p_1$: welche Positionen kontrolliert $p_1$ (siehe
+  Tabelle oben)? Trage den Inhalt dieser Positionen in deine Skizze
+  ein und bestimme $p_1$ so, dass die Gesamtzahl der Einsen in dieser
+  Gruppe \textbf{gerade} ist.
+
+\item Berechne $p_2$ analog.
+
+\item Berechne $p_3$ analog.
+
+\item Schreibe das vollständige Codewort auf:
+
+  \begin{verbatim}
+Position:    1    2    3    4    5    6    7
+Codewort:   ___  ___   1   ___   0    1    1
+  \end{verbatim}
+\end{enumerate}
+\end{bleistiftuebung}
+
+\begin{bleistiftuebung}{3}{Mehr Codewörter}
+Bestimme die Codewörter für folgende Datenwörter (genauso wie eben):
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  $d_1\, d_2\, d_3\, d_4$ & $p_1$ & $p_2$ & $p_3$ & Codewort (Position 1–7) \\
+  \midrule
+  0 0 0 0 & & & & \\
+  1 1 1 1 & & & & \\
+  1 0 0 0 & & & & \\
+  0 1 1 0 & & & & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+(Tipp: bei \texttt{0000} ist es einfach ;-) Bei \texttt{1111} müssen
+alle Prüfbits angepasst werden.)
+\end{bleistiftuebung}
+
+\subsection*{Decodieren — der wirklich coole Trick}
+
+So weit so gut. Aber der eigentliche Zauber kommt jetzt: \textbf{Wie
+korrigieren wir Fehler?}
+
+Stell dir vor, das Codewort \texttt{0110011} (das hattest du in
+Übung 2 für \texttt{1011}) wird übertragen. Unterwegs kippt ein Bit.
+Du empfängst zum Beispiel \texttt{0010011} (Bit 2 ist gekippt).
+
+Der Empfänger berechnet erneut die drei Prüfsummen:
+
+\begin{itemize}
+\item $s_1$: Anzahl Einsen in Positionen 1, 3, 5, 7 $\bmod 2$
+\item $s_2$: Anzahl Einsen in Positionen 2, 3, 6, 7 $\bmod 2$
+\item $s_3$: Anzahl Einsen in Positionen 4, 5, 6, 7 $\bmod 2$
+\end{itemize}
+
+Bei einem fehlerfreien Codewort sind alle drei $s$ gleich 0. Bei einem
+Fehler an Position $p$ ist genau das $s$ ungleich 0, dessen Prüfbit
+die Position $p$ überwacht.
+
+\textbf{Hier ist der Knaller:} schreibe $s_3\, s_2\, s_1$ \textbf{als
+Binärzahl} auf. Diese Zahl ist genau \textbf{die Position des
+Fehlers!}
+
+\begin{bleistiftuebung}{4}{Decodieren von Hand}
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Empfangen: \texttt{0010011}. Berechne $s_1, s_2, s_3$ (gerade
+  Parität, jedes $s$ ist 0 oder 1).
+
+  \begin{quote}
+  Nimm die Tabelle der Positionen oben zur Hilfe.
+  \end{quote}
+
+\item Schreibe $s_3\, s_2\, s_1$ als Binärzahl. In welcher Position
+  ist der Fehler?
+
+\item Korrigiere das empfangene Wort. Welches Datenwort wurde
+  ursprünglich gesendet?
+
+\item Probier es mit einem zweiten Beispiel: empfangen \texttt{1100110}.
+  Wo ist der Fehler? Wie lautet das ursprüngliche Datenwort?
+\end{enumerate}
+\end{bleistiftuebung}
+
+\subsection*{Warum funktioniert das?}
+
+Das ist die schönste Idee am Hamming-Code — und sie folgt direkt aus
+der binären Nummerierung der Positionen:
+
+\begin{itemize}
+\item Wenn das Bit an Position $p$ gekippt ist, dann sind genau die
+  Prüfsummen $s_j$ „kaputt“, deren Prüfbit Position $p$ überwacht.
+\item Welche Prüfbits überwachen Position $p$? Genau die $p_j$, für die
+  das $j$-te Bit der Binärdarstellung von $p$ eine 1 ist.
+\item Also ist $s_3\, s_2\, s_1$ (binär gelesen) \textbf{genau} die
+  Binärdarstellung von $p$!
+\end{itemize}
+
+Das ist keine Koinzidenz, sondern das Ergebnis von Hammings genialer
+Wahl der Prüfbit-Positionen.
+
+% =============================================================
+\section{Python-Werkstatt: Encoder und Decoder \normalfont(\textit{$\approx$ 60 min})}
+% =============================================================
+
+Jetzt bauen wir das in Python. Lege in Thonny eine neue Datei
+\texttt{hamming74.py} an.
+
+\begin{pythoneinheit}{1}{Encoder}
+\pythoncodeteil{tag3/hamming74.py}{encoder}
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{2}{Decoder mit Fehlerkorrektur}
+\pythoncodeteil{tag3/hamming74.py}{decoder}
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{3}{Systematischer Test}
+Jetzt der Lieblingsmoment: alle möglichen Einzelfehler durchsimulieren
+und prüfen, ob der Decoder wirklich alle korrigiert.
+
+\pythoncodeteil{tag3/hamming74.py}{test-einzel}
+
+\paragraph{Aufgabe 3.1 — Was passiert bei Doppelfehlern?}
+Erweitere den Test, sodass er \textbf{zwei} Bits gleichzeitig kippt
+(an verschiedenen Positionen). Wie viele Doppelfehler werden trotzdem
+korrekt korrigiert? Wie viele werden falsch korrigiert (Decoder denkt,
+es war ein Einzelfehler an einer falschen Position)?
+
+\pythoncodeteil{tag3/hamming74.py}{test-doppel}
+
+Du wirst sehen: \textbf{alle Doppelfehler werden falsch „korrigiert“}.
+Der Decoder denkt, es sei ein Einzelfehler, korrigiert das falsche Bit
+— und liefert ein falsches Datenwort. \textbf{Das ist gefährlich}, weil
+der Empfänger keinen Hinweis bekommt, dass etwas schief gelaufen ist!
+
+Daher gibt es Erweiterungen wie \textbf{SECDED} (Single Error
+Correction, Double Error Detection): ein zusätzliches Paritätsbit
+erkennt Doppelfehler. Mehr dazu in den nächsten Tagen.
+\end{pythoneinheit}
+
+% =============================================================
+\section{Wo steckt das überall drin? \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+Was wir hier auf Karopapier bauen, ist die mathematische Grundlage für
+Verfahren, die heute jede Sekunde milliardenfach laufen.
+
+\textbf{ECC-RAM in Servern:} kosmische Strahlung (Höhenstrahlung, sogar
+in Bürogebäuden!) kippt gelegentlich Bits in Speicherchips. In normalem
+RAM bleibt das unbemerkt — im Server würde das ständig zu Abstürzen
+führen. Server-RAM nutzt daher SECDED-Codes auf Hamming-Basis: für
+jedes 64-Bit-Datenwort gibt es 8 Prüfbits.
+
+\textbf{Voyager-Sonden:} die beiden Voyager-Sonden, gestartet 1977,
+senden seit fast 50 Jahren Daten zur Erde — aus mittlerweile über
+24~Milliarden Kilometern Entfernung. Bei dieser Entfernung ist das
+Signal so schwach, dass viele Bits unterwegs verloren gehen. Sie
+nutzen \emph{verkettete Codes}: ein innerer Code (Hamming-artig) und
+ein äußerer Reed-Solomon-Code — genau das, was im Datamatrix-Symbol
+steckt.
+
+\textbf{WLAN, USB, SATA, Mobilfunk:} alle nutzen Fehlerkorrektur. Jedes
+Mal, wenn dein Handy ein WLAN-Paket empfängt, läuft im Hintergrund ein
+Decoder — auf Basis derselben Mathematik, die du heute mit Bleistift
+skizzierst.
+
+\textbf{Magnetische Speicher (Festplatten, SSDs):} SSDs nutzen
+LDPC-Codes (Low-Density Parity-Check), die als Verallgemeinerung von
+Hamming-Codes verstanden werden können. Festplatten benutzen
+Reed-Solomon plus weitere Verfahren.
+
+\begin{quote}
+Der Punkt: was du heute durchgerechnet hast, ist keine akademische
+Spielerei. Es ist die Basis dafür, dass Computer und Kommunikation
+überhaupt zuverlässig funktionieren.
+\end{quote}
+
+% =============================================================
+\section{Reflexion und Brücke zu Datamatrix \normalfont(\textit{$\approx$ 20 min})}
+% =============================================================
+
+\subsection*{Was wir heute gelernt haben}
+
+\begin{itemize}
+\item Die \textbf{Hamming-Schranke} sagt uns, wie viele Prüfbits
+  \emph{mindestens} nötig sind, um Einzelfehler korrigieren zu können.
+\item Der \textbf{(7,4)-Hamming-Code} erreicht diese Schranke exakt
+  und ist damit \emph{perfekt}.
+\item Hammings geniale Idee: Prüfbits an Zweierpotenz-Positionen, jedes
+  überwacht die Positionen, deren Binärdarstellung an der entsprechenden
+  Stelle eine 1 hat.
+\item Die \textbf{drei Prüfsummen ergeben binär gelesen die Position
+  des Fehlers} — das ist keine Magie, sondern Folge der Konstruktion.
+\item Hamming-Codes korrigieren \textbf{einen} Bitfehler perfekt, aber
+  Doppelfehler werden falsch „korrigiert“ → daher braucht man in der
+  Praxis SECDED oder stärkere Codes.
+\end{itemize}
+
+\subsection*{Drei Fragen zum Mitnehmen}
+
+\begin{enumerate}
+\item Wenn der Hamming-Code (7,4) Einzelfehler korrigiert, aber bei
+  Doppelfehlern lügt — was würde passieren, wenn wir 4 Datenbits in 8
+  Bits codieren (also ein Prüfbit mehr)? Wäre das ein guter Tausch?
+
+\item Stell dir einen kaputten Datamatrix-Code vor: auf einem
+  zerkratzten Versandetikett ist nicht ein einzelnes Bit weg, sondern
+  ein ganzer \textbf{Bereich} (mehrere benachbarte Bits gleichzeitig).
+  Würde Hamming-Code damit klarkommen?
+
+\item Hamming-Code arbeitet mit einzelnen Bits. Ein Datamatrix-Code
+  aber speichert Bytes (Buchstaben, Ziffern). Was würde es bedeuten,
+  wenn wir mit \emph{Bytes} statt \emph{Bits} rechnen? Gibt es so
+  etwas wie eine „Byte-Parität“?
+\end{enumerate}
+
+\subsection*{Vorschau Tag 4}
+
+Morgen schauen wir uns an, was passiert, wenn Fehler \textbf{gehäuft}
+auftreten — das ist nämlich die Realität bei zerkratzten Etiketten und
+beschädigten CDs. Wir lernen \textbf{CRC} (Cyclic Redundancy Check)
+kennen, das in WLAN und Ethernet steckt, und wir verstehen den Begriff
+\textbf{Bündelfehler}. Außerdem treffen wir auf das Konzept des
+\textbf{Interleaving} — ein einfacher, aber genialer Trick, mit dem
+man Bündelfehler in Einzelfehler verwandeln kann.
+
+Damit machen wir den ersten Schritt vom Bit-Denken zum Byte-Denken —
+und in ein paar Tagen sind wir dann bei der Mathematik, die Datamatrix
+tatsächlich nutzt: \textbf{endliche Körper} und \textbf{Reed-Solomon}.
+
+% =============================================================
+\newpage
+\section*{Lösungen (erst nach eigenem Versuch ansehen!)}
+\addcontentsline{toc}{section}{Lösungen}
+% =============================================================
+
+\subsection*{Bleistiftübung 1 — Hamming-Schranke}
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Ungleichung: $\mathbf{2^k \cdot (n + 1) \le 2^n}$, mit $n = k + r$.
+\item Umgeformt für $r$: $\mathbf{2^r \ge k + r + 1}$.
+\item Tabelle:
+
+  \begin{center}
+  \begin{tabular}{ccc}
+    \toprule
+    $k$ & $n$ (min.) & $r$ \\
+    \midrule
+    1 & 3  & 2 \\
+    2 & 5  & 3 \\
+    3 & 6  & 3 \\
+    4 & 7  & 3 \\
+    5 & 9  & 4 \\
+    6 & 10 & 4 \\
+    7 & 11 & 4 \\
+    8 & 12 & 4 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  Rechenweg z.\,B.\ für $k = 4$: probiere $r = 1, 2, 3, \dots$ und
+  prüfe, ob $2^r \ge k + r + 1$:
+  \begin{itemize}
+  \item $r = 2$: $2^2 = 4$, aber $k + r + 1 = 7$ → reicht nicht.
+  \item $r = 3$: $2^3 = 8$, $k + r + 1 = 8$ → passt \textbf{genau}.
+  \end{itemize}
+
+\item Besonders gut „passt“ die Schranke bei $k = 1$
+  ($n = 3 \to 2^1 \cdot 4 = 8 = 2^3$), $k = 4$
+  ($n = 7 \to 2^4 \cdot 8 = 128 = 2^7$), $k = 11$ ($n = 15$), \dots\
+  Diese sind die „perfekten“ Hamming-Codes.
+\end{enumerate}
+
+\subsection*{Bleistiftübung 2 — Codewort \texttt{1011}}
+
+Datenbits: $d_1 = 1$, $d_2 = 0$, $d_3 = 1$, $d_4 = 1$, also Positionen
+3, 5, 6, 7 mit Werten 1, 0, 1, 1.
+
+Berechnung der Prüfbits (gerade Parität):
+
+\begin{itemize}
+\item $p_1$ überwacht Positionen 1, 3, 5, 7 = $p_1$, 1, 0, 1 → Summe
+  der Daten $1+0+1 = 2$, also $p_1 = \mathbf{0}$ (damit Gesamtsumme
+  gerade).
+\item $p_2$ überwacht Positionen 2, 3, 6, 7 = $p_2$, 1, 1, 1 → Summe
+  $1+1+1 = 3$, also $p_2 = \mathbf{1}$.
+\item $p_3$ überwacht Positionen 4, 5, 6, 7 = $p_3$, 0, 1, 1 → Summe
+  $0+1+1 = 2$, also $p_3 = \mathbf{0}$.
+\end{itemize}
+
+Codewort:
+
+\begin{verbatim}
+Position:    1    2    3    4    5    6    7
+Codewort:    0    1    1    0    0    1    1
+\end{verbatim}
+
+\subsection*{Bleistiftübung 3 — Mehr Codewörter}
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  $d_1\, d_2\, d_3\, d_4$ & $p_1$ & $p_2$ & $p_3$ & Codewort (Position 1–7) \\
+  \midrule
+  0 0 0 0 & 0 & 0 & 0 & 0 0 0 0 0 0 0 \\
+  1 1 1 1 & 1 & 1 & 1 & 1 1 1 1 1 1 1 \\
+  1 0 0 0 & 1 & 1 & 0 & 1 1 1 0 0 0 0 \\
+  0 1 1 0 & 1 & 0 & 0 & 1 0 0 0 1 1 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+(Die ersten zwei sind besonders schön: das Null-Codewort und das
+Eins-Codewort. Letzteres hat Hamming-Distanz \textbf{7} zum ersten —
+der Code hat also Mindestdistanz mindestens 7? Nein, das ist nicht die
+Mindestdistanz; die ist 3. Andere Paare können kleinere Distanzen
+haben. Greta darf das gerne überprüfen — lass dafür alle 16 Codewörter
+generieren und finde die kleinste paarweise Hamming-Distanz.)
+
+\subsection*{Bleistiftübung 4 — Decodieren}
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Empfangen: \texttt{0 0 1 0 0 1 1}.
+  \begin{itemize}
+  \item $s_1 = b_1+b_3+b_5+b_7 \bmod 2 = 0+1+0+1 \bmod 2 = 2 \bmod 2
+    = \mathbf{0}$
+  \item $s_2 = b_2+b_3+b_6+b_7 \bmod 2 = 0+1+1+1 \bmod 2 = 3 \bmod 2
+    = \mathbf{1}$
+  \item $s_3 = b_4+b_5+b_6+b_7 \bmod 2 = 0+0+1+1 \bmod 2 = 2 \bmod 2
+    = \mathbf{0}$
+  \end{itemize}
+\item $s_3\, s_2\, s_1 = 0\, 1\, 0$ binär $= \mathbf{2}$ dezimal.
+  Fehler an Position \textbf{2}.
+\item Korrigiert: Position 2 kippen → \texttt{0 1 1 0 0 1 1}.
+  Datenbits an Positionen 3, 5, 6, 7 = \texttt{1, 0, 1, 1}.
+  Ursprüngliches Datenwort: \textbf{1 0 1 1}. \checkmark
+\item Empfangen: \texttt{1 1 0 0 1 1 0}.
+  \begin{itemize}
+  \item $s_1 = 1+0+1+0 = 2 \bmod 2 = \mathbf{0}$
+  \item $s_2 = 1+0+1+0 = 2 \bmod 2 = \mathbf{0}$
+  \item $s_3 = 0+1+1+0 = 2 \bmod 2 = \mathbf{0}$
+  \end{itemize}
+  Alle Prüfsummen 0 → \textbf{kein Fehler erkannt}. Datenbits =
+  Positionen 3, 5, 6, 7 = \texttt{0, 1, 1, 0}. Datenwort:
+  \textbf{0 1 1 0}.
+
+  (Gemein: kein Fehler! Hat Greta das gemerkt?)
+\end{enumerate}
+
+\subsection*{Aufgabe 3.1 — Doppelfehler-Test}
+
+Erwartete Ausgabe (sinngemäß):
+
+\begin{verbatim}
+Doppelfehler: 0/336 zufällig richtig, 336/336 falsch
+\end{verbatim}
+
+Erklärung: bei einem Doppelfehler ergeben die drei Prüfsummen genau
+die XOR-Summe der zwei gekippten Positionen (binär). Diese ist nie 0
+(außer bei zwei \emph{gleichen} Positionen, was nicht zählt) und
+entspricht einer \textbf{gültigen Position 1–7} — also wird der
+Decoder einen \emph{dritten}, falschen Bit kippen. Resultat: 3 Bits
+gekippt insgesamt → Datenwort fast immer falsch.
+
+Genau das motiviert SECDED: ein achtes Bit als „Gesamt-Parität“ über
+alle 7 Bits erkennt zuverlässig, ob die Anzahl der Fehler ungerade
+(1) oder gerade (0, 2, 4, \dots) ist. Damit lässt sich zwischen
+Einzel- und Doppelfehler unterscheiden.
+
+\subsection*{Antworten zu den drei Reflexionsfragen}
+
+\begin{enumerate}
+\item \textbf{8 statt 7 Bits:} ja, das ist genau der \textbf{erweiterte
+  Hamming-Code (8,4)} oder allgemein \textbf{SECDED}. Mit einem
+  zusätzlichen Paritätsbit kann man Doppelfehler \emph{erkennen} (aber
+  immer noch nicht korrigieren). In ECC-RAM sind das (72, 64) — 64
+  Datenbits, 8 Prüfbits, korrigiert 1 Fehler, erkennt 2.
+
+\item \textbf{Bündelfehler:} Hamming-Code hilft hier nicht. Wenn 2
+  oder mehr benachbarte Bits gleichzeitig kippen, wird der Code
+  falsch „korrigieren“. Die Lösung: entweder die Daten
+  \textbf{verteilen} (Interleaving), sodass benachbarte
+  Übertragungsfehler nicht zu benachbarten Codebits werden — oder
+  \textbf{stärkere Codes} mit größerer Korrekturkraft, z.\,B.\
+  Reed-Solomon.
+
+\item \textbf{Byte-Parität:} ja, das ist genau die Idee von
+  Reed-Solomon. Statt mit Bits (0/1) rechnet man mit Bytes (0–255),
+  und die „Modulo-Arithmetik“ wird durch \emph{Polynomarithmetik in
+  einem endlichen Körper} ersetzt. Damit kann man pro Prüfbyte einen
+  Bytefehler korrigieren — und ein einziger Bytefehler kann bis zu 8
+  Bitfehler abdecken (wenn alle in dasselbe Byte fallen). Genau diese
+  Eigenschaft macht Reed-Solomon ideal für Bündelfehler.
+\end{enumerate}
