@@ -5,7 +5,7 @@
 # `make clean`      räumt LaTeX-Build-Artefakte auf.
 # `make shell`      öffnet eine Subshell im latex/-Verzeichnis (für ad-hoc latexmk).
 
-.PHONY: all buch clean shell test-code
+.PHONY: all buch clean shell test-code container container-clean
 
 LATEX_DIR := latex
 CODE_DIR := $(LATEX_DIR)/code
@@ -29,3 +29,15 @@ clean:
 
 shell:
 	cd $(LATEX_DIR) && exec $$SHELL
+
+# --- Container-Build -------------------------------------------------
+# `make container`        baut das Buch im Container (Engine-Auto-Detection:
+#                         bevorzugt Apple `container`, Fallback Docker).
+# `make container-clean`  ruft `make clean` im Container auf.
+# Erzwungene Engine: `ENGINE=docker make container`.
+
+container:
+	./build/in-container.sh
+
+container-clean:
+	./build/in-container.sh clean

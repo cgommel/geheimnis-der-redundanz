@@ -25,6 +25,9 @@ __pycache__/
 # Snippet-Cache (von \pythoncodeteil zur Build-Zeit erzeugt)
 latex/.snippets/
 
+# minted-Cache (entsteht im Container neben den Sources, statt im out_dir)
+latex/_minted-*/
+
 # OS-Krimskrams
 .DS_Store
 Thumbs.db
