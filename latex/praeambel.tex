@@ -44,6 +44,25 @@
 % --- Tabellen ---
 \usepackage{booktabs, array, longtable}
 
+% --- Code-Highlighting via minted ---
+% minted ruft Pygments per Shell auf; deshalb -shell-escape in .latexmkrc.
+\usepackage{minted}
+% Hintergrundfarbe für Code-Blöcke (sehr helles Grau, naive CMYK aus
+% RGB(246, 247, 248), entspricht der bisherigen pandoc-shadecolor).
+\definecolor{codebg}{cmyk}{0.01, 0.00, 0.00, 0.03}
+\setminted{
+  style=tango,
+  fontsize=\small,
+  bgcolor=codebg,
+  frame=none,
+  breaklines=true,
+  autogobble=true,
+  linenos=false,
+  baselinestretch=1.05,
+  xleftmargin=2pt,
+  xrightmargin=2pt,
+}
+
 % --- Kopf-/Fußzeile via scrlayer-scrpage ---
 \usepackage[autooneside=false, automark]{scrlayer-scrpage}
 \clearpairofpagestyles

@@ -5,15 +5,22 @@
 # `make clean`  räumt LaTeX-Build-Artefakte auf.
 # `make shell`  öffnet eine Subshell im latex/-Verzeichnis (für ad-hoc latexmk).
 
-.PHONY: all alt clean shell tag1 tag2 tag3 tag4
+.PHONY: all alt clean shell tag1 tag2 tag3 tag4 test-code
 
 LATEX_DIR := latex
+CODE_DIR := $(LATEX_DIR)/code
 
 all: buch
 
-buch:
+buch: test-code
 	mkdir -p pdf/latex/kapitel
 	cd $(LATEX_DIR) && latexmk
+
+# Syntaxprüfung aller Code-Snippets vor dem LaTeX-Build.
+test-code:
+	@find $(CODE_DIR) -name "*.py" -type f -print0 \
+	    | xargs -0 -I {} python3 -m py_compile {}
+	@echo "✓ Alle Python-Snippets syntaktisch sauber"
 
 # Alte Markdown-Toolchain (Brücke, wird mit M8 entfernt).
 alt:

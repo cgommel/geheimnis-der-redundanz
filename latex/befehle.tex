@@ -92,3 +92,9 @@
 \newenvironment{werkzeugcheck}[1]%
   {\begin{aufgabe}{⚙}{Werkzeug-}{Check}{cWerkzeug}{\bfseries #1.\par}}
   {\end{aufgabe}}
+
+% --- Code-Snippet-Einbindung ---
+% \pythoncode{tagN/file.py} bindet eine Python-Datei vollständig ein.
+% Pfad ist relativ zu latex/code/. Die .py-Dateien sind eigenständig
+% lauffähig, sodass Greta sie 1:1 in Thonny verwenden kann.
+\newcommand{\pythoncode}[1]{\inputminted{python}{code/#1}}
