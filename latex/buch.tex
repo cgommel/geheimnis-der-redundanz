@@ -19,16 +19,27 @@
 \input{praeambel}
 \input{farben}
 \input{befehle}
-
-\title{Das Geheimnis der Redundanz}
-\subtitle{Von der Prüfziffer zum Datamatrix}
-\author{Christoph Gommel}
-\date{\today}
+\input{glossar}
 
 \begin{document}
 
 \frontmatter
-\maketitle
+
+% --- Custom Titelseite ---
+\begin{titlepage}
+  \centering
+  \vspace*{5cm}
+  {\Huge\bfseries Das Geheimnis der Redundanz\par}
+  \vspace{1.2cm}
+  {\Large\itshape Von der Prüfziffer zum Datamatrix\par}
+  \vfill
+  {\large Christoph Gommel\par}
+  \vspace{0.4cm}
+  {\large \today\par}
+  \vspace*{1.5cm}
+\end{titlepage}
+
+\include{vorwort}
 \tableofcontents
 
 \mainmatter
@@ -42,5 +53,14 @@
 
 \appendix
 \include{anhang_loesungen}
+
+% \glsaddall zeigt alle Glossar-Einträge (auch die, die im Text nicht
+% per \gls{...} referenziert wurden). Solange wir die Markups nicht
+% systematisch durch alle Kapitel gezogen haben, ist das die
+% praktikable Variante.
+\glsaddall
+\printglossary[title=Glossar, toctitle=Glossar]
+
+\printindex
 
 \end{document}

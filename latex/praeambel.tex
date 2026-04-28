@@ -23,10 +23,28 @@
 
 % --- Sprache, Mikrotypografie ---
 \usepackage[ngerman]{babel}
+% babel-ngerman macht ASCII-" zum Shorthand-Aktivator ("u → ü, "f → ff
+% etc.). Das hat schon zu absurden Verschmelzungen wie "echterFFehler"
+% statt "echter" Fehler" geführt. Wir schalten den Shorthand ab; für
+% typografisch korrekte deutsche Anführungszeichen nutzen wir Unicode
+% („…") direkt im Quelltext.
+\shorthandoff{"}
 \usepackage{microtype}
 
 % --- Mathematik (\bmod, \le, \ge, \checkmark, …) ---
 \usepackage{amsmath, amssymb}
+
+% --- Glossar (Polish-Sprint M6) ---
+% automake=immediate ruft makeglossaries per \write18 auf (shell-escape
+% ist eh schon aktiv wegen minted), nonumberlist unterdrückt die
+% Seitenzahlen hinter den Glossar-Einträgen (sonst stehen dort die
+% Seiten, an denen \gls genutzt wurde).
+\usepackage[automake=immediate, toc, nonumberlist]{glossaries-extra}
+\makeglossaries
+
+% --- Sachindex ---
+\usepackage{imakeidx}
+\makeindex[intoc, columns=2]
 
 % --- Farben & Hyperlinks ---
 \usepackage{xcolor}
