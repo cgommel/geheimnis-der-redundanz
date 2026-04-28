@@ -113,7 +113,9 @@
 \newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
 \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\small}
 \newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
-\newenvironment{snugshade}{%
+% framed.sty (ab TeX Live 2024) definiert snugshade bereits selbst.
+% Wir überschreiben es per \renewenvironment, um unser Padding zu erhalten.
+\renewenvironment{snugshade}{%
   \def\FrameCommand{\fboxsep=4pt\colorbox{shadecolor}}%
   \MakeFramed{\FrameRestore\FrameRule=0pt}}%
 {\endMakeFramed}

@@ -66,19 +66,20 @@ EOF
     # 4. Vorlage hineinkopieren
     cp "$VORLAGE_DIR/vorlage_koma.tex" .
 
-    # 5. xelatex zweimal
-    xelatex -interaction=nonstopmode main.tex >/dev/null 2>&1 || true
-    xelatex -interaction=nonstopmode main.tex >/dev/null 2>&1 || true
+    # 5. xelatex zweimal (Output ins Log, nicht ins Leere)
+    xelatex -interaction=nonstopmode main.tex >xelatex.log 2>&1 || true
+    xelatex -interaction=nonstopmode main.tex >xelatex.log 2>&1 || true
 
     if [[ ! -f main.pdf ]]; then
-        echo "✗ Build von $tag fehlgeschlagen" >&2
+        echo "✗ Build von $tag fehlgeschlagen — letzte 30 Zeilen aus xelatex.log:" >&2
+        tail -n 30 xelatex.log >&2
         return 1
     fi
 
     # 6. PDF an Zielort
     cp main.pdf "$OUT_DIR/${md_file%.md}.pdf"
     local size
-    size=$(stat -c%s "$OUT_DIR/${md_file%.md}.pdf")
+    size=$(wc -c <"$OUT_DIR/${md_file%.md}.pdf" | tr -d ' ')
     echo "✓ $OUT_DIR/${md_file%.md}.pdf ($size Bytes)"
 }
 
