@@ -1,0 +1,133 @@
+\section{Tag 6 — Polynome über GF($2^3$) und die Reed-Solomon-Idee}
+
+\subsection*{Bleistiftübung 1 — Polynome rechnen}
+
+(a) $f(x) + g(x)$: koeffizientenweise XOR.
+\begin{align*}
+  &\text{Konstante: } 4 \oplus 5 = 1 \\
+  &\text{Koeff. von } x: 3 \oplus 6 = 5 \\
+  &\text{Koeff. von } x^2: 1 \oplus 0 = 1 \\
+  \Rightarrow\; & f(x) + g(x) = 1 + 5x + x^2.
+\end{align*}
+
+(b) $(1+x)^2$ über GF($2^3$):
+\begin{align*}
+  (1 + x)(1 + x)
+  &= 1 + x + x + x^2 \\
+  &= 1 + (1 \oplus 1) x + x^2 \\
+  &= 1 + 0 \cdot x + x^2 = 1 + x^2.
+\end{align*}
+
+\textbf{Vergleich:} in der gewohnten Algebra wäre $(1+x)^2 = 1 + 2x +
+x^2$. In GF($2^3$) ist aber $1 + 1 = 0$, der mittlere Term
+verschwindet also. Allgemein gilt in jedem Körper mit
+\emph{Charakteristik 2} (wie GF($2^n$)) der „Freshman's Dream":
+$(a + b)^2 = a^2 + b^2$. Einer der Gründe, warum GF($2^n$) für
+Computer-Implementierungen so charmant ist.
+
+(c) $(2 + x) \cdot (3 + x^2)$:
+\begin{align*}
+  &= 2 \cdot 3 + 2 \cdot x^2 + x \cdot 3 + x \cdot x^2 \\
+  &= 6 + 3x + 2x^2 + x^3,
+\end{align*}
+denn $2 \cdot 3 = 6$ (aus der Multiplikationstafel von Tag 5:
+$x \cdot (x+1) = x^2 + x = 6$).
+
+In Standardform: $\mathbf{6 + 3x + 2x^2 + x^3}$.
+
+\subsection*{Bleistiftübung 2 — Gerade durch zwei Punkte}
+
+(a) Aus $f(x) = a_0 + a_1 x$ und den beiden Auswertungen:
+\begin{align*}
+  a_0 + a_1 \cdot 1 &= 4 \\
+  a_0 + a_1 \cdot 2 &= 7
+\end{align*}
+
+(b) Subtrahieren wir die erste Gleichung von der zweiten (in GF: das
+ist Addition):
+\[
+  (a_0 + 2 a_1) + (a_0 + a_1) = 7 + 4
+  \;\Rightarrow\; (1 \oplus 2) a_1 = 7 \oplus 4
+  \;\Rightarrow\; 3 a_1 = 3.
+\]
+Also $a_1 = 3 \cdot 3^{-1}$. Aus Tag 5 wissen wir: das Inverse von
+$3$ in GF($2^3$) ist $6$ (denn $3 \cdot 6 = 1$). Also
+$a_1 = 3 \cdot 6 = 1$.
+
+Eingesetzt in die erste Gleichung: $a_0 = 4 + a_1 = 4 + 1 = 5$.
+
+(c) Das Polynom ist $\mathbf{f(x) = 5 + x}$. Verifikation:
+\begin{itemize}
+\item $f(1) = 5 + 1 = 5 \oplus 1 = 4$ \checkmark
+\item $f(2) = 5 + 1 \cdot 2 = 5 \oplus 2 = 7$ \checkmark
+\end{itemize}
+
+\subsection*{Bleistiftübung 3 — RS$(5, 3)$ von Hand}
+
+(a) $f(x) = 3 + 5x + 2x^2$, ausgewertet an den fünf Stützstellen:
+
+\begin{center}
+\begin{tabular}{cl}
+  \toprule
+  $x$ & $f(x)$ \\
+  \midrule
+  $1$ & $3 + 5 + 2 = 4$ \\
+  $2$ & $3 + (5 \cdot 2) + (2 \cdot 4) = 3 + 1 + 3 = 1$ \\
+  $3$ & $3 + (5 \cdot 3) + (2 \cdot 3^2) = 3 + 4 + (2 \cdot 5) = 3 + 4 + 1 = 6$ \\
+  $4$ & $3 + (5 \cdot 4) + (2 \cdot 4^2) = 3 + 2 + (2 \cdot 6) = 3 + 2 + 7 = 6$ \\
+  $5$ & $3 + (5 \cdot 5) + (2 \cdot 5^2) = 3 + 7 + (2 \cdot 7) = 3 + 7 + 5 = 1$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Hilfsrechnungen aus der GF($2^3$)-Multiplikationstafel:
+$5 \cdot 2 = 1$, $2 \cdot 4 = 3$, $5 \cdot 3 = 4$, $3 \cdot 3 = 5$,
+$2 \cdot 5 = 1$, $5 \cdot 4 = 2$, $4 \cdot 4 = 6$, $2 \cdot 6 = 7$,
+$5 \cdot 5 = 7$, $2 \cdot 7 = 5$.
+
+Codewort: $\mathbf{[4, 1, 6, 6, 1]}$.
+
+(b) Wenn $f(2)$ und $f(4)$ als verloren markiert sind und der
+Empfänger $f(1) = 4$, $f(3) = 6$, $f(5) = 1$ kennt:
+
+\begin{itemize}
+\item Er weiß: das gesuchte Polynom hat Grad $< 3$, also Form
+  $a_0 + a_1 x + a_2 x^2$ mit drei unbekannten Koeffizienten.
+\item Drei Auswertungen sind drei Gleichungen in den drei
+  Unbekannten — ein lineares Gleichungssystem über GF($2^3$).
+\item Das System hat genau eine Lösung (aus dem Theorem über die
+  Stützstellen-Eindeutigkeit), die er ausrechnen kann. Die
+  Datensymbole sind dann genau die Koeffizienten.
+\end{itemize}
+
+(c) Bei RS$(5, 3)$ ist $n - k = 2$. Korrigierbar sind also
+$\lfloor 2/2 \rfloor = \mathbf{1}$ nicht-lokalisierter Fehler. (Zwei
+Auslöschungen sind möglich, aber nur ein „echter" Fehler.)
+
+\subsection*{Aufgaben 1.1, 1.2, 2.1, 2.2 (Python)}
+
+\textbf{1.1 — Horner-Schema:}
+\[
+  a_0 + a_1 x + a_2 x^2 = a_0 + x \cdot (a_1 + x \cdot a_2).
+\]
+Statt drei Multiplikationen ($a_1 \cdot x$, $a_2 \cdot x^2 = a_2 \cdot
+x \cdot x$) und einer Addition pro Term reicht eine Multiplikation
+und eine Addition pro Koeffizient — von außen nach innen geklammert.
+Horner ist die effizienteste Polynom-Auswertung.
+
+\textbf{1.2:} bei richtiger Implementierung soll
+\texttt{f.auswerten(GF8(2))} genau \texttt{GF8(1)} ergeben (siehe
+Bleistiftübung 3). Falls nicht: in der Multiplikationstafel
+nachschlagen, wo der Vorzeichenfehler steckt.
+
+\textbf{2.1:} mit derselben Stützstelle zweimal verschwindet die
+Eindeutigkeit — zwei gleiche Auswertungen liefern keine zwei
+Gleichungen, sondern nur eine. Der Empfänger hätte effektiv ein
+Codewort der Länge $n-1$, würde aber Längen-$n$ erwarten. Schlecht.
+
+\textbf{2.2:} Wenn der Empfänger gar nicht weiß, dass
+\texttt{codewort[2]} verfälscht wurde, ist es ein „echter" Fehler.
+Bei RS$(5, 3)$ kann genau ein solcher korrigiert werden — Tag 8 zeigt
+das Verfahren. Wüsste der Empfänger, dass diese Position kaputt ist
+(Position-Wissen aus dem Übertragungsmedium), wäre es nur eine
+Auslöschung — und davon kann er bis zu zwei korrigieren.
