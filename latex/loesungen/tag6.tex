@@ -21,7 +21,7 @@
 \textbf{Vergleich:} in der gewohnten Algebra wäre $(1+x)^2 = 1 + 2x +
 x^2$. In GF($2^3$) ist aber $1 + 1 = 0$, der mittlere Term
 verschwindet also. Allgemein gilt in jedem Körper mit
-\emph{Charakteristik 2} (wie GF($2^n$)) der „Freshman's Dream":
+\emph{Charakteristik 2} (wie GF($2^n$)) der „Freshman's Dream“:
 $(a + b)^2 = a^2 + b^2$. Einer der Gründe, warum GF($2^n$) für
 Computer-Implementierungen so charmant ist.
 
@@ -102,7 +102,7 @@ Empfänger $f(1) = 4$, $f(3) = 6$, $f(5) = 1$ kennt:
 
 (c) Bei RS$(5, 3)$ ist $n - k = 2$. Korrigierbar sind also
 $\lfloor 2/2 \rfloor = \mathbf{1}$ nicht-lokalisierter Fehler. (Zwei
-Auslöschungen sind möglich, aber nur ein „echter" Fehler.)
+Auslöschungen sind möglich, aber nur ein „echter“ Fehler.)
 
 \subsection*{Aufgaben 1.1, 1.2, 2.1, 2.2 (Python)}
 
@@ -126,7 +126,7 @@ Gleichungen, sondern nur eine. Der Empfänger hätte effektiv ein
 Codewort der Länge $n-1$, würde aber Längen-$n$ erwarten. Schlecht.
 
 \textbf{2.2:} Wenn der Empfänger gar nicht weiß, dass
-\texttt{codewort[2]} verfälscht wurde, ist es ein „echter" Fehler.
+\texttt{codewort[2]} verfälscht wurde, ist es ein „echter“ Fehler.
 Bei RS$(5, 3)$ kann genau ein solcher korrigiert werden — Tag 8 zeigt
 das Verfahren. Wüsste der Empfänger, dass diese Position kaputt ist
 (Position-Wissen aus dem Übertragungsmedium), wäre es nur eine

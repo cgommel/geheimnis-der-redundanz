@@ -66,8 +66,14 @@
 % LaTeX wählt selbst die passende, je nachdem auf welcher Seite die
 % Aufgabe beginnt. Der page-aware Strich entsteht im Overlay der
 % aufgabebox und wechselt automatisch beim Seitenumbruch mit.
+%
+% \needspace{...} reserviert vor dem Aufgabenblock Mindestplatz, sodass
+% LaTeX bei knappen Verhältnissen lieber vorher umbricht — sonst
+% landete die Marginalie auf der vorigen Seite, während der
+% zugehörige Block erst auf der nächsten Seite begann (LY-01).
 \newenvironment{aufgabe}[4]%
   {% #1 = Symbol, #2 = Label-Zeile-1, #3 = Label-Zeile-2, #4 = Farbe
+   \needspace{5\baselineskip}%
    \marginpar[\markercontentVerso{#1}{#2}{#3}{#4}]%
               {\markercontentRecto{#1}{#2}{#3}{#4}}%
    \begin{aufgabebox}{#4}\ignorespaces}

@@ -1,0 +1,181 @@
+% =============================================================
+% Glossar-Einträge.
+%
+% Eingebunden in der Präambel (vor \begin{document}). Im Text
+% verwendet via \gls{schluessel} an der ersten Erwähnung; weitere
+% Auftritte können auch \gls{} sein, der Glossar-Eintrag wird dann
+% nur noch normal gesetzt.
+%
+% Schlüssel sind kurz und sprechend; Anzeigename steht in `name=`.
+% =============================================================
+
+\newglossaryentry{modulo}{
+  name=Modulo,
+  description={Operation \(a \bmod n\): der Rest, der bei der Division
+    von \(a\) durch \(n\) bleibt. Universalwerkzeug der
+    Codierungstheorie}}
+
+\newglossaryentry{paritaet}{
+  name=Parität,
+  description={Eigenschaft einer Bitfolge, die sich aus der Anzahl der
+    Einsen ergibt: \emph{gerade Parität}, wenn die Anzahl gerade
+    ist, sonst \emph{ungerade}. Eine Paritätsprüfung erkennt jede
+    ungerade Anzahl gekippter Bits}}
+
+\newglossaryentry{paritaetsbit}{
+  name=Paritätsbit,
+  description={Zusätzliches Bit, das so gewählt wird, dass die
+    Gesamt-Parität (meist gerade) zustande kommt. Erkennt
+    Einzel-Bitfehler}}
+
+\newglossaryentry{redundanz}{
+  name=Redundanz,
+  description={Daten-Anteil, der über die reine Information
+    hinausgeht und der Erkennung oder Korrektur von
+    Übertragungsfehlern dient. Preis für Robustheit}}
+
+\newglossaryentry{ean13}{
+  name=EAN-13,
+  description={European Article Number, 13-stelliger Strichcode auf
+    fast jedem Konsumgut. Letzte Ziffer ist eine Prüfziffer (Modulo
+    10 mit Gewichten 1 und 3)}}
+
+\newglossaryentry{isbn10}{
+  name=ISBN-10,
+  description={Bis 2007 verwendete 10-stellige Buchnummer. Prüfziffer
+    Modulo 11; deshalb gelegentlich „X" als Prüfsymbol nötig}}
+
+\newglossaryentry{luhn}{
+  name=Luhn-Algorithmus,
+  description={Prüfziffer-Verfahren für Kreditkartennummern (Hans Peter
+    Luhn, 1954). Verdoppelt jede zweite Ziffer von rechts und summiert
+    die Quersummen}}
+
+\newglossaryentry{hammingdistanz}{
+  name=Hamming-Distanz,
+  description={Anzahl der Stellen, an denen sich zwei gleich lange
+    Wörter unterscheiden. Zentrales Maß für Codes}}
+
+\newglossaryentry{mindestdistanz}{
+  name=Mindestdistanz,
+  description={Kleinste Hamming-Distanz zwischen je zwei Codewörtern
+    eines Codes. Bestimmt die Korrektur-/Erkennungs-Fähigkeit:
+    \(d-1\) Fehler erkennbar, \(\lfloor (d-1)/2 \rfloor\)
+    korrigierbar}}
+
+\newglossaryentry{code}{
+  name=Code,
+  description={Menge gültiger Codewörter. Die Hamming-Distanzen
+    zwischen ihnen bestimmen die Korrektureigenschaften}}
+
+\newglossaryentry{codewort}{
+  name=Codewort,
+  description={Element eines Codes, also eine gültig codierte Bit-
+    oder Symbolfolge}}
+
+\newglossaryentry{hammingschranke}{
+  name=Hamming-Schranke,
+  description={Untere Grenze für die Anzahl Bits, die zur
+    Einzelfehler-Korrektur nötig sind: \(2^k \cdot (n+1) \le 2^n\).
+    Wird vom \((7,4)\)-Hamming-Code mit Gleichheit erreicht („perfekter
+    Code")}}
+
+\newglossaryentry{hammingcode}{
+  name=Hamming-Code,
+  description={Familie linearer Codes (Richard Hamming, 1950), die
+    einen Einzel-Bitfehler korrigieren. Der \((7,4)\)-Variante codiert
+    4 Datenbits in 7 Codebits}}
+
+\newglossaryentry{secded}{
+  name=SECDED,
+  description={Single Error Correction, Double Error Detection.
+    Erweiterung eines Hamming-Codes um ein Gesamt-Paritätsbit:
+    erkennt Doppelfehler zusätzlich zur Einzelfehler-Korrektur. In
+    ECC-RAM Standard}}
+
+\newglossaryentry{buendelfehler}{
+  name=Bündelfehler,
+  description={Mehrere benachbarte Bitfehler, etwa durch Kratzer auf
+    einer CD oder Funkfading. Realer als zufällige Einzelfehler;
+    motiviert Interleaving}}
+
+\newglossaryentry{interleaving}{
+  name=Interleaving,
+  description={Verschachtelung von Codewörtern vor der Übertragung,
+    sodass ein Bündelfehler aus jedem Codewort nur ein einziges Bit
+    trifft. Steckt in jeder CD und vielen Funkstandards}}
+
+\newglossaryentry{crc}{
+  name=CRC,
+  description={Cyclic Redundancy Check. Standardverfahren der
+    Fehlererkennung. Daten werden als Polynom interpretiert und
+    modulo eines Generatorpolynoms gerechnet}}
+
+\newglossaryentry{generatorpolynom}{
+  name=Generatorpolynom,
+  description={Festes Polynom \(G(x)\) bei CRC oder Reed-Solomon, das
+    die Code-Eigenschaften bestimmt. Codewörter sind durch \(G(x)\)
+    teilbar}}
+
+\newglossaryentry{koerper}{
+  name=Körper,
+  description={Mathematische Struktur, in der man uneingeschränkt
+    addieren, subtrahieren, multiplizieren und dividieren kann
+    (Ausnahme: Division durch Null). Beispiele: \(\mathbb{R}\),
+    \(\mathbb{Q}\), \(\mathbb{Z}/p\mathbb{Z}\) für \(p\) prim}}
+
+\newglossaryentry{endlicherkoerper}{
+  name=Endlicher Körper,
+  description={Körper mit endlich vielen Elementen. Tritt nur in
+    Größen \(p^n\) auf (\(p\) prim). Notation \(GF(p^n)\) für
+    \emph{Galois-Feld}. Für Reed-Solomon im Datamatrix wird
+    \(GF(2^8)\) verwendet}}
+
+\newglossaryentry{galoisfeld}{
+  name=Galois-Feld,
+  description={Synonym für endlicher Körper, benannt nach Évariste
+    Galois (1811--1832). Geschrieben \(GF(p^n)\)}}
+
+\newglossaryentry{charakteristik}{
+  name=Charakteristik,
+  description={Kleinste positive Zahl \(p\), für die \(p \cdot 1 = 0\)
+    gilt. In jedem \(GF(2^n)\) ist die Charakteristik 2 — daraus
+    folgt der „Freshman's Dream" \((a+b)^2 = a^2 + b^2\)}}
+
+\newglossaryentry{irreduziblespolynom}{
+  name=Irreduzibles Polynom,
+  description={Polynom, das nicht in zwei Polynome niedrigeren Grades
+    zerlegt werden kann. Analoges Konzept zur Primzahl. Wird gebraucht,
+    um \(GF(2^n)\) als Körper zu bauen}}
+
+\newglossaryentry{inverses}{
+  name=Multiplikatives Inverses,
+  description={Zu einem Element \(a \ne 0\) eines Körpers das
+    Element \(a^{-1}\) mit \(a \cdot a^{-1} = 1\). Existiert in
+    Körpern für jedes Element außer Null}}
+
+\newglossaryentry{stuetzstelle}{
+  name=Stützstelle,
+  description={Punkt \(x_i\), an dem ein Polynom \(f\) ausgewertet
+    wird, um den Wert \(f(x_i)\) zu erhalten. Bei Reed-Solomon werden
+    \(n\) Stützstellen verwendet, von denen \(k\) zur Rekonstruktion
+    reichen}}
+
+\newglossaryentry{reedsolomon}{
+  name=Reed-Solomon-Code,
+  description={Fehlerkorrigierender Code über \(GF(2^n)\). Daten
+    werden als Polynom interpretiert und an \(n\) Stützstellen
+    ausgewertet; die \(n\) Werte sind das Codewort. Korrigiert bis
+    zu \(\lfloor (n-k)/2 \rfloor\) Symbolfehler}}
+
+\newglossaryentry{aushloeschung}{
+  name=Auslöschung,
+  description={Fehler mit bekannter Position (engl.\ \emph{erasure}).
+    Im Gegensatz zum allgemeinen Fehler („wir wissen nicht, welches
+    Symbol verfälscht ist") doppelt so günstig zu korrigieren}}
+
+\newglossaryentry{horner}{
+  name=Horner-Schema,
+  description={Effizientes Verfahren zur Polynom-Auswertung:
+    \(a_0 + x(a_1 + x(a_2 + \dots))\). Spart Multiplikationen
+    gegenüber der naiven Auswertung}}
