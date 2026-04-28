@@ -1,0 +1,57 @@
+name: release
+
+# Bei einem Tag der Form v* wird das Buch gebaut und als
+# GitHub-Release veröffentlicht. Beispiel:
+#   git tag v0.1.0-tag1bis5
+#   git push origin v0.1.0-tag1bis5
+# → erzeugt eine Release "v0.1.0-tag1bis5" mit buch.pdf als Asset.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag-Name für die Release (nur bei manuellem Aufruf)"
+        required: true
+        type: string
+
+permissions:
+  contents: write   # nötig für softprops/action-gh-release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo auschecken
+        uses: actions/checkout@v4
+
+      - name: Buildx einrichten
+        uses: docker/setup-buildx-action@v3
+
+      - name: Container-Image bauen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/Dockerfile
+          tags: redundancy-book:release
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Buch bauen
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -w /work \
+            redundancy-book:release \
+            make
+
+      - name: Release erstellen mit PDF als Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: ${{ github.event.inputs.tag || github.ref_name }}
+          generate_release_notes: true
+          files: pdf/latex/buch.pdf
