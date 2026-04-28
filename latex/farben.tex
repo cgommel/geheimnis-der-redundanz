@@ -1,0 +1,23 @@
+% =============================================================
+% Farbset 3 aus doku/LAYOUT_BRIEFING.md (Pastell, hell).
+%
+% Definiert in CMYK, weil das Buch in den Druck soll.
+% Die ursprünglichen RGB-Werte aus dem Briefing stehen als Kommentar
+% darüber; die CMYK-Werte sind naiv per Standardformel umgerechnet
+% (K = 1 - max(R,G,B)/255 etc.). Für endgültige Druckqualität ggf.
+% mit ICC-Profil (z. B. ISOcoated_v2_eci) nachjustieren.
+%
+% Diese drei Farben werden konsequent verwendet:
+%   - für den Strich am Aufgabenblock
+%   - für das Symbol in der Marginalie
+%   - für die Kapitälchen-Bezeichnung unter dem Symbol
+% =============================================================
+
+% Bleistift — RGB(235, 160,  80), helles Orange
+\definecolor{cBleistift}{cmyk}{0.00, 0.32, 0.66, 0.08}
+
+% Python — RGB( 95, 140, 180), sanftes Blau
+\definecolor{cPython}   {cmyk}{0.47, 0.22, 0.00, 0.29}
+
+% Werkzeug — RGB(185, 200, 110), helles Lindgrün
+\definecolor{cWerkzeug} {cmyk}{0.08, 0.00, 0.45, 0.22}

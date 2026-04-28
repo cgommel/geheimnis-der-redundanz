@@ -17,6 +17,14 @@ main.pdf
 *.fdb_latexmk
 *.fls
 
+# Python (Bytecache aus test-code, lokale Tests in latex/code/)
+__pycache__/
+*.pyc
+*.pyo
+
+# Snippet-Cache (von \pythoncodeteil zur Build-Zeit erzeugt)
+latex/.snippets/
+
 # OS-Krimskrams
 .DS_Store
 Thumbs.db

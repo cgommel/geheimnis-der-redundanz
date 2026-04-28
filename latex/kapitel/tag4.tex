@@ -1,0 +1,426 @@
+\chapter{Tag 4 — Wenn Fehler sich zusammenrotten: Bündelfehler, Interleaving und CRC}
+
+\begin{quote}
+Der Hamming-Code von gestern ist großartig — aber er hat eine Schwäche:
+zwei oder mehr benachbarte Fehler werfen ihn aus der Bahn. Genau das
+passiert aber in der echten Welt: zerkratzte CDs, dreckige Etiketten,
+gestörte WLAN-Pakete. Heute lernen wir, wie man damit umgeht — und
+treffen auf zwei neue Ideen, die in fast jedem digitalen Gerät
+stecken: \textbf{Interleaving} und \textbf{CRC}.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 4 kannst du \dots
+
+\begin{itemize}
+\item erklären, warum \textbf{Bündelfehler} (mehrere benachbarte Bits)
+  in der Praxis viel häufiger sind als zufällig verteilte Einzelfehler
+\item den Hamming-Code zu \textbf{SECDED} erweitern und damit
+  Doppelfehler \textbf{erkennen} (auch wenn nicht korrigieren)
+\item mit \textbf{Interleaving} einen Bündelfehler in lauter
+  Einzelfehler verwandeln
+\item ein \textbf{CRC} (Cyclic Redundancy Check) berechnen und prüfen
+\item den Unterschied zwischen \emph{Erkennen} und \emph{Korrigieren}
+  in der Praxis abschätzen und entscheiden, welches Verfahren zu
+  welcher Anwendung passt
+\end{itemize}
+
+Material: Bleistift, kariertes Papier, Thonny.
+
+% =============================================================
+\section{Warum Bündelfehler so gemein sind \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+Stell dir folgende Situation vor: du brennst eine CD, machst einen
+Kratzer rein und versuchst, sie zu lesen. Der Kratzer ist 2 mm lang.
+Auf der CD-Oberfläche sind das, sagen wir mal, 200 Bits hintereinander,
+die nicht mehr gelesen werden können. \textbf{200 benachbarte
+Bitfehler.}
+
+Oder ein anderes Beispiel: Funkverbindung. Wenn ein Mobilfunk-Sender
+kurz von einem Auto verdeckt wird (sogenanntes \emph{Fading}), gehen
+\emph{alle} Bits, die in diesem Moment ankommen, verloren. Wieder ein
+Bündel — diesmal vielleicht Hunderte oder Tausende von Bits.
+
+Solche \textbf{Bündelfehler} (engl.\ \emph{burst errors}) sind in der
+Realität die Regel, nicht die Ausnahme.
+
+\begin{bleistiftuebung}{1}{Wie verhält sich Hamming bei einem Bündelfehler?}
+Erinnere dich an deinen $(7,4)$-Hamming-Code von gestern. Er
+korrigiert genau einen Bitfehler.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Was passiert, wenn auf einem Codewort \textbf{zwei} benachbarte
+  Bits gleichzeitig kippen? Du hast das gestern in Aufgabe 3.1 schon
+  ausprobiert. Was war das Ergebnis?
+\item Stell dir vor, ein Bündelfehler über \textbf{3} benachbarte Bits
+  trifft dein Codewort. Was glaubst du, ergibt der Decoder?
+\item Diskutiert: wäre es eine gute Idee, einfach Hamming-Codes
+  hintereinanderzuschalten? Wenn ja, warum? Wenn nein, warum nicht?
+\end{enumerate}
+
+\begin{quote}
+Tipp zu (c): wenn du z.\,B.\ 4 Hamming-Codewörter hintereinander
+schreibst — also $7+7+7+7 = 28$ Bits — und dann ein Bündelfehler über
+3 Bits genau zwischen Wort 2 und Wort 3 hereinrutscht: in welchen
+Wörtern sind die Fehler? Wie viele Fehler pro Wort?
+\end{quote}
+\end{bleistiftuebung}
+
+\subsection*{Eine erste Idee: SECDED}
+
+Bevor wir Bündelfehler richtig angehen, machen wir noch eine kleine
+Erweiterung des Hamming-Codes, die Doppelfehler immerhin
+\textbf{erkennt}, auch wenn sie sie nicht korrigieren kann.
+
+\textbf{Idee:} wir hängen an den $(7,4)$-Hamming-Code ein
+\textbf{achtes Bit} an — die Gesamt-Parität über alle 7 Bits. Aus dem
+$(7,4)$-Code wird der \textbf{$(8,4)$-SECDED-Code} (Single Error
+Correction, Double Error Detection).
+
+So funktioniert das beim Empfänger:
+
+\begin{center}
+\begin{tabular}{llp{6cm}}
+  \toprule
+  Hamming-Prüfung & Gesamt-Parität & Diagnose \\
+  \midrule
+  ok             & ok             & kein Fehler \\
+  Fehler erkannt & falsch         & 1 Fehler → korrigierbar \\
+  Fehler erkannt & ok             & 2 Fehler → erkannt, aber unrettbar \\
+  ok             & falsch         & nur das achte Bit selbst gekippt \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Der Trick steckt in der \textbf{Kombination}: bei einem Einzelfehler
+ist sowohl die Hamming-Prüfung als auch die Gesamt-Parität gestört
+(denn 1 ist eine ungerade Anzahl). Bei einem Doppelfehler ist die
+Hamming-Prüfung gestört, aber die Gesamt-Parität bleibt richtig (denn
+2 ist gerade). Daraus lässt sich eindeutig unterscheiden, ob ein
+Einzel- oder ein Doppelfehler vorlag!
+
+\begin{bleistiftuebung}{2}{SECDED nachvollziehen}
+Codewort von gestern: \texttt{0 1 1 0 0 1 1} (für Datenwort
+\texttt{1 0 1 1}).
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Berechne das Gesamt-Paritätsbit $P$, sodass die Anzahl der
+  Einsen im erweiterten Codewort \textbf{gerade} ist. Schreibe das
+  vollständige $(8,4)$-Codewort auf.
+\item Du empfängst \texttt{0 1 0 0 0 1 1 0} (achtes Bit ist deine
+  berechnete Gesamt-Parität, das vorletzte Bit wurde gekippt).
+  Berechne die Hamming-Prüfsummen $s_1, s_2, s_3$. Berechne die
+  Gesamt-Parität. Welcher Fall aus der Tabelle liegt vor?
+\item Empfangen: \texttt{1 1 0 0 0 0 1 0}. Welcher Fall liegt vor?
+\end{enumerate}
+\end{bleistiftuebung}
+
+\begin{quote}
+SECDED steckt heute in jedem \textbf{ECC-RAM} in Servern. Das gestern
+angesprochene 64-Bit-Wort mit 8 Prüfbits ist genau ein SECDED-Code:
+er korrigiert 1 Bitfehler pro 64-Bit-Wort und erkennt 2 Bitfehler.
+\end{quote}
+
+% =============================================================
+\section{Interleaving — der einfachste Trick gegen Bündelfehler \normalfont(\textit{$\approx$ 45 min})}
+% =============================================================
+
+SECDED ist nett, aber Bündelfehler sind damit immer noch nicht im
+Griff — wir können einen Doppelfehler ja nur \textbf{erkennen}, nicht
+korrigieren. Was tun, wenn zerkratzte CDs ganze 200-Bit-Bündel
+zerstören?
+
+\textbf{Die Idee von Interleaving:} verteile die Daten so über die
+Übertragung, dass benachbarte Bits in der Übertragung \emph{nicht}
+benachbart in den Daten sind. Wenn dann ein Bündelfehler kommt,
+betrifft er aus jedem Codewort nur \textbf{ein einziges Bit} — und
+das kann der Hamming-Code wieder korrigieren.
+
+\subsection*{Das Bild dazu}
+
+Stell dir vor, du hast 4 Hamming-Codewörter $A, B, C, D$, jedes 7 Bit
+lang:
+
+\begin{verbatim}
+A: a1 a2 a3 a4 a5 a6 a7
+B: b1 b2 b3 b4 b5 b6 b7
+C: c1 c2 c3 c4 c5 c6 c7
+D: d1 d2 d3 d4 d5 d6 d7
+\end{verbatim}
+
+\textbf{Ohne Interleaving} würden wir die einfach hintereinander
+schreiben:
+
+\begin{verbatim}
+a1 a2 a3 a4 a5 a6 a7 | b1 b2 b3 b4 b5 b6 b7 | c1 ... | d1 ...
+\end{verbatim}
+
+Ein Bündelfehler über 4 Bits in der Mitte trifft alle 4 Bits desselben
+Codeworts → unrettbar.
+
+\textbf{Mit Interleaving} schreiben wir spaltenweise:
+
+\begin{verbatim}
+a1 b1 c1 d1 | a2 b2 c2 d2 | a3 b3 c3 d3 | ... | a7 b7 c7 d7
+\end{verbatim}
+
+Ein Bündelfehler über 4 Bits trifft jetzt aus jedem Codewort genau
+\textbf{1 Bit}. Jeder Hamming-Code-Decoder kann das korrigieren!
+
+\begin{bleistiftuebung}{3}{Interleaving auf Karopapier}
+Hier sind 4 sehr kurze Codewörter (aus einem fiktiven 4-Bit-Code):
+
+\begin{verbatim}
+A: 1 0 1 0
+B: 0 1 1 1
+C: 1 1 0 0
+D: 0 0 1 1
+\end{verbatim}
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Schreibe sie hintereinander auf (ohne Interleaving). Wie lang
+  ist die resultierende Zeile?
+\item Schreibe sie nun in eine $4 \times 4$-Tabelle (eine Zeile pro
+  Codewort) und lies die Daten \textbf{spaltenweise} aus. Schreibe
+  die so entstandene Bitfolge auf.
+\item Nimm an, ein Bündelfehler kippt in der interleavten Folge die
+  Bits an Position 5, 6, 7, 8. Schreibe die gestörte Folge auf, baue
+  sie zurück in die $4 \times 4$-Tabelle und prüfe: wie viele Fehler
+  hat jedes Codewort jetzt?
+\item Würde derselbe 4-Bit-Bündelfehler ohne Interleaving (Variante a)
+  ein Codewort komplett ruinieren?
+\end{enumerate}
+\end{bleistiftuebung}
+
+\begin{pythoneinheit}{1}{Interleaver bauen}
+Lege eine neue Datei \texttt{interleaver.py} an:
+
+\pythoncodeteil{tag4/interleaver.py}{interleave}
+
+\paragraph{Aufgabe 1.1 — Bündelfehler simulieren.}
+Nutze deinen \texttt{hamming74\_encode}/\texttt{hamming74\_decode} aus
+Tag 3 zusammen mit dem Interleaver. Probiere folgendes:
+
+\begin{enumerate}
+\item Wähle 4 Datenwörter (je 4 Bits). Codiere jedes mit Hamming → 4
+  Codewörter à 7 Bit.
+\item Interleave die 4 Codewörter zu einer 28-Bit-Folge.
+\item Simuliere einen Bündelfehler: kippe \textbf{4 benachbarte Bits}
+  in dieser Folge.
+\item Deinterleave zurück in 4 Codewörter à 7 Bit.
+\item Decodiere jedes Codewort einzeln mit
+  \texttt{hamming74\_decode}.
+\item Prüfe: sind alle 4 Datenwörter korrekt rekonstruiert worden?
+\end{enumerate}
+
+\begin{quote}
+Erwartung: bei 4 Codewörtern und 4 Bündelfehler-Bits hat jedes
+Codewort \emph{höchstens 1 Fehler} → Hamming kann jeden korrigieren →
+alle Datenwörter werden gerettet.
+\end{quote}
+\end{pythoneinheit}
+
+\subsection*{Die Praxis: CD und Compact-Disc-DA}
+
+Auf einer Audio-CD steckt diese Idee in massiv ausgebauter Form:
+\textbf{Cross-Interleaved Reed-Solomon Code (CIRC)}. Die Audio-Daten
+werden über \emph{Hunderte} Symbole interleaved, sodass selbst Kratzer
+von mehreren Millimetern Länge problemlos rekonstruiert werden können
+— aus benachbarten Symbolen in der Übertragung werden weit entfernte
+Symbole in den Originaldaten. Wenn du heute auf Spotify einen alten
+Song hörst, der von einer CD-Master-Tape kam: dieser CIRC hat ihn
+überlebt.
+
+% =============================================================
+\section{CRC — die Praxis-Standardlösung für Erkennung \normalfont(\textit{$\approx$ 45 min})}
+% =============================================================
+
+Bisher hatten wir es mit \emph{Korrektur} zu tun. Aber in vielen
+Anwendungen reicht es, wenn man Fehler \textbf{erkennt} und das
+fehlerhafte Paket einfach \textbf{erneut anfordert}:
+
+\begin{itemize}
+\item Bei Ethernet (Netzwerkkarten): wenn ein Paket fehlerhaft
+  ankommt, wird es einfach noch einmal verlangt.
+\item Bei TCP (das, was hinter \texttt{https://} und SSH und fast
+  allem im Internet steckt): wenn ein Paket fehlt oder kaputt ist,
+  wird es nochmal geschickt.
+\item Bei ZIP-Dateien: wenn das CRC nicht stimmt, weiß das
+  Archivierungsprogramm, dass die Datei kaputt ist.
+\end{itemize}
+
+In all diesen Fällen ist das Werkzeug der Wahl: \textbf{CRC} (Cyclic
+Redundancy Check).
+
+\subsection*{Die Idee von CRC}
+
+Bei einer Prüfziffer wie EAN-13 hatten wir das Datenwort als Zahl
+betrachtet und modulo eine Primzahl gerechnet. CRC macht dasselbe —
+nur mit \textbf{Polynomen statt Zahlen}.
+
+Dazu betrachten wir eine Bitfolge wie \texttt{1 0 1 1 0 1} als
+Polynom:
+\[
+  1 \cdot x^5 + 0 \cdot x^4 + 1 \cdot x^3 + 1 \cdot x^2 + 0 \cdot x + 1
+  \;=\; x^5 + x^3 + x^2 + 1
+\]
+
+Jedes Bit ist ein Koeffizient (entweder 0 oder 1) vor einer Potenz
+von $x$.
+
+\subsection*{CRC-3 (winzig, aber aussagekräftig)}
+
+Das einfachste sinnvolle CRC: wir wählen ein \textbf{Generatorpolynom}
+mit Grad 3, zum Beispiel:
+\[
+  G(x) = x^3 + x + 1 \quad \to \quad \text{binär: } 1011
+\]
+
+Das Verfahren:
+
+\begin{enumerate}
+\item Hänge an die Daten ($k$ Bit) drei Nullen an.
+\item Teile die so entstandene Zahl durch $G(x)$, aber: \textbf{Modulo
+  2 bei jedem Schritt} (das heißt, statt Subtraktion machen wir XOR
+  — kein Übertrag, kein Vorzeichen).
+\item Der \textbf{Rest} der Division ist das CRC. Es hat genau 3 Bits
+  (denn der Grad von $G$ ist 3).
+\item Hänge den Rest an die Daten an. Das ist das gesendete Wort.
+\end{enumerate}
+
+\begin{bleistiftuebung}{4}{CRC von Hand}
+Daten: \texttt{1 0 1 1 0} (5 Bits).
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Hänge 3 Nullen an: \texttt{1 0 1 1 0 0 0 0} (8 Bits).
+\item Führe die Polynomdivision modulo 2 durch. Das geht wie
+  schriftliche Division im Kopf, nur mit XOR statt Subtraktion. Hier
+  zur Hilfe der Anfang:
+
+  \begin{verbatim}
+   1 0 1 1 0 0 0 0   ÷   1 0 1 1
+   1 0 1 1
+   ─────── ⊕
+   0 0 0 0 0 0 0 0
+       │
+       └ ab hier weitermachen ...
+  \end{verbatim}
+
+  \begin{quote}
+  Tipp: XOR ist $0 \oplus 0 = 0$, $0 \oplus 1 = 1$, $1 \oplus 0 = 1$,
+  $1 \oplus 1 = 0$. Also: gleiche Bits → 0, verschiedene Bits → 1.
+  \end{quote}
+
+\item Welcher Rest bleibt nach der Division übrig? Das sind die 3
+  CRC-Bits.
+\item Schreibe das gesendete Wort auf: 5 Daten-Bits + 3 CRC-Bits = 8
+  Bits.
+\item Beim Empfänger: die ganzen 8 Bits werden durch dasselbe $G(x)$
+  geteilt. Wenn der Rest \textbf{0} ist, war alles in Ordnung.
+  Probiere es: teile dein Ergebnis aus (d) durch \texttt{1011}. Was
+  bleibt übrig?
+\end{enumerate}
+\end{bleistiftuebung}
+
+\begin{pythoneinheit}{2}{CRC implementieren}
+\pythoncodeteil{tag4/crc.py}{berechnung}
+
+\paragraph{Aufgabe 2.1 — Wie viele Fehler erkennt CRC-3?}
+Schreibe einen Brute-Force-Test: für ein gültiges CRC-Wort der Länge
+8 probiere \textbf{alle 256 möglichen Fehler-Muster} (jedes Bit kann
+gekippt sein oder nicht) und zähle, wie viele davon erkannt werden.
+
+\pythoncodeteil{tag4/crc.py}{brute-force}
+
+\paragraph{Aufgabe 2.2 — Welche Fehler bleiben unentdeckt?}
+Bei einem CRC mit $r$ Prüfbits gibt es immer genau $2^r$ mögliche
+Fehler-Muster, die unentdeckt bleiben (auch das Null-Muster, das aber
+kein Fehler ist). Bei CRC-3 ($r = 3$) sind das $2^3 = 8$ Muster (inkl.\
+Null). Schau dir die nicht erkannten Muster an: was ist die kleinste
+Anzahl von gekippten Bits, die unentdeckt bleibt?
+
+\begin{quote}
+Spoiler: bei einem gut gewählten Generatorpolynom werden alle 1-Bit-
+und 2-Bit-Fehler erkannt (für CRC-3 zumindest in einer bestimmten
+Maximallänge). Erst ab 3 Bit Fehlern wird's interessant.
+\end{quote}
+\end{pythoneinheit}
+
+\subsection*{CRC in der Praxis}
+
+Die wirklich wichtigen CRCs sind:
+
+\begin{center}
+\begin{tabular}{lcl}
+  \toprule
+  Name           & Grad & Bekannt aus \\
+  \midrule
+  CRC-8          & 8    & Bluetooth, ATM-Netze \\
+  CRC-16-CCITT   & 16   & Bluetooth, X.25, HDLC \\
+  CRC-32         & 32   & Ethernet, ZIP-Dateien, PNG, MPEG \\
+  CRC-32C        & 32   & iSCSI, ext4 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+CRC-32 erkennt mit hoher Wahrscheinlichkeit (besser als 1 zu 4
+Milliarden) jeden Bündelfehler bis 32 Bit Länge und alle Doppelfehler
+in Paketen bis ca.\ 8 KB. Genau deshalb ist es der De-facto-Standard
+im Internet-Stack.
+
+% =============================================================
+\section{Reflexion und Brücke \normalfont(\textit{$\approx$ 20 min})}
+% =============================================================
+
+\subsection*{Was wir heute gelernt haben}
+
+\begin{itemize}
+\item \textbf{Bündelfehler} sind in der Realität die Regel, nicht die
+  Ausnahme — Kratzer, Funkfading, defekte Speichersektoren betreffen
+  immer mehrere benachbarte Bits.
+\item \textbf{SECDED} erweitert Hamming um ein zusätzliches
+  Paritätsbit. Es kann immer noch nur 1 Fehler korrigieren, erkennt
+  aber sicher 2.
+\item \textbf{Interleaving} ist eine geniale, einfache Idee: Daten so
+  verschachteln, dass Bündelfehler zu Einzelfehlern werden, die der
+  innere Code (z.\,B.\ Hamming) korrigieren kann. Steckt in jeder CD,
+  DVD und vielen Funkstandards.
+\item \textbf{CRC} ist das Standardverfahren für Erkennung (ohne
+  Korrektur). Es nutzt Polynomdivision modulo 2 und ist mathematisch
+  eng mit dem verwandt, was wir noch kennenlernen werden.
+\end{itemize}
+
+\subsection*{Drei Fragen zum Mitnehmen}
+
+\begin{enumerate}
+\item CRC erkennt mehr Fehlertypen als eine einfache Parität, kostet
+  aber auch mehr Prüfbits. Wenn du auf einem stark gestörten Funkkanal
+  arbeitest — würdest du eher CRC einsetzen, oder einen
+  fehlerkorrigierenden Code? Was ist der Tradeoff?
+\item Du hast bei CRC bemerkt: wir rechnen mit \textbf{Polynomen
+  modulo 2}. Bei EAN-13 haben wir mit Zahlen modulo 10 gerechnet,
+  bei ISBN-10 mit Zahlen modulo 11. Sieht aus, als wäre Modulo
+  \emph{die} universelle Idee. Wie könnte man das auf Bytes (also
+  Zahlen 0\ldots255) übertragen?
+\item Beim Hamming-Code mussten wir genau wissen, \emph{welche} Bits
+  gekippt sind, um zu korrigieren. Bei CRC interessiert uns nur,
+  \emph{ob} irgendwas gekippt ist. Welcher Ansatz braucht weniger
+  Information — und warum funktioniert er trotzdem?
+\end{enumerate}
+
+\subsection*{Vorschau Tag 5}
+
+Frage 2 oben ist nicht zufällig gestellt. Morgen verlassen wir
+endgültig die Welt der Bits und steigen in die Welt der \textbf{Bytes}
+ein — nicht als 8 Bits, sondern als eigenständige Zahlen 0 bis 255.
+Dafür brauchen wir eine neue Mathematik: \textbf{endliche Körper}
+(oder \emph{Galois-Felder}, abgekürzt GF). Klingt fies, ist aber im
+Grunde nur „Modulo-Arithmetik mit Polynomen statt Zahlen“ — und wir
+haben heute mit CRC schon den Fuß in der Tür gehabt.
+
+Mit endlichen Körpern können wir dann verstehen, wie
+\textbf{Reed-Solomon} funktioniert — und damit sind wir nur noch
+wenige Schritte vom \textbf{Datamatrix} entfernt.
+

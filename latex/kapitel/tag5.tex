@@ -1,0 +1,513 @@
+\chapter{Tag 5 — Eine neue Mathematik: endliche Körper}
+
+\begin{quote}
+Gestern hast du mit CRC etwas Erstaunliches getan: du hast \textbf{mit
+Polynomen gerechnet, modulo 2}. Heute gehen wir einen Schritt weiter
+und entdecken, dass dahinter eine ganze mathematische Welt steckt:
+die der \textbf{endlichen Körper}. Das klingt sperrig, ist aber im
+Grunde nur „Modulo-Rechnung, hochgezogen auf Polynome“. Und genau
+diese Welt brauchen wir, um morgen Reed-Solomon zu verstehen — das
+Verfahren, das im Datamatrix-Code steckt.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 5 kannst du \dots
+
+\begin{itemize}
+\item erklären, was ein \textbf{Körper} in der Mathematik ist und
+  warum „Körper“ hier nicht „Volumen“ heißt
+\item die Rechenregeln in \textbf{GF(2)} (dem kleinsten Körper)
+  anwenden
+\item zeigen, warum \textbf{Modulo 256} für Bytes nicht funktioniert
+\item in \textbf{GF($2^3$)} addieren und multiplizieren — mit
+  Bleistift und Zettel
+\item für jedes Element in GF($2^3$) das \textbf{multiplikative
+  Inverse} finden
+\item in Python eine kleine Klasse für GF($2^3$) bauen und damit
+  experimentieren
+\end{itemize}
+
+Material: Bleistift, kariertes Papier, viel Geduld für die
+Multiplikationstafel. Optional: zwei verschiedene Farben (für
+Datenbits und Polynom-Koeffizienten).
+
+% =============================================================
+\section{Was ist eigentlich ein „Körper“? \normalfont(\textit{$\approx$ 25 min})}
+% =============================================================
+
+Bisher haben wir mit ganz unterschiedlichen Zahlensystemen gerechnet:
+ganze Zahlen, modulo 10 (EAN-13), modulo 11 (ISBN), modulo 2
+(Parität), Polynome modulo 2 (CRC). Lass uns mal sortieren, was die
+alle gemeinsam haben.
+
+In jedem dieser Systeme kannst du:
+
+\begin{itemize}
+\item \textbf{Addieren} (immer)
+\item \textbf{Subtrahieren} (immer; bei Modulo wird's „addieren mit
+  Gegenzahl“)
+\item \textbf{Multiplizieren} (immer)
+\item \textbf{Dividieren} — das ist die spannende Frage!
+\end{itemize}
+
+\subsection*{Wann kann man dividieren?}
+
+Dividieren heißt: zu jeder Zahl $\ne 0$ gibt es eine \textbf{Gegenzahl}
+(das \emph{multiplikative Inverse}), sodass $a \cdot a^{-1} = 1$. Bei
+den reellen Zahlen ist das einfach: $5^{-1} = 0{,}2$. Bei
+modulo-Systemen wird's interessant.
+
+\begin{bleistiftuebung}{1}{Wann gibt es Inverse?}
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Versuche, in \textbf{modulo 10} für jede Zahl 1 bis 9 ein
+  Inverses zu finden, also eine Zahl $b$, sodass $a \cdot b \equiv 1
+  \pmod{10}$. Welche Zahlen haben Inverse, welche nicht?
+
+  \begin{quote}
+  Tipp: probiere systematisch. Für $a = 3$ z.\,B.\ die Reihe
+  $3 \cdot 1 = 3,\ 3 \cdot 2 = 6,\ 3 \cdot 3 = 9,\ 3 \cdot 4 = 12
+  \equiv 2, \dots$ und schaue, wann die 1 auftaucht.
+  \end{quote}
+
+\item Mache dasselbe für \textbf{modulo 11}. Welche Zahlen haben
+  Inverse?
+
+\item Was fällt dir auf? Welche Eigenschaft hat 11, die 10 nicht hat?
+
+\item \textbf{Faustregel formulieren:} bei Modulo $n$ hat eine Zahl
+  $a$ genau dann ein Inverses, wenn \dots?
+\end{enumerate}
+\end{bleistiftuebung}
+
+\subsection*{Was ist nun ein Körper?}
+
+Ein \textbf{Körper} (engl.\ \emph{field}) ist eine Menge von Zahlen,
+in der man \textbf{uneingeschränkt rechnen} kann: $+, -, \cdot, \div$
+(außer Division durch 0). Konkret heißt das:
+
+\begin{itemize}
+\item Es gibt eine 0 (neutrales Element der Addition).
+\item Es gibt eine 1 (neutrales Element der Multiplikation).
+\item Jede Zahl hat eine Gegenzahl (additives Inverses).
+\item Jede Zahl $\ne 0$ hat ein multiplikatives Inverses.
+\item Plus die üblichen Rechenregeln (Assoziativität, Kommutativität,
+  Distributivität).
+\end{itemize}
+
+Beispiele für Körper:
+\begin{itemize}
+\item $\mathbb{R}$ (reelle Zahlen)
+\item $\mathbb{Q}$ (rationale Zahlen)
+\item $\mathbb{C}$ (komplexe Zahlen)
+\item $\mathbb{Z}/p\mathbb{Z}$ — die ganzen Zahlen modulo $p$ mit $p$
+  prim (das ist neu!)
+\end{itemize}
+
+Beispiele für \textbf{keine} Körper:
+\begin{itemize}
+\item $\mathbb{Z}$ (ganze Zahlen) — kein Inverses für 2 (es gibt kein
+  „$1/2$“ in $\mathbb{Z}$)
+\item $\mathbb{Z}/10\mathbb{Z}$ — modulo 10, weil 2, 4, 5, 6, 8 keine
+  Inverse haben
+\end{itemize}
+
+\begin{quote}
+Merke: \textbf{Körper modulo $n$ gibt es nur, wenn $n$ eine Primzahl
+ist.} Diese Körper schreibt man oft auch GF($p$) — „Galois-Feld“ der
+Größe $p$, benannt nach dem französischen Mathematiker Évariste Galois
+(1811–1832, lebte nur 20 Jahre, hat aber eine ganze Disziplin der
+Mathematik begründet).
+\end{quote}
+
+\begin{bleistiftuebung}{2}{Der kleinste Körper: GF(2)}
+GF(2) ist der allerkleinste Körper. Er hat genau zwei Elemente: 0 und
+1. Du kennst ihn schon — nur unter einem anderen Namen.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Erstelle die \textbf{Additionstafel} für GF(2):
+
+  \begin{center}
+  \begin{tabular}{c|cc}
+    $+$ & 0 & 1 \\
+    \hline
+    0 & & \\
+    1 & & \\
+  \end{tabular}
+  \end{center}
+
+\item Erstelle die \textbf{Multiplikationstafel} für GF(2):
+
+  \begin{center}
+  \begin{tabular}{c|cc}
+    $\cdot$ & 0 & 1 \\
+    \hline
+    0 & & \\
+    1 & & \\
+  \end{tabular}
+  \end{center}
+
+\item Vergleiche: welche aus Python bekannten Operationen ergeben
+  dieselben Tabellen?
+
+  \begin{quote}
+  Tipp: erinnere dich an Tag 1 (Parität) und Tag 4 (CRC).
+  \end{quote}
+
+\item Was ist $1 - 1$ in GF(2)? Was ist also die Gegenzahl von 1?
+  (Gemeinheit: in GF(2) ist das nicht „$-1$“.)
+\end{enumerate}
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Warum Modulo 256 nicht der Weg ist \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+Wir wollen mit Bytes rechnen, also mit Zahlen 0 bis 255. Naheliegend
+wäre: einfach Modulo 256. Aber 256 ist keine Primzahl ($256 = 2^8$),
+also haben wir das Problem aus Bleistiftübung 1 zurück.
+
+\begin{bleistiftuebung}{3}{Modulo 256 ist kaputt}
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Was ist $2 \cdot 128 \bmod 256$? Folgerung: hat 2 ein Inverses
+  in modulo 256?
+
+\item Welche Zahlen aus $1 \dots 255$ haben kein Inverses modulo 256?
+
+  \begin{quote}
+  Tipp: eine Zahl $a$ hat genau dann ein Inverses modulo $n$, wenn
+  $a$ und $n$ keinen gemeinsamen Teiler außer 1 haben (man sagt:
+  \emph{teilerfremd} oder \emph{koprim}).
+  \end{quote}
+
+\item Wie viele Zahlen aus $1 \dots 255$ sind koprim zu 256? (Du
+  musst nicht alle aufzählen, aber überlege, welche es nicht sind.)
+\end{enumerate}
+\end{bleistiftuebung}
+
+\subsection*{Zwei mögliche Auswege}
+
+Wir hätten zwei Optionen:
+
+\textbf{Option 1:} statt 256 eine Primzahl in der Nähe nehmen,
+z.\,B.\ 257 (das ist tatsächlich prim!). Damit hätten wir GF(257) —
+einen schönen Körper. Aber: Bytes sind 256 Werte, nicht 257. Wir
+würden ständig den 257-ten Wert „übrig“ haben. Unschön.
+
+\textbf{Option 2:} eine ganz neue Konstruktion: statt mit Zahlen
+modulo $2^8$ rechnen wir mit \textbf{Polynomen} vom Grad $< 8$ über
+GF(2), und nehmen modulo eines bestimmten Polynoms. Klingt fies, ist
+aber elegant — und genau das, was wir heute aufbauen.
+
+Wir starten klein: erst mit GF($2^3$) (8 Elemente), dann später mit
+GF($2^8$) (256 Elemente).
+
+% =============================================================
+\section{GF($2^3$) konkret aufbauen \normalfont(\textit{$\approx$ 60 min})}
+% =============================================================
+
+Das ist der schwierigste Teil heute. Aber wenn du ihn verstanden
+hast, hast du das Tor zu Reed-Solomon weit aufgestoßen.
+
+\subsection*{Die Grundidee}
+
+Wir betrachten \textbf{Polynome vom Grad kleiner als 3, deren
+Koeffizienten 0 oder 1 sind}. Das sind genau $2^3 = 8$ Stück:
+
+\begin{verbatim}
+0
+1
+x
+x+1
+x²
+x²+1
+x²+x
+x²+x+1
+\end{verbatim}
+
+Diese 8 Polynome sind die Elemente von GF($2^3$). Jedes lässt sich
+als 3-Bit-Zahl schreiben:
+
+\begin{verbatim}
+0       =  000
+1       =  001
+x       =  010
+x+1     =  011
+x²      =  100
+x²+1    =  101
+x²+x    =  110
+x²+x+1  =  111
+\end{verbatim}
+
+Praktischer Trick: wir können also einfach mit 3-Bit-Zahlen rechnen,
+müssen aber die Rechenregeln der Polynome beachten.
+
+\subsection*{Addition in GF($2^3$)}
+
+Polynome addieren wir koeffizientenweise. Da die Koeffizienten in
+GF(2) liegen (also 0 oder 1), ist die Addition modulo 2 — genau
+\textbf{XOR}.
+
+Beispiel: $(x^2+x+1) + (x^2+1)$. Koeffizienten:
+\begin{verbatim}
+   1 1 1
+⊕  1 0 1
+─────────
+   0 1 0   →  x
+\end{verbatim}
+
+Also: $(x^2+x+1) + (x^2+1) = x$. Schreibst du das als 3-Bit-Zahlen:
+$\texttt{111} \oplus \texttt{101} = \texttt{010}$.
+
+\begin{bleistiftuebung}{4}{Addition in GF($2^3$)}
+Berechne (am einfachsten als XOR der 3-Bit-Darstellungen):
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  Aufgabe & Ergebnis (3-Bit) & Als Polynom \\
+  \midrule
+  $(x+1) + (x^2+x)$            & & \\
+  $(x^2+1) + (x^2+x+1)$        & & \\
+  $x^2 + x^2$                  & & \\
+  $(x^2+x+1) + (x^2+x+1)$      & & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{quote}
+Beobachtung: was ist $a + a$ für jedes Element $a$?
+\end{quote}
+\end{bleistiftuebung}
+
+\subsection*{Multiplikation — jetzt wird's interessant}
+
+Polynome multiplizieren wir wie in der Schule, aber \textbf{die
+Koeffizienten in GF(2)}. Beispiel:
+
+\begin{verbatim}
+(x + 1) · (x + 1)
+= x·x + x·1 + 1·x + 1·1
+= x² + x + x + 1
+= x² + 0 + 1            (denn x + x = 0 in GF(2))
+= x² + 1
+\end{verbatim}
+
+Aber: was, wenn das Ergebnis Grad $\ge 3$ hat? Dann passt es nicht
+mehr in unsere 3-Bit-Welt.
+
+\begin{verbatim}
+(x²) · (x) = x³        ← Grad 3, zu hoch!
+\end{verbatim}
+
+\subsection*{Modulo-Polynom: das irreduzible Polynom}
+
+Hier kommt der Schlüssel-Trick. So wie bei modulo $p$ alles, was
+$\ge p$ wird, modulo $p$ reduziert wird, nehmen wir hier
+\textbf{alles modulo eines bestimmten Polynoms} $p(x)$ mit Grad 3.
+
+Welches Polynom nehmen wir? Es muss \textbf{irreduzibel} sein — das
+heißt, es darf nicht in Faktoren niedrigeren Grades zerlegbar sein
+(analog zu „Primzahl“ bei Zahlen).
+
+Ein irreduzibles Polynom vom Grad 3 über GF(2) ist:
+\[
+  p(x) = x^3 + x + 1
+\]
+(Es gibt noch genau ein anderes, $x^3 + x^2 + 1$, aber das nehmen
+wir nicht.)
+
+\subsection*{Modulo $p(x)$ rechnen}
+
+Wenn ein Multiplikationsergebnis ein $x^3$ enthält, ersetzen wir es:
+aus $p(x) = x^3 + x + 1 = 0$ (in unserer neuen Welt!) folgt
+$x^3 = x + 1$. Diese \textbf{Reduktionsregel} brauchen wir ständig:
+\begin{align*}
+  x^3  &=  x + 1 \\
+  x^4  &=  x \cdot x^3 = x \cdot (x + 1) = x^2 + x \\
+  x^5  &=  x \cdot x^4 = x \cdot (x^2 + x) = x^3 + x^2 = (x+1) + x^2 = x^2 + x + 1
+\end{align*}
+
+\begin{bleistiftuebung}{5}{Multiplikation in GF($2^3$)}
+Berechne, mit $p(x) = x^3 + x + 1$:
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item $x \cdot x^2$ (kleine Aufwärmübung)
+\item $x^2 \cdot x^2$
+
+  \begin{quote}
+  Tipp: $x^2 \cdot x^2 = x^4$, und $x^4 = x^2 + x$ (siehe oben).
+  \end{quote}
+
+\item $(x+1) \cdot (x^2+x)$
+
+\item $(x^2+x+1) \cdot (x^2+1)$
+
+  \begin{quote}
+  Tipp: erst auspolieren (Distributivgesetz), dann reduzieren.
+  \end{quote}
+\end{enumerate}
+\end{bleistiftuebung}
+
+\subsection*{Die vollständige Multiplikationstafel}
+
+Wenn du Lust hast, kannst du dir die komplette $8 \times 8$-Multi\-pli\-ka\-tions\-tafel
+von GF($2^3$) selbst ausrechnen. Das ist mühsam, aber sehr lehrreich
+— und du machst es nur einmal.
+
+\begin{bleistiftuebung}{6}{(Bonus) Die Tafel}
+Fülle die Tafel aus. Element 0 lasse ich dir geschenkt, das ist die
+ganze erste Zeile/Spalte.
+
+\begin{center}\small
+\begin{tabular}{l|lllllll}
+  \toprule
+  $\cdot$  & $1$ & $x$ & $x{+}1$ & $x^2$ & $x^2{+}1$ & $x^2{+}x$ & $x^2{+}x{+}1$ \\
+  \midrule
+  $1$            & $1$ & $x$ & $x{+}1$ & $x^2$ & $x^2{+}1$ & $x^2{+}x$ & $x^2{+}x{+}1$ \\
+  $x$            & $x$ &     &         &       &           &           &               \\
+  $x{+}1$        &     &     &         &       &           &           &               \\
+  $x^2$          &     &     &         &       &           &           &               \\
+  $x^2{+}1$      &     &     &         &       &           &           &               \\
+  $x^2{+}x$      &     &     &         &       &           &           &               \\
+  $x^2{+}x{+}1$  &     &     &         &       &           &           &               \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{quote}
+Wenn du das durchhältst, hast du mehr über endliche Körper gelernt
+als in den meisten Mathematik-Erstsemestern.
+\end{quote}
+\end{bleistiftuebung}
+
+\subsection*{Inverse finden}
+
+Sobald du die Multiplikationstafel hast, sind die Inverse einfach
+abzulesen: das Inverse von $a$ ist das Element $b$, sodass
+$a \cdot b = 1$.
+
+\begin{bleistiftuebung}{7}{Inverse aus der Tafel}
+Lies aus deiner Tafel ab:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  Element & Inverses \\
+  \midrule
+  $1$            & \\
+  $x$            & \\
+  $x+1$          & \\
+  $x^2$          & \\
+  $x^2+1$        & \\
+  $x^2+x$        & \\
+  $x^2+x+1$      & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{quote}
+Wenn alles geklappt hat: \textbf{jedes Element $\ne 0$ hat ein
+Inverses}. Das ist genau das, was einen Körper ausmacht.
+\end{quote}
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Python-Werkstatt: GF($2^3$) implementieren \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+Jetzt bauen wir das in Python. Lege eine neue Datei \texttt{gf8.py}
+an.
+
+\begin{pythoneinheit}{1}{Die Klasse}
+\pythoncodeteil{tag5/gf8.py}{klasse}
+
+\paragraph{Aufgabe 1.1 — Verifiziere mit deiner Bleistift-Tafel.}
+Wähle drei Multiplikationen aus Bleistiftübung 5 oder aus deiner
+Tafel und prüfe, ob das Python-Ergebnis übereinstimmt.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{2}{Inverse per Brute Force}
+Solange wir nur 8 Elemente haben, können wir das Inverse jedes
+Elements einfach durch Probieren finden:
+
+\pythoncodeteil{tag5/gf8.py}{inverse}
+
+\paragraph{Aufgabe 2.1 — Vergleiche mit deiner Tafel.}
+Stimmen die berechneten Inverse mit Bleistiftübung 7 überein?
+
+\paragraph{Aufgabe 2.2 — Multiplikationstafel automatisch erzeugen.}
+Schreibe Code, der die komplette $8 \times 8$-Multiplikationstafel
+ausgibt. Format zum Beispiel:
+
+\begin{verbatim}
+   ·  | 0  1  2  3  4  5  6  7
+   ---+------------------------
+   0  | 0  0  0  0  0  0  0  0
+   1  | 0  1  2  3  4  5  6  7
+   ...
+\end{verbatim}
+
+Vergleiche das mit deiner Bleistift-Tafel aus Bleistiftübung 6
+(falls du sie gemacht hast).
+\end{pythoneinheit}
+
+% =============================================================
+\section{Reflexion und Ausblick \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+\subsection*{Was wir heute gelernt haben}
+
+\begin{itemize}
+\item \textbf{Körper} sind Zahlensysteme, in denen man uneingeschränkt
+  rechnen kann (auch dividieren, außer durch 0).
+\item \textbf{GF($p$)} für $p$ prim ist ein Körper — einfach
+  Modulo-Rechnung mit Inversen.
+\item \textbf{Modulo 256 ist kein Körper} — man kann nicht teilen.
+\item Die Lösung: \textbf{Polynom-Arithmetik modulo eines
+  irreduziblen Polynoms} liefert Körper für jede Zahl der Form
+  $2^n$.
+\item \textbf{GF($2^3$)} ist der erste solche Körper, den wir konkret
+  aufgebaut haben: 8 Elemente, jedes ein Polynom vom Grad $< 3$,
+  Multiplikation modulo $x^3 + x + 1$.
+\item \textbf{Jedes Element $\ne 0$ hat ein Inverses} — wir haben die
+  Inverse durch Probieren gefunden.
+\end{itemize}
+
+\subsection*{Drei Fragen zum Mitnehmen}
+
+\begin{enumerate}
+\item Wir haben GF($2^3$) gemacht. Für Bytes brauchen wir GF($2^8$)
+  — also 256 Elemente, Polynome vom Grad $< 8$ modulo eines
+  irreduziblen Polynoms vom Grad 8. Wie würde sich der Code aus
+  Python-Einheit 1 ändern? (Tipp: vier Stellen, alle minimal.)
+
+\item Inverse durch Probieren ist ineffizient. Bei GF($2^8$) wären
+  das 255 Versuche pro Inverse. Es gibt einen viel besseren
+  Algorithmus (genannt \textbf{Erweiterter Euklidischer
+  Algorithmus}). Bevor du davon erfährst — wie würdest \emph{du}
+  spontan vorschlagen, das schneller zu machen?
+
+\item Wir haben heute viele Polynome auf einer abstrakten Ebene
+  behandelt — als Elemente eines Körpers. Ab morgen werden wir
+  Polynome aber wieder als „echte“ Polynome verwenden, deren
+  Koeffizienten \emph{Elemente} eines Körpers sind. Klingt
+  verwirrend? Es ist genau wie bei reellen Zahlen: $\mathbb{R}$ ist
+  ein Körper, und ein Polynom wie $3x^2 + 5x - 2$ hat Koeffizienten
+  \emph{aus} $\mathbb{R}$. Wir machen jetzt dasselbe, nur mit
+  GF($2^8$) statt $\mathbb{R}$.
+\end{enumerate}
+
+\subsection*{Vorschau Tag 6}
+
+Morgen treffen wir auf die zentrale Reed-Solomon-Idee: \textbf{Daten
+als Polynom interpretieren, an mehreren Stellen auswerten, und genug
+zusätzliche Auswertungen mitspeichern, um aus weniger als der Hälfte
+aller Stellen das Original rekonstruieren zu können.} Das ist die
+geniale Verallgemeinerung dessen, was wir bei ISBN-10 mit „eine
+Ziffer rekonstruieren“ schon gemacht haben.
+
+Dafür brauchen wir die Werkzeuge von heute (Körper-Arithmetik) und
+die Werkzeuge von Tag 4 (Polynomdivision). Tag 6 ist also Synthese
+der letzten zwei Tage.
+
