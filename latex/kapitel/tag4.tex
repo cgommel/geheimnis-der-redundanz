@@ -1,0 +1,39 @@
+\chapter{Tag 4 — SECDED, Bündelfehler, Interleaving, CRC}
+
+Stub-Kapitel für M1. Inhalte folgen in M4.
+
+Dieses Kapitel testet \emph{Szenario 2} aus dem Briefing: eine Aufgabe,
+die über einen Seitenumbruch geht. Der farbige Strich am Rand muss
+sich auf der nächsten Seite fortsetzen, die Marginalie soll aber nur
+am Anfang stehen.
+
+\begin{bleistiftuebung}{1}{Eine bewusst lange Aufgabe für den Seitenumbruch-Test}
+Die folgende Aufgabe ist absichtlich ausführlich gehalten, damit der
+Aufgaben-Block über einen Seitenumbruch hinausgeht.
+
+Stell dir eine zerkratzte CD vor. Ein einzelner Kratzer von wenigen
+Millimetern zerstört nicht ein einzelnes Bit, sondern eine ganze
+Sequenz benachbarter Bits — ein \textbf{Bündelfehler} (engl.\ \emph{burst
+error}). Hamming-Codes, wie wir sie an Tag 3 gesehen haben, sind genau
+für diese Situation \emph{nicht} gemacht: sie korrigieren einen
+einzelnen Bitfehler, lügen aber bei zwei oder mehr.
+
+Es gibt zwei prinzipielle Antworten: stärkere Codes verwenden (das
+führt uns zu Reed-Solomon ab Tag 7) oder den Bündelfehler in mehrere
+Einzelfehler zerlegen, indem man die Daten vor dem Übertragen so
+\emph{verteilt}, dass benachbarte Sendebits in unterschiedlichen
+Codewörtern landen. Dieses Verteilen heißt \textbf{Interleaving}.
+
+Aufgabe: nimm einen \(3 \times 4\)-Block aus zwölf Bits, schreibe ihn
+zuerst zeilenweise auf, dann spaltenweise. Markiere einen Bündelfehler
+über vier benachbarte Bits in der spaltenweisen Reihenfolge. Wo landen
+die fehlerhaften Bits in der zeilenweisen Anordnung? Wenn jede Zeile
+ein Codewort ist, das einen Einzelfehler korrigieren kann — wie viele
+der vier Fehler werden korrigiert?
+
+Diese Übung ist absichtlich textlastig. Sie zeigt, dass das Layout den
+Strich auf der nächsten Seite konsequent fortsetzt und dass die
+Marginalie am Aufgabenanfang sitzen bleibt. Wenn die Aufgabe nach dem
+Seitenumbruch bündig weiterläuft, ist das Layout in diesem Punkt
+einsatzbereit.
+\end{bleistiftuebung}

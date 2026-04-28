@@ -1,0 +1,41 @@
+% =============================================================
+% Master-Datei: bindet die Module ein und definiert die
+% Reihenfolge der Kapitel.
+%
+% Stand M1: Skelett mit vier Kapitel-Stubs, jedes mit Aufgaben für
+% die fünf Test-Szenarien aus doku/LAYOUT_BRIEFING.md.
+% =============================================================
+
+\documentclass[
+  11pt,
+  a4paper,
+  twoside,
+  parskip=half,
+  headings=normalsize,
+  numbers=noenddot,
+  open=right,
+]{scrbook}
+
+\input{praeambel}
+\input{farben}
+\input{befehle}
+
+\title{Das Geheimnis der Redundanz}
+\subtitle{Von der Prüfziffer zum Datamatrix}
+\author{Christoph Gommel}
+\date{\today}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+\tableofcontents
+
+\mainmatter
+
+\include{kapitel/tag1}
+\include{kapitel/tag2}
+\include{kapitel/tag3}
+\include{kapitel/tag4}
+
+\end{document}

@@ -1,0 +1,60 @@
+% =============================================================
+% Präambel — Pakete, Schriften, Geometrie, Sprache, Kopf-/Fußzeile.
+%
+% Wird von buch.tex eingebunden, NACH \documentclass.
+% Layout-Bausteine (Aufgaben-Umgebungen) sind in befehle.tex,
+% Farben in farben.tex.
+% =============================================================
+
+% --- Geometrie nach doku/LAYOUT_BRIEFING.md ---
+\usepackage[a4paper,
+            inner=2.5cm, outer=4.5cm,
+            top=2.0cm, bottom=2.5cm,
+            marginparwidth=2.7cm, marginparsep=0.15cm,
+            headheight=15pt]{geometry}
+
+% --- Schriften ---
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}[Scale=0.95]
+\setsansfont{DejaVu Sans}[Scale=0.95]
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+% Eigener Font für die Marginalien-Symbole (✏ ⌨ ⚙ aus DejaVu Sans).
+\newfontfamily\markerfont{DejaVu Sans}
+
+% --- Sprache, Mikrotypografie ---
+\usepackage[ngerman]{babel}
+\usepackage{microtype}
+
+% --- Farben & Hyperlinks ---
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+% --- Layout-Bausteine ---
+% tcolorbox: nur die Libraries laden, die wir tatsächlich brauchen
+% (skins für `enhanced` und `borderline`, breakable für mehrseitige Boxen).
+% [most] würde tikzfill u.a. mitziehen, was wir nicht nutzen.
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{changepage}
+
+% --- TikZ (für Venn-Diagramme etc.) ---
+\usepackage{tikz}
+\usetikzlibrary{positioning, calc}
+
+% --- Tabellen ---
+\usepackage{booktabs, array, longtable}
+
+% --- Kopf-/Fußzeile via scrlayer-scrpage ---
+\usepackage[autooneside=false, automark]{scrlayer-scrpage}
+\clearpairofpagestyles
+\automark[chapter]{chapter}
+\ihead{\small\textit{\headmark}}
+\ohead{\small\pagemark}
+\KOMAoptions{headsepline=0.3pt}
+
+% --- Witwen / Waisen vermeiden ---
+\widowpenalty=10000
+\clubpenalty=10000
+
+% --- Etwas Toleranz für die schmaleren Spalten ---
+\setlength{\emergencystretch}{3em}

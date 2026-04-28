@@ -1,0 +1,32 @@
+\chapter{Tag 2 — ISBN-10, Luhn, Hamming-Distanz}
+
+Stub-Kapitel für M1. Inhalte folgen in M4.
+
+Dieses Kapitel testet \emph{Szenario 4}: ein Recto-/Verso-Wechsel mitten
+im Kapitel — die zweite Aufgabe muss automatisch die Spiegel-Variante
+bekommen.
+
+\begin{bleistiftuebung}{1}{Modulo warmrechnen}
+Berechne im Kopf oder auf Papier: \(29 \bmod 7\), \(100 \bmod 9\),
+\(1000 \bmod 11\), \((47 + 38) \bmod 10\).
+
+Modulo \(m\) heißt: teile durch \(m\) und nimm den \emph{Rest}. Du wirst
+es heute oft brauchen.
+\end{bleistiftuebung}
+
+Etwas Fließtext, damit die nächste Seite einen klaren Anfang hat.
+
+\clearpage
+
+\begin{pythoneinheit}{1}{EAN-13-Validator}
+Implementiere die Funktion zur Berechnung der EAN-13-Prüfziffer:
+
+\begin{verbatim}
+def ean13_pruefziffer(zwoelf_ziffern):
+    summe = sum(d * (1 if i % 2 == 0 else 3)
+                for i, d in enumerate(zwoelf_ziffern))
+    return (10 - summe % 10) % 10
+\end{verbatim}
+
+Probiere die Funktion mit der EAN auf einer Schokoladenpackung aus.
+\end{pythoneinheit}

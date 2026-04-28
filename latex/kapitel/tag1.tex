@@ -1,0 +1,39 @@
+\chapter{Tag 1 — Prüfziffern und Fehlererkennung}
+
+Stub-Kapitel für M1. Inhalte folgen in M4.
+
+Dieses Kapitel testet \emph{Szenario 1} aus dem Layout-Briefing:
+eine Aufgabe pro Aufgabentyp auf einer Seite, alle drei Symbole
+sichtbar.
+
+\begin{bleistiftuebung}{1}{Wiederholung als Code}
+Welche der folgenden empfangenen Dreierblöcke werden korrekt zu
+\(0\) oder \(1\) zurückübersetzt?
+\texttt{111}, \texttt{010}, \texttt{001}, \texttt{110},
+\texttt{000}, \texttt{101}.
+
+Wie viele Bitfehler pro Dreierblock kann das Verfahren korrigieren?
+\end{bleistiftuebung}
+
+Ein bisschen Fließtext zwischen den Aufgaben, damit die Marginalien
+sichtbar Abstand bekommen und das Zusammenspiel der Boxen geprüft
+werden kann.
+
+\begin{pythoneinheit}{1}{Paritätsprüfer bauen}
+Lege in Thonny eine neue Datei an und tippe diesen Code ab — das
+testet \emph{Szenario 3} (Code-Block innerhalb eines Aufgaben-Blocks):
+
+\begin{verbatim}
+def paritaetsbit(daten):
+    return sum(daten) % 2
+
+print(paritaetsbit([1, 0, 1, 1, 0]))
+\end{verbatim}
+
+Speichere die Datei als \texttt{paritaet.py} und führe sie aus.
+\end{pythoneinheit}
+
+\begin{werkzeugcheck}{Thonny einrichten}
+Lade Thonny von \texttt{thonny.org} herunter und installiere es. Du
+findest dort ein Installationspaket für dein Betriebssystem.
+\end{werkzeugcheck}
