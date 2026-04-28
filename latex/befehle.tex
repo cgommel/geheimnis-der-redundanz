@@ -16,24 +16,31 @@
 % die Begründung für jede Designentscheidung.
 % =============================================================
 
-% --- tcolorbox-Varianten: Strich rechts (Recto) bzw. links (Verso) ---
-\newtcolorbox{aufgabeRecto}[1]{%
+% --- aufgabebox: tcolorbox mit page-aware Strich am Außenrand ---
+% Eine einzige Box, kein Recto/Verso-Split mehr. Der overlay-Hook wird
+% bei jedem Page-Part neu ausgewertet (auch wenn die Aufgabe per
+% breakable über Seiten geht), prüft die aktuelle Seitenparität und
+% zeichnet den Strich auf der jeweiligen Außenseite.
+%
+% left/right=8pt sorgt für Innenabstand zum Strich auf beiden Seiten;
+% der Text bleibt immer mittig in der Box.
+\newtcolorbox{aufgabebox}[1]{%
   enhanced, breakable,
   colback=white, colframe=white,
   boxrule=0pt, arc=0pt, outer arc=0pt,
-  left=4pt, right=12pt, top=4pt, bottom=4pt,
   boxsep=0pt,
-  borderline east={2.5pt}{0pt}{#1},
+  left=8pt, right=8pt, top=4pt, bottom=4pt,
   before skip=0.6em, after skip=0.6em,
-}
-\newtcolorbox{aufgabeVerso}[1]{%
-  enhanced, breakable,
-  colback=white, colframe=white,
-  boxrule=0pt, arc=0pt, outer arc=0pt,
-  left=12pt, right=4pt, top=4pt, bottom=4pt,
-  boxsep=0pt,
-  borderline west={2.5pt}{0pt}{#1},
-  before skip=0.6em, after skip=0.6em,
+  overlay={%
+    \checkoddpage
+    \ifoddpage
+      \draw[line width=2.5pt, color=#1]
+        (frame.north east) -- (frame.south east);%
+    \else
+      \draw[line width=2.5pt, color=#1]
+        (frame.north west) -- (frame.south west);%
+    \fi
+  },
 }
 
 % --- Marginalien-Inhalt für Recto und Verso ---
@@ -54,25 +61,17 @@
   {\small\textsc{#3}}%
 }
 
-% --- Page-aware Aufgaben-Umgebung ---
-% Wählt anhand der Seitenparität die richtige Box-Variante und gibt
-% \marginpar BEIDE Inhaltsvarianten mit, sodass LaTeX selbst die
-% richtige Seite auswählen kann (robuster als \reversemarginpar).
-\makeatletter
+% --- Aufgaben-Umgebung ---
+% Marginpar wird mit beiden Inhaltsvarianten aufgerufen (recto/verso);
+% LaTeX wählt selbst die passende, je nachdem auf welcher Seite die
+% Aufgabe beginnt. Der page-aware Strich entsteht im Overlay der
+% aufgabebox und wechselt automatisch beim Seitenumbruch mit.
 \newenvironment{aufgabe}[4]%
   {% #1 = Symbol, #2 = Label-Zeile-1, #3 = Label-Zeile-2, #4 = Farbe
-   \checkoddpage
-   \ifoddpage
-     \def\@aktbox{aufgabeRecto}%
-   \else
-     \def\@aktbox{aufgabeVerso}%
-   \fi
    \marginpar[\markercontentVerso{#1}{#2}{#3}{#4}]%
               {\markercontentRecto{#1}{#2}{#3}{#4}}%
-   \expandafter\begin\expandafter{\@aktbox}{#4}%
-   \ignorespaces}
-  {\expandafter\end\expandafter{\@aktbox}}
-\makeatother
+   \begin{aufgabebox}{#4}\ignorespaces}
+  {\end{aufgabebox}}
 
 % --- Komfort-Wrapper für die drei Aufgabentypen ---
 % Konvention: der erste Teil der Aufgabe ist der Titel (fett), gefolgt
