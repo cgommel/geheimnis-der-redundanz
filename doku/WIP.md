@@ -23,11 +23,24 @@ Aktueller Stand: 72 Seiten, Tag 1–5 vollständig, Lösungen im Anhang A
 - M6 — Glossar & Index
 - M7 — Front-/Back-Matter
 
+## Phase 2 — Container-Build lokal: 🟡 in Arbeit
+
+`build/Dockerfile` (Debian Bookworm + TeX Live + DejaVu + Pygments)
+und `build/in-container.sh` (Engine-Detection: Apple `container` →
+Docker → Fehler) sind angelegt, `make container` baut das Buch.
+
+**Getestet:** Apple `container` 0.11 baut grün durch. (Docker-Pfad
+plausibel, weil OCI-Standard, aber noch nicht explizit getestet.)
+
+**Konsistenz:** Container und lokal bauen beide 72 Seiten —
+deckungsgleicher Output. Die Wahl Debian Trixie statt Bookworm
+schließt den TeX-Live-Versionsabstand zur lokalen Installation
+(beide jetzt nahe TL 2025/2026).
+
 ## Anstehende Phasen
 
 | Phase | Inhalt | Branch |
 |-------|--------|--------|
-| 2 | Container-Build lokal (Apple `container` bevorzugt, Docker-Fallback) | `feature/container-build` |
 | 3 | CI/Release auf GitHub (PR-Builds, tag-getriebene Releases) | `feature/ci-release` |
 | 4 | Tag 6 (Polynome über GF(2^n), Reed-Solomon-Idee) | `feature/tag6` |
 | 5 (opt.) | Tag 7 (Reed-Solomon-Encoder) | `feature/tag7` |
