@@ -1,34 +1,564 @@
-\chapter{Tag 1 — Prüfziffern und Fehlererkennung}
+\chapter{Tag 1 — Wenn ein Bit kippt: Prüfziffern und erste Fehlererkennung}
 
-Stub-Kapitel für M1. Inhalte folgen in M4.
+\begin{quote}
+Reise-Ziel der zwei Wochen: verstehen, wie ein Datamatrix-Code Fehler
+verkraftet (zerkratzte Pakete, dreckige Etiketten, schlechte Drucker).
+Heute bauen wir das Fundament: \textbf{wie erkennt man überhaupt, dass
+etwas schief gelaufen ist?}
+\end{quote}
 
-Dieses Kapitel testet \emph{Szenario 1} aus dem Layout-Briefing:
-eine Aufgabe pro Aufgabentyp auf einer Seite, alle drei Symbole
-sichtbar.
+\section*{Lernziele für heute}
+
+Am Ende von Tag 1 kannst du \dots
+
+\begin{itemize}
+\item erklären, warum Computer mehr Daten speichern, als sie eigentlich müssen
+\item mit der Modulo-Rechnung umgehen
+\item ein Paritätsbit von Hand und in Python berechnen
+\item die Prüfziffer eines EAN-13-Strichcodes nachrechnen
+\item konkret sagen, \textbf{welche Fehler ein Verfahren erkennt — und welche nicht}
+\end{itemize}
+
+Material: Bleistift, Radiergummi, kariertes Papier, ein Laptop mit
+Python, ein Produkt mit Strichcode (Schokolade, Buch, Müslipackung —
+egal).
+
+% =============================================================
+\section{Warum überhaupt Fehlerkorrektur? \normalfont(\textit{$\approx$ 20 min})}
+% =============================================================
+
+Stell dir vor, du scannst an der Supermarktkasse eine Schokolade. Der
+Strichcode ist zerkratzt, die Kassiererin hört kein „Piep“. Was tun?
+
+\begin{enumerate}
+\item \textbf{Erkennen}, dass der Scan kaputt ist → nochmal scannen.
+\item \textbf{Korrigieren}: der Scanner rät die fehlende Stelle richtig
+  → kein zweiter Scan nötig.
+\end{enumerate}
+
+Beides braucht \textbf{Redundanz}: wir speichern absichtlich mehr, als
+nötig wäre. Der „Mehraufwand“ ist der Preis dafür, dass Daten auch
+dann noch ankommen, wenn unterwegs etwas verloren geht.
+
+\subsection*{Mini-Aufgabe (mündlich, 5 min)}
+
+Sammelt zusammen 3 Situationen aus deinem Alltag, in denen Fehler in
+Daten passieren können. (Tipps: SMS, WLAN, CD-Player, USB-Stick,
+QR-Code im Bus, Banküberweisung \dots)
+
+\subsection*{Die naivste Idee: dreimal schicken}
+
+Wir senden jedes Bit \textbf{dreimal}:
+
+\begin{verbatim}
+Original:    1 0 1 1
+Gesendet:    111 000 111 111
+Empfangen:   111 010 111 111   ← in der Mitte ist 1 Bit gekippt
+\end{verbatim}
+
+Der Empfänger schaut bei jedem Dreierblock: „Welches Bit ist häufiger?“
+→ Mehrheitsentscheid.
 
 \begin{bleistiftuebung}{1}{Wiederholung als Code}
-Welche der folgenden empfangenen Dreierblöcke werden korrekt zu
-\(0\) oder \(1\) zurückübersetzt?
-\texttt{111}, \texttt{010}, \texttt{001}, \texttt{110},
-\texttt{000}, \texttt{101}.
-
-Wie viele Bitfehler pro Dreierblock kann das Verfahren korrigieren?
+\begin{enumerate}[leftmargin=*]
+\item Welche der folgenden empfangenen Dreierblöcke werden korrekt zu
+  $0$ oder $1$ zurückübersetzt?
+  \texttt{111}, \texttt{010}, \texttt{001}, \texttt{110}, \texttt{000},
+  \texttt{101}.
+\item Wie viele Bitfehler pro Dreierblock kann das Verfahren
+  \textbf{korrigieren}? Wie viele kann es nur \textbf{erkennen}?
+\item Wie viel Prozent der gesendeten Bits sind „Verschwendung“
+  (Redundanz)?
+\item Diskutiert: warum verwendet niemand dieses Verfahren in der
+  Praxis?
+\end{enumerate}
 \end{bleistiftuebung}
 
-Ein bisschen Fließtext zwischen den Aufgaben, damit die Marginalien
-sichtbar Abstand bekommen und das Zusammenspiel der Boxen geprüft
-werden kann.
+→ Wir wollen klüger sein als „dreimal schicken“. Auf geht's.
 
-\begin{pythoneinheit}{1}{Paritätsprüfer bauen}
-Lege in Thonny eine neue Datei an und tippe diesen Code ab — das
-testet \emph{Szenario 3} (Code-Block innerhalb eines Aufgaben-Blocks):
+% =============================================================
+\section{Mathe-Werkzeug: Modulo \normalfont(\textit{$\approx$ 20 min})}
+% =============================================================
 
-\pythoncode{tag1/paritaet.py}
+Fast jedes Fehlerkorrektur-Verfahren rechnet mit \textbf{Modulo}. Es
+lohnt sich, die fünf Minuten zu investieren.
 
-Speichere die Datei als \texttt{paritaet.py} und führe sie aus.
-\end{pythoneinheit}
+$a \bmod n$ heißt: „was bleibt als Rest, wenn ich $a$ durch $n$ teile?“
+
+\begin{verbatim}
+17 mod 5  =  2     (denn 17 = 3·5 + 2)
+23 mod 7  =  2
+100 mod 13 = 9
+\end{verbatim}
+
+\textbf{Bild:} eine Uhr ist Modulo $12$. Wenn es 10 Uhr ist und du 5
+Stunden wartest, ist es nicht 15 Uhr, sondern 3 Uhr. Also
+$(10 + 5) \bmod 12 = 3$.
+
+In Python ist Modulo der \texttt{\%}-Operator:
+
+\begin{verbatim}
+>>> 17 % 5
+2
+>>> (10 + 5) % 12
+3
+\end{verbatim}
+
+\begin{bleistiftuebung}{2}{Modulo warmrechnen}
+Berechne im Kopf oder auf Papier:
+
+\begin{center}
+\begin{tabular}{lc}
+  \toprule
+  Aufgabe & Ergebnis \\
+  \midrule
+  $29 \bmod 7$        & \\
+  $100 \bmod 9$       & \\
+  $1000 \bmod 11$     & \\
+  $(47 + 38) \bmod 10$ & \\
+  $(8 \cdot 7) \bmod 10$ & \\
+  $0 \bmod 13$        & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+\end{bleistiftuebung}
+
+\textbf{Wichtige Eigenschaft, die wir oft brauchen:}
+\[
+  (a + b) \bmod n \;=\; \big((a \bmod n) + (b \bmod n)\big) \bmod n
+\]
+
+Heißt: du darfst beim Rechnen jederzeit „$\bmod\, n$“ nehmen, ohne
+dass das Ergebnis falsch wird. Das ist Gold wert, wenn die Zahlen
+groß werden.
+
+% =============================================================
+\section{Das Paritätsbit — die einfachste Erkennung \normalfont(\textit{$\approx$ 45 min})}
+% =============================================================
+
+Idee: wir hängen an unsere Daten \textbf{ein einziges Bit} an, und zwar
+so, dass die Anzahl der Einsen am Ende \textbf{gerade} ist. Das nennt
+man \emph{gerade Parität}.
+
+Beispiel: Daten = \texttt{1011010} → drei Einsen, also ungerade → wir
+hängen eine \texttt{1} an → \texttt{10110101}.
+
+Beim Empfänger: Anzahl der Einsen zählen. Ist sie ungerade → Fehler
+erkannt.
+
+\begin{bleistiftuebung}{3}{Parität von Hand}
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Bestimme das Paritätsbit (gerade Parität) für:
+
+  \begin{center}
+  \begin{tabular}{ccc}
+    \toprule
+    Datenwort & Paritätsbit & Gesendetes 8-Bit-Wort \\
+    \midrule
+    1010101 & & \\
+    1111000 & & \\
+    0000001 & & \\
+    1100110 & & \\
+    0000000 & & \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+\item Welche dieser empfangenen 8-Bit-Wörter sind \textbf{mit
+  Sicherheit fehlerhaft} (gerade Parität vorausgesetzt)?
+
+  \begin{verbatim}
+  10110011
+  11000001
+  00000000
+  01010100
+  11111111
+  \end{verbatim}
+
+\item \textbf{Wichtigste Frage des Tages:} was passiert, wenn unterwegs
+  \textbf{zwei} Bits kippen? Erkennt das Paritätsbit den Fehler?
+  Begründe.
+
+\item Die Parität erkennt also nur eine bestimmte Sorte Fehler.
+  Beschreibe in einem Satz, welche.
+\end{enumerate}
+\end{bleistiftuebung}
 
 \begin{werkzeugcheck}{Thonny einrichten}
-Lade Thonny von \texttt{thonny.org} herunter und installiere es. Du
-findest dort ein Installationspaket für dein Betriebssystem.
+Bevor wir den ersten Code schreiben, kurz das Werkzeug einrichten. Wir
+nehmen \textbf{Thonny} — eine Python-Umgebung, die genau für Einsteiger
+gemacht ist. Falls noch nicht installiert: \texttt{thonny.org} →
+herunterladen → starten.
 \end{werkzeugcheck}
+
+\textbf{So sieht Thonny aus:}
+
+\begin{itemize}
+\item Oben der \textbf{Editor} — dort schreibst du dein Programm
+  (mehrere Zeilen, wird gespeichert).
+\item Unten die \textbf{Shell} — dort kannst du einzelne Befehle direkt
+  ausprobieren, sie werden sofort ausgeführt. Perfekt zum Herumspielen.
+\end{itemize}
+
+\textbf{Die fünf Befehle, die du heute brauchst:}
+
+\begin{center}
+\begin{tabular}{@{}llp{4.8cm}@{}}
+  \toprule
+  Aktion & Tastenkombination & Zweck \\
+  \midrule
+  Neue Datei & \texttt{Strg + N} & Leeres Editor-Fenster \\
+  Speichern & \texttt{Strg + S} & Code als \texttt{.py}-Datei sichern \\
+  \textbf{Programm ausführen} & \textbf{\texttt{F5}} & Editor-Code starten \\
+  Zeile testen & in Shell + Enter & Schnellprobe ohne Speichern \\
+  Variable anschauen & Menü „Ansicht“ & Zeigt aktuelle Werte \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Erste Probe} (in der Shell):
+
+\begin{verbatim}
+>>> 2 + 3
+5
+>>> 17 % 5
+2
+>>> print("Hallo Greta")
+Hallo Greta
+\end{verbatim}
+
+\textbf{Tipp — der Debugger:} Thonny hat einen wunderbaren Debug-Knopf
+(das Käfer-Symbol). Damit lässt sich Code Schritt für Schritt
+ausführen und du siehst, was bei jedem Schritt passiert. Heute brauchst
+du das noch nicht, aber merken!
+
+\begin{quote}
+Wenn etwas nicht funktioniert: lies die rote Fehlermeldung ganz unten.
+Sie zeigt meistens \textbf{die Zeile} und \textbf{das Problem}. Häufige
+Stolperer: vergessenes \texttt{:} am Ende von \texttt{for}/\texttt{if}-Zeilen,
+falsche Einrückung (Python ist da streng!), Tippfehler in Variablennamen.
+\end{quote}
+
+\begin{pythoneinheit}{1}{Paritätsprüfer bauen}
+Lege in Thonny eine neue Datei an (\texttt{Strg + N}), speichere sie
+als \texttt{paritaet.py}, tippe den Code unten ab und drücke
+\texttt{F5} zum Ausführen:
+
+\pythoncodeteil{tag1/paritaet.py}{pruefer}
+
+\paragraph{Aufgabe 3.1 — Systematischer Test.}
+Schreibe Code, der \textbf{jedes} mögliche 7-Bit-Datenwort durchgeht
+(das sind 128), je ein Paritätsbit anhängt, dann \textbf{genau einen
+Bitfehler} an jeder möglichen Position simuliert und prüft, ob die
+Parität den Fehler erkennt.
+
+Erwartetes Ergebnis: 100\,\% aller Einzelfehler werden erkannt.
+
+\pythoncodeteil{tag1/paritaet.py}{kippe-bit}
+
+Tipp: alle 128 Datenwörter bekommst du mit
+\texttt{itertools.product([0,1], repeat=7)}.
+
+\paragraph{Aufgabe 3.2 — Wo versagt das Verfahren?}
+Mache das Gleiche, aber kippe \textbf{zwei} Bits gleichzeitig (an
+verschiedenen Positionen). Welcher Anteil der Doppelfehler wird
+erkannt?
+\end{pythoneinheit}
+
+% =============================================================
+\section{EAN-13 — Prüfziffern aus dem echten Leben \normalfont(\textit{$\approx$ 60 min})}
+% =============================================================
+
+Jetzt verlassen wir die 0/1-Welt und gehen ins echte Leben. Hol dir
+bitte ein \textbf{Produkt mit Strichcode} vom Schreibtisch oder aus
+der Küche.
+
+Unten am Strichcode stehen 13 Ziffern. Das ist der \textbf{EAN-13}
+(European Article Number). Er steckt auf fast jedem Konsumgut der
+Welt.
+
+\begin{verbatim}
+4 0 0 6 3 8 1 3 3 3 9 3 1
+└────── 12 Datenziffern ──────┘ │
+                                Prüfziffer
+\end{verbatim}
+
+\subsection*{Wie wird die Prüfziffer berechnet?}
+
+\begin{enumerate}
+\item Multipliziere die ersten 12 Ziffern abwechselnd mit \textbf{1}
+  und \textbf{3} (1.\ Ziffer $\times 1$, 2.\ Ziffer $\times 3$,
+  3.\ Ziffer $\times 1$, \dots).
+\item Bilde die Summe.
+\item \textbf{Prüfziffer $= (10 - (\text{Summe} \bmod 10)) \bmod 10$.}
+\end{enumerate}
+
+\subsection*{Beispiel: 5 9 0 1 2 3 4 1 2 3 4 5 ?}
+
+\begin{verbatim}
+5·1 + 9·3 + 0·1 + 1·3 + 2·1 + 3·3 + 4·1 + 1·3 + 2·1 + 3·3 + 4·1 + 5·3
+=  5 +  27 +  0 +  3 +  2 +  9 +  4 +  3 +  2 +  9 +  4 + 15
+=  83
+
+83 mod 10 = 3
+10 − 3   = 7
+\end{verbatim}
+
+Die Prüfziffer ist also \textbf{7}, der vollständige EAN-13 lautet
+\textbf{5 9 0 1 2 3 4 1 2 3 4 5 7}.
+
+\begin{bleistiftuebung}{4}{Echte Codes nachrechnen}
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Schnapp dir das Produkt vom Tisch, schreibe die 13 Ziffern auf,
+  \textbf{decke die letzte Ziffer ab} und rechne sie aus. Stimmt sie
+  mit der gedruckten überein?
+\item Berechne die Prüfziffer für diese 12 Datenziffern:
+  \texttt{400638133393}. \emph{(Tipp: es ist eine deutsche EAN; das
+  \texttt{4} zeigt das Herkunftsland.)}
+\item Hier sind drei EAN-13. Genau einer davon ist gefälscht — welcher?
+  \begin{itemize}
+  \item \texttt{4006381333931}
+  \item \texttt{9783446435001}
+  \item \texttt{4012345678902}
+  \end{itemize}
+\end{enumerate}
+\end{bleistiftuebung}
+
+\begin{pythoneinheit}{2}{Der EAN-13-Validator}
+\pythoncodeteil{tag1/ean13.py}{validator}
+
+\paragraph{Aufgabe 4.1 — Eigenes Produkt.}
+Tippe deinen echten EAN-13 in die Funktion ein. Wenn du \texttt{False}
+siehst, hast du dich verschrieben — schau nochmal hin.
+\end{pythoneinheit}
+
+% =============================================================
+\section{Was EAN-13 \emph{nicht} erkennt \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+Das Spannende kommt jetzt: jedes Verfahren hat \textbf{blinde Flecken}.
+Bei der Parität waren es Doppelfehler. Bei EAN-13 ist es subtiler.
+
+\begin{bleistiftuebung}{5}{Erste Vermutungen}
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Behauptung: \emph{„EAN-13 erkennt jeden Tippfehler in einer
+  einzelnen Ziffer.“} Stimmt das? Versuche, einen Gegenbeweis zu
+  finden, indem du in \texttt{4006381333931} eine einzelne Ziffer
+  veränderst und nachrechnest. Probiere mehrere.
+\item Tippfehler \#2: \textbf{Zifferndreher} (zwei benachbarte Ziffern
+  vertauscht). Aus \texttt{4006381333931} wird zum Beispiel
+  \texttt{0406381333931}. Rechne nach, ob die Prüfziffer das merkt.
+\item Probiere mehrere Zifferndreher aus. Findest du einen, den EAN-13
+  \textbf{nicht} erkennt?
+\end{enumerate}
+\end{bleistiftuebung}
+
+\begin{pythoneinheit}{3}{Mit Brute Force die blinden Flecken finden}
+Computer machen sowas viel schneller als wir. Lass den Computer
+\textbf{alle möglichen Vertauschungen benachbarter Ziffern}
+systematisch testen:
+
+\pythoncodeteil{tag1/ean13.py}{zifferndreher}
+
+\paragraph{Aufgabe 5.1.}
+Lass das Skript laufen. Welche Position(en) tauchen auf?
+
+\paragraph{Aufgabe 5.2 — Das Muster finden.}
+Schau dir die Stellen, an denen ein Zifferndreher \emph{nicht} erkannt
+wird, genau an. Was haben die beiden vertauschten Ziffern gemeinsam?
+
+\begin{quote}
+Hinweis: es hat mit ihrer \textbf{Differenz} zu tun.
+\end{quote}
+
+\paragraph{Aufgabe 5.3 — Wie viele Einzelfehler werden erkannt?}
+Schreibe Code, der für einen gültigen EAN-13 alle möglichen
+Einzelfehler durchprobiert (jede der 13 Stellen kann zu jeder anderen
+der 9 Ziffern verändert werden — das sind $13 \times 9 = 117$
+Möglichkeiten) und zählt, wie viele davon erkannt werden.
+\end{pythoneinheit}
+
+% =============================================================
+\section{Reflexion und Ausblick \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+\subsection*{Was wir heute gelernt haben}
+
+\begin{itemize}
+\item Fehlerkorrektur kostet \textbf{Redundanz} — die Frage ist, wie
+  clever man sie nutzt.
+\item \textbf{Modulo} ist das Universalwerkzeug, weil es Zahlen klein
+  hält.
+\item \textbf{Parität} erkennt jeden Einzelfehler, aber keinen
+  Doppelfehler. Sie kann nicht korrigieren.
+\item \textbf{EAN-13} erkennt jeden Einzelfehler, aber genau die Hälfte
+  der Zifferndreher bleibt unentdeckt.
+\item Verfahren testet man am besten \textbf{systematisch mit Brute
+  Force} — Computer sind dafür perfekt.
+\end{itemize}
+
+\subsection*{Drei Fragen zum Mitnehmen}
+
+\begin{enumerate}
+\item Warum ist es eigentlich nicht trivial, einen Fehler nicht nur zu
+  erkennen, sondern auch zu \textbf{korrigieren}?
+\item Wenn EAN-13 Zifferndreher mit Differenz 5 nicht erkennt — könnte
+  man das Verfahren so verbessern, dass es das doch tut? Was müsste
+  man ändern?
+\item Wie viele Datenziffern bräuchten wir wohl, um einen einzelnen
+  Fehler nicht nur zu erkennen, sondern auch zu \textbf{korrigieren}?
+\end{enumerate}
+
+\subsection*{Vorschau Tag 2}
+
+Morgen schauen wir uns weitere Prüfziffer-Verfahren aus der Praxis an:
+die \textbf{ISBN-10} (mit Modulo 11 und einem Trick für
+1-Ziffer-Korrektur), den \textbf{Luhn-Algorithmus} für Kreditkarten
+— und die zentrale Frage: \textbf{wie viel Redundanz brauche ich, um
+einen Fehler nicht nur zu finden, sondern selbst zu reparieren?} Damit
+landen wir beim Begriff der \textbf{Hamming-Distanz} — und sind nur
+noch ein paar Tage von Reed-Solomon und Datamatrix entfernt.
+
+% =============================================================
+\newpage
+\section*{Lösungen (erst nach eigenem Versuch ansehen!)}
+\addcontentsline{toc}{section}{Lösungen}
+% =============================================================
+
+\subsection*{Bleistiftübung 1 — Wiederholungscode}
+
+\begin{enumerate}
+\item Mehrheitsentscheid: \texttt{111}$\to 1$, \texttt{010}$\to 0$,
+  \texttt{001}$\to 0$, \texttt{110}$\to 1$, \texttt{000}$\to 0$,
+  \texttt{101}$\to 1$.
+\item Pro Block korrigieren: 1 Bitfehler. Erkennen (ohne zu
+  korrigieren): 2 Bitfehler. (3 Fehler = alle gekippt → wird falsch
+  korrigiert!)
+\item Redundanz: 2 von 3 Bits sind Redundanz, also etwa 67\,\%.
+\item Viel zu teuer. In der Praxis braucht man Verfahren, die mit
+  z.\,B.\ 10\,\% Redundanz auskommen.
+\end{enumerate}
+
+\subsection*{Bleistiftübung 2 — Modulo}
+
+\begin{center}
+\begin{tabular}{lc}
+  \toprule
+  Aufgabe & Ergebnis \\
+  \midrule
+  $29 \bmod 7$         & 1 \\
+  $100 \bmod 9$        & 1 \\
+  $1000 \bmod 11$      & 10 \\
+  $(47 + 38) \bmod 10$ & 5 \\
+  $(8 \cdot 7) \bmod 10$ & 6 \\
+  $0 \bmod 13$         & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Bleistiftübung 3 — Parität}
+
+(a)
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  Datenwort & P & Gesendet \\
+  \midrule
+  1010101 & 0 & 10101010 \\
+  1111000 & 0 & 11110000 \\
+  0000001 & 1 & 00000011 \\
+  1100110 & 0 & 11001100 \\
+  0000000 & 0 & 00000000 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+(b) Anzahl der Einsen zählen, ungerade = fehlerhaft:
+\begin{itemize}
+\item \texttt{10110011} → 5 Einsen → \textbf{fehlerhaft}
+\item \texttt{11000001} → 3 Einsen → \textbf{fehlerhaft}
+\item \texttt{00000000} → 0 → ok
+\item \texttt{01010100} → 3 → \textbf{fehlerhaft}
+\item \texttt{11111111} → 8 → ok
+\end{itemize}
+
+(c) Bei zwei gekippten Bits kippt auch die Anzahl der Einsen zweimal um
+→ die Parität bleibt \textbf{gleich} → Fehler \textbf{nicht erkannt}.
+
+(d) Parität erkennt genau \textbf{eine ungerade Anzahl gekippter Bits}
+(1, 3, 5, \dots Fehler). Gerade Fehleranzahlen bleiben unbemerkt.
+
+\subsection*{Bleistiftübung 4 — EAN-13}
+
+(b) \texttt{400638133393}:
+\begin{verbatim}
+4·1 + 0·3 + 0·1 + 6·3 + 3·1 + 8·3 + 1·1 + 3·3 + 3·1 + 3·3 + 9·1 + 3·3
+= 4 + 0 + 0 + 18 + 3 + 24 + 1 + 9 + 3 + 9 + 9 + 9 = 89
+(10 − 89 mod 10) mod 10 = (10 − 9) mod 10 = 1
+\end{verbatim}
+→ Prüfziffer \textbf{1}, voller Code: \texttt{4006381333931}.
+
+(c) Mit dem Verfahren ausrechnen:
+\begin{itemize}
+\item \texttt{4006381333931} → gültig (Prüfziffer 1 \checkmark)
+\item \texttt{9783446435001} → gültig (ISBN-13, Prüfziffer 1
+  \checkmark)
+\item \texttt{4012345678902} → Summe
+  $= 4 \cdot 1 + 0 \cdot 3 + 1 \cdot 1 + 2 \cdot 3 + 3 \cdot 1 + 4 \cdot 3 + 5 \cdot 1 + 6 \cdot 3 + 7 \cdot 1 + 8 \cdot 3 + 9 \cdot 1 + 0 \cdot 3
+  = 4+0+1+6+3+12+5+18+7+24+9+0 = \mathbf{89}$, Prüfziffer also
+  \textbf{1}, nicht 2 → \textbf{gefälscht}.
+\end{itemize}
+
+\subsection*{Aufgabe 3.1 — Lösung}
+
+\pythoncodeteil{tag1/paritaet.py}{test-einzel}
+
+Ergebnis: 1024/1024 (100\,\%).
+
+\subsection*{Aufgabe 3.2 — Lösung}
+
+\pythoncodeteil{tag1/paritaet.py}{test-doppel}
+
+Ergebnis: 0/3584 (0\,\%!) — Parität erkennt KEINEN Doppelfehler.
+
+\subsection*{Aufgaben 5.1 / 5.2 — Lösung}
+
+Bei \texttt{4006381333931} werden Vertauschungen an Position 1↔2
+(\texttt{00}/\texttt{06} — egal, weil eine Ziffer 0 ist) usw. Wenn
+man systematisch alle EANs ausprobiert, erkennt man:
+
+\begin{quote}
+\textbf{Ein Zifferndreher zwischen benachbarten Ziffern $a$ und $b$
+wird genau dann nicht erkannt, wenn $|a - b| = 5$.}
+\end{quote}
+
+Begründung: die Differenz, die der Tausch in der Summe macht, ist
+$(b \cdot 1 + a \cdot 3) - (a \cdot 1 + b \cdot 3) = 2(a - b)$. Damit
+das modulo 10 verschwindet, muss $2(a-b) \equiv 0 \pmod{10}$, also
+$a - b \equiv 0 \pmod{5}$. Bei einer echten Vertauschung ($a \ne b$)
+heißt das: $|a-b| = 5$.
+
+→ Von den 45 möglichen Ziffernpaaren mit $a \ne b$ haben 5 Paare die
+Differenz 5: $(0,5)$, $(1,6)$, $(2,7)$, $(3,8)$, $(4,9)$. Das sind
+$5/45 \approx 11\,\%$ aller möglichen Zifferndreher, die EAN-13
+\textbf{nicht} erkennt.
+
+\subsection*{Aufgabe 5.3 — Lösung}
+
+\pythoncodeteil{tag1/ean13.py}{einzelfehler}
+
+Alle 117 Einzelfehler werden erkannt.
+
+\subsection*{Antworten zu den drei Reflexionsfragen}
+
+\begin{enumerate}
+\item \textbf{Erkennen} heißt nur „etwas stimmt nicht“. \textbf{Korrigieren}
+  heißt „ich weiß, was ursprünglich da stand“. Dafür müssen sich
+  gültige Codewörter so stark unterscheiden, dass sich nach einem
+  Fehler immer noch das ursprüngliche Codewort eindeutig „am nächsten“
+  anbietet → führt zur \textbf{Hamming-Distanz} (Tag 2/3).
+\item Statt der Gewichte 1 und 3 könnte man andere Gewichte (z.\,B.\
+  mit Modulo 11) verwenden — das macht die ISBN-10 (kommt morgen).
+\item Spoiler: für 1-Bit-Korrektur reichen erstaunlich wenige
+  Zusatzbits — siehe \textbf{Hamming-Code (7,4)} in Tag 3.
+\end{enumerate}
