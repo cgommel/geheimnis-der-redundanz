@@ -1,0 +1,101 @@
+# Buch aus den Quellen bauen
+
+Das Buch wird aus LaTeX-Quellen gebaut, mit `xelatex`,
+`glossaries-extra`, `tcolorbox` und `minted` (Code-Highlighting via
+Pygments).
+
+## Schnellstart
+
+```bash
+make           # baut das Buch nach pdf/latex/buch.pdf
+make test-code # prüft die Python-Snippets syntaktisch
+make clean     # entfernt Build-Artefakte
+```
+
+## Container-Build (empfohlen)
+
+Wenn die TeX-Live-Welt lokal nicht passt, baut der Container alles
+reproduzierbar (Debian Trixie + TeX Live):
+
+```bash
+make container         # Engine-Auto-Detection: bevorzugt Apple `container`,
+                       # Fallback `docker`. Erzwingbar mit ENGINE=docker
+make container-clean
+```
+
+## Lokale Voraussetzungen (ohne Container)
+
+```bash
+sudo tlmgr install fvextra framed newunicodechar latexmk \
+                   tcolorbox changepage tikzfill pdfcol \
+                   needspace collection-latexextra
+brew install --cask font-dejavu        # macOS / Homebrew
+brew install pygments
+pip install reedsolo                   # für Etappe 8
+```
+
+## Vorab-PDFs einzelner Etappen
+
+Für Auszüge einzelner Etappen ohne Hauptbuch-Build gibt es
+Standalone-Master:
+
+```bash
+make buch_tag7         # nur Etappe 7 + zugehörige Lösungen
+make buch_tag8         # nur Etappe 8 + zugehörige Lösungen
+make buch_tag7_8       # Etappe 7 und 8 zusammen, eigenes Inhaltsverzeichnis
+```
+
+Pattern für neue Etappen: `latex/buch_tagN.tex` als Master plus ein
+analoges Makefile-Target.
+
+## Verzeichnisstruktur
+
+```text
+.
+├── Makefile                          ← Build-Targets (make, container, clean, …)
+├── latex/                            ← Single Source of Truth (LaTeX-native)
+│   ├── buch.tex                      Master, scrbook twoside
+│   ├── praeambel.tex                 Pakete, Geometrie, Schriften, Header
+│   ├── farben.tex                    CMYK-Farbset für die Aufgabentypen
+│   ├── befehle.tex                   Aufgaben-Umgebungen, Code-Snippet-Wrapper
+│   ├── glossar.tex                   Glossar-Einträge (glossaries-extra)
+│   ├── kapitel/tagN.tex              Etappen
+│   ├── loesungen/tagN.tex            Lösungen pro Etappe
+│   ├── anhang_loesungen.tex          Anhang-Master, bündelt loesungen/*.tex
+│   ├── code/tagN/*.py                Lauffähige Python-Snippets mit
+│   │                                 Region-Markern (# region NAME / # endregion)
+│   ├── scripts/extract_region.py     Schneidet Regionen zur Build-Zeit aus
+│   ├── buch_tagN.tex                 Standalone-Master für einzelne Etappen
+│   │                                 (Vorab-PDFs ohne Hauptbuch-Build)
+│   └── .latexmkrc                    XeLaTeX + shell-escape, Output nach pdf/
+├── build/                            ← Container-Build
+│   ├── Dockerfile                    Debian Trixie + TeX Live
+│   └── in-container.sh               Engine-Detection-Wrapper
+├── .github/workflows/
+│   ├── build.yml                     CI: jeder Push baut das Buch
+│   └── release.yml                   Tag-getriggertes Release mit PDF-Asset
+├── doku/                             ← Redaktionelle Dokumentation
+│   ├── zielpublikum.md               Profil der Zielperson
+│   ├── schreibstil.md                Tonalität, Konventionen
+│   ├── inhaltsplan.md                Roter Faden über alle Etappen
+│   ├── feedback-greta.md             Rückmeldungen je Etappe
+│   ├── LAYOUT_BRIEFING.md            Designentscheidungen für das Layout
+│   ├── MAENGEL.md                    Sammelliste für den Polish-Sprint
+│   └── WIP.md                        Aktueller Arbeitsstand
+└── pdf/latex/buch.pdf                ← Build-Output (gitignored)
+```
+
+## Layout
+
+- `scrbook` zweiseitig, A4, 11 pt, KOMA-Headings
+- DejaVu Serif/Sans/Sans Mono
+- Aufgaben-Umgebungen mit farbigem Strich auf der jeweils äußeren
+  Seite (CMYK-Pastell: Bleistift-Orange, Python-Blau, Werkzeug-Grün);
+  page-aware, wechselt korrekt mit der Seitenparität auch über
+  Page-Breaks hinweg
+- Marginalie spiegelt mit, Symbol + Bezeichnung in der Aufgaben-Farbe
+- Code-Highlighting via `minted` mit Tango-Style
+- TikZ für Diagramme
+
+Begründungen und alle Designentscheidungen stehen in
+[`doku/LAYOUT_BRIEFING.md`](doku/LAYOUT_BRIEFING.md).
