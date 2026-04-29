@@ -1,0 +1,167 @@
+\section{Tag 7 — Reed-Solomon-Encoder mit Generator-Polynom}
+
+\subsection*{Bleistiftübung 1 — Potenzen von $\alpha$ in GF($2^3$)}
+
+(a) Multiplikation mit $\alpha = 2$ (Polynom $x$) immer aus der
+Tafel von Tag 5:
+
+\begin{center}
+\begin{tabular}{cl}
+  \toprule
+  $i$ & $\alpha^i$ \\
+  \midrule
+  $0$ & $1$ \\
+  $1$ & $2$ ($= x$) \\
+  $2$ & $4$ ($= x^2$) \\
+  $3$ & $3$ ($= x + 1$, denn $x \cdot x^2 = x^3 = x + 1$) \\
+  $4$ & $6$ ($= x^2 + x$) \\
+  $5$ & $7$ ($= x^2 + x + 1$) \\
+  $6$ & $5$ ($= x^2 + 1$) \\
+  $7$ & $1$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+(b) $\alpha^7 = 1$. Also $\alpha^8 = \alpha^1 = 2$, $\alpha^9 =
+\alpha^2 = 4$ usw. Die Folge wiederholt sich mit Periode $7$.
+
+(c) Sieben verschiedene Werte: $\{1, 2, 4, 3, 6, 7, 5\}$ — das sind
+genau die sieben Nicht-Null-Elemente von GF($2^3$). $\alpha = 2$ ist
+also ein primitives Element.
+
+\subsection*{Bleistiftübung 2 — Generator-Polynom für RS$(5,3)$ über GF($2^3$)}
+
+$\alpha = 2$, $\alpha^2 = 4$. Also:
+\begin{align*}
+  g(x) &= (x + 2)(x + 4) \\
+       &= x^2 + 4x + 2x + 2 \cdot 4 \\
+       &= x^2 + (4 \oplus 2) x + (2 \cdot 4) \\
+       &= x^2 + 6x + 3.
+\end{align*}
+
+(Hilfsrechnungen: $4 \oplus 2 = \texttt{100} \oplus \texttt{010} =
+\texttt{110} = 6$. $2 \cdot 4 = x \cdot x^2 = x^3 = x + 1 = 3$.)
+
+Also $g_0 = 3$, $g_1 = 6$, $g_2 = 1$ (monisch).
+
+\subsection*{Bleistiftübung 3 — RS$(5,3)$-Codewort für $(d_2, d_1, d_0) = (2, 5, 3)$}
+
+(a) $d(x) \cdot x^2 = 3 x^2 + 5 x^3 + 2 x^4$, als Koeffizientenliste
+(niedrigster Grad zuerst): $[0, 0, 3, 5, 2]$.
+
+(b) Polynomdivision durch $g(x) = x^2 + 6x + 3$. Vom höchsten Term
+abwärts:
+
+\textbf{Schritt 1:} höchstes Bit ist $\arbeit[4] = 2$. Subtrahiere
+(in GF: addiere) $2 \cdot g(x) \cdot x^2$:
+\begin{itemize}
+\item Position 4: $2 \oplus 2 \cdot 1 = 2 \oplus 2 = 0$
+\item Position 3: $5 \oplus 2 \cdot 6 = 5 \oplus 7 = 2$
+\item Position 2: $3 \oplus 2 \cdot 3 = 3 \oplus 6 = 5$
+\end{itemize}
+Liste danach: $[0, 0, 5, 2, 0]$.
+
+(Hilfsrechnungen: $2 \cdot 6 = x \cdot (x^2 + x) = x^3 + x^2 =
+(x+1) + x^2 = x^2 + x + 1 = 7$. $2 \cdot 3 = x \cdot (x+1) = x^2 + x
+= 6$.)
+
+\textbf{Schritt 2:} höchstes Bit ist $\arbeit[3] = 2$. Subtrahiere
+$2 \cdot g(x) \cdot x$:
+\begin{itemize}
+\item Position 3: $2 \oplus 2 = 0$
+\item Position 2: $5 \oplus 7 = 2$
+\item Position 1: $0 \oplus 6 = 6$
+\end{itemize}
+Liste danach: $[0, 6, 2, 0, 0]$.
+
+\textbf{Schritt 3:} höchstes Bit ist $\arbeit[2] = 2$. Subtrahiere
+$2 \cdot g(x) \cdot x^0$:
+\begin{itemize}
+\item Position 2: $2 \oplus 2 = 0$
+\item Position 1: $6 \oplus 7 = 1$
+\item Position 0: $0 \oplus 6 = 6$
+\end{itemize}
+Liste danach: $[6, 1, 0, 0, 0]$.
+
+Rest: $r(x) = 6 + x$. Also $p_0 = 6$, $p_1 = 1$.
+
+(c) Codewort: $c(x) = 6 + x + 3 x^2 + 5 x^3 + 2 x^4$, als Liste
+$\mathbf{[6, 1, 3, 5, 2]}$.
+
+(d) Verifikation per Horner-Schema, Auswertung an $\alpha = 2$:
+\begin{align*}
+  &\text{Start} = 2 \\
+  &2 \cdot 2 + 5 = 4 \oplus 5 = 1 \\
+  &1 \cdot 2 + 3 = 2 \oplus 3 = 1 \\
+  &1 \cdot 2 + 1 = 2 \oplus 1 = 3 \\
+  &3 \cdot 2 + 6 = 6 \oplus 6 = 0 \;\checkmark
+\end{align*}
+
+Auswertung an $\alpha^2 = 4$:
+\begin{align*}
+  &\text{Start} = 2 \\
+  &2 \cdot 4 + 5 = 3 \oplus 5 = 6 \\
+  &6 \cdot 4 + 3 = 5 \oplus 3 = 6 \\
+  &6 \cdot 4 + 1 = 5 \oplus 1 = 4 \\
+  &4 \cdot 4 + 6 = 6 \oplus 6 = 0 \;\checkmark
+\end{align*}
+
+Beide Wurzeln des Generator-Polynoms ergeben 0 — Codewort gültig.
+
+\subsection*{Aufgabe 1.1 — Was hat sich geändert?}
+
+Vier Stellen:
+\begin{itemize}
+\item \texttt{MOD = 0b100011101} statt \texttt{0b1011}.
+\item Wertebereich \texttt{0..255} statt \texttt{0..7}.
+\item Schleifenbereiche in \texttt{\_\_mul\_\_}: \texttt{range(8)}
+  und \texttt{range(14, 7, -1)} statt \texttt{range(3)} und
+  \texttt{range(5, 2, -1)}.
+\item Repräsentation: \texttt{\{:08b\}} bzw. einfach Dezimal statt
+  \texttt{\{:03b\}} (kosmetisch).
+\end{itemize}
+
+Die mathematische Struktur ist genau gleich.
+
+\subsection*{Aufgabe 1.2, 2.1, 3.1, 3.2, 4.1 (Python)}
+
+Erwartete Ausgaben:
+
+\begin{itemize}
+\item \texttt{gf256\_inverse}: jede Probe ergibt \texttt{GF256(1)} —
+  wenn nicht, ist die Reduktionsschleife in \texttt{\_\_mul\_\_}
+  fehlerhaft.
+\item Generator-Polynom RS$(255, 251)$: vier Wurzeln
+  $\alpha^0, \alpha^1, \alpha^2, \alpha^3$ ergeben jeweils $0$.
+  (Wenn nicht: indices in der Schleife prüfen.)
+\item \texttt{rs\_encode(“GRETA“, 4)}: Daten bleiben unverändert,
+  vier Prüfsymbole hinten — abhängig von der Wahl des
+  Modulo-Polynoms und der Wurzel-Folge.
+\item Bei einem gekippten Symbol im Codewort liefert
+  \texttt{ist\_durch\_g\_teilbar} \texttt{False}, plus den ersten
+  Index $i$, an dem $c(\alpha^i) \ne 0$. Genau diese Werte sind die
+  \emph{Syndrome} aus Tag 8.
+\end{itemize}
+
+\subsection*{Antworten zu den drei Reflexionsfragen}
+
+\begin{enumerate}
+\item Die Wahl $\alpha^0, \alpha^1, \dots, \alpha^{t-1}$ ist die
+  \emph{kanonische} Wahl, weil sie die Berechnung der Syndrome am
+  Decoder besonders einfach macht: das $i$-te Syndrom ist $r(\alpha^i)$.
+  Andere Wurzeln sind mathematisch zulässig, würden aber den Decoder
+  umständlicher machen.
+
+\item In GF($2^{16}$) sind die Polynome größer (Grad bis 15), die
+  Lookup-Tabellen größer ($2^{16} = 65{,}536$ Einträge), aber die
+  Mathematik genau gleich. Praktisch genutzt: \emph{BCH-Codes} und
+  \emph{Reed-Solomon} mit größerer Block-Länge — DVB-T,
+  Speicher-Controller in SSDs, manche QR-Code-Größen.
+
+\item Bei einem fehlerfreien Codewort sind alle Syndrome $0$. Bei
+  genau einem Fehler an Position $j$ mit Wert $e$ ist das $i$-te
+  Syndrom $S_i = e \cdot \alpha^{i \cdot j}$ — die Syndrome bilden
+  also eine geometrische Folge in $\alpha^j$, mit Vorfaktor $e$. Aus
+  zwei Syndromen kann man Position $j$ und Wert $e$ rekonstruieren —
+  das ist die einfache Variante des Decoders, die wir morgen sehen.
+\end{enumerate}

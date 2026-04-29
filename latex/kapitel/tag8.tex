@@ -1,0 +1,324 @@
+\chapter{Tag 8 — Reed-Solomon-Decoder}
+
+\begin{quote}
+Tag 7 hat dir den Encoder gegeben — Daten plus Prüfsymbole, sodass das
+Codewort durch das Generator-Polynom teilbar ist. Heute drehen wir den
+Spieß um: wir empfangen ein Codewort, das unterwegs verfälscht wurde,
+und müssen das Original rekonstruieren. Wir lernen den
+\textbf{Auslöschungs-Decoder} (wenn wir wissen, \emph{wo} die Fehler
+sitzen — analog zu deiner ISBN-10-Detektivarbeit aus Tag 2)
+vollständig, schauen den allgemeinen Decoder als Skizze an und nutzen
+für die Praxis die Bibliothek \texttt{reedsolo}.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 8 kannst du \dots
+
+\begin{itemize}
+\item die \textbf{Syndrome} eines empfangenen Codewortes berechnen
+  und ihre Bedeutung erklären
+\item bei \textbf{einer} Auslöschung den fehlenden Wert von Hand
+  rekonstruieren
+\item bei \textbf{mehreren} Auslöschungen das zugehörige
+  Vandermonde-System aufstellen — und das in Python lösen
+\item das Prinzip des allgemeinen Decoders (Berlekamp-Massey +
+  Forney) skizzieren
+\item mit der \texttt{reedsolo}-Bibliothek einen vollständigen
+  Encoder/Decoder benutzen und seine Korrekturgrenzen ausloten
+\end{itemize}
+
+Material: Bleistift, kariertes Papier, deine GF($2^3$)-Multi\-pli\-ka\-tions\-tafel
+aus Tag 5, Thonny mit \texttt{pip install reedsolo}.
+
+% =============================================================
+\section{Syndrome — was hat uns das Codewort zu sagen? \normalfont(\textit{$\approx$ 25 min})}
+% =============================================================
+
+\subsection*{Definition}
+
+Sei $r(x)$ das empfangene Polynom. Die \textbf{Syndrome} sind:
+\[
+  S_i = r(\alpha^i), \qquad i = 1, 2, \dots, t.
+\]
+(Mit $t$ als Anzahl der Prüfsymbole, $\alpha = 2$ als primitivem
+Element.)
+
+\subsection*{Was Syndrome verraten}
+
+Schreibe $r(x) = c(x) + e(x)$ mit $c(x)$ als richtigem Codewort und
+$e(x)$ als Fehlervektor. Da $c(\alpha^i) = 0$ (Codewort ist durch
+$g(x)$ teilbar, Wurzeln sind $\alpha^1, \dots, \alpha^t$), folgt:
+\[
+  S_i = c(\alpha^i) + e(\alpha^i) = e(\alpha^i).
+\]
+
+Die Syndrome \emph{hängen also nur von den Fehlern ab} — das
+Originalcodewort kürzt sich raus. Genauer: wenn die Fehler an
+Positionen $j_1, j_2, \dots, j_v$ mit Werten $e_{j_1}, \dots, e_{j_v}$
+liegen, dann
+\[
+  S_i = \sum_{k=1}^{v} e_{j_k} \, \alpha^{i \cdot j_k}.
+\]
+
+\subsection*{Konsequenzen}
+
+\begin{itemize}
+\item \textbf{Alle Syndrome sind 0} $\;\Rightarrow\;$ entweder ist
+  alles gut, oder die Fehler sind so groß, dass das Codewort
+  „zufällig“ zu einem anderen gültigen Codewort wurde (extrem
+  unwahrscheinlich).
+\item \textbf{Mindestens ein Syndrom} $\ne 0$ $\;\Rightarrow\;$ es
+  gab Fehler. Wir wissen aber noch nicht, wie viele und wo.
+\end{itemize}
+
+\begin{bleistiftuebung}{1}{Syndrome berechnen}
+Aus Tag 7 kennst du das Codewort
+\[
+  c = (6,\; 1,\; 3,\; 5,\; 2)
+\]
+über GF($2^3$) für die Daten $(d_2, d_1, d_0) = (2, 5, 3)$. Bei der
+Übertragung geht das Symbol an Position 2 verloren. Du empfängst
+also
+\[
+  r = (6,\; 1,\; ?,\; 5,\; 2)
+\]
+und setzt das fehlende Symbol vorerst auf 0:
+$r = (6, 1, 0, 5, 2)$.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Berechne $S_1 = r(\alpha^1) = r(2)$ über GF($2^3$). Tipp:
+  Horner-Schema, höchster Koeffizient zuerst, jeder Schritt
+  Multiplikation mit $\alpha = 2$ und XOR mit dem nächsten
+  Koeffizienten.
+
+\item Berechne $S_2 = r(\alpha^2) = r(4)$.
+
+\item Verifiziere: bei einem fehlerfreien Codewort wären beide
+  Syndrome 0. Gibt's einen Fehler?
+\end{enumerate}
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Auslöschungs-Decoder von Hand \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+Eine \textbf{Auslöschung} ist ein Fehler an \emph{bekannter} Position.
+Das ist eine viel günstigere Situation als ein „echter“ Fehler — wir
+müssen nicht mehr suchen, wo der Fehler sitzt, nur noch \emph{welcher
+Wert} dort hingehört.
+
+\subsection*{Eine einzelne Auslöschung}
+
+Bei einer Auslöschung an Position $j$ vereinfacht sich die
+Syndrom-Formel dramatisch:
+\[
+  S_i = e_j \cdot \alpha^{i \cdot j} \quad \text{für } i = 1, 2, \dots, t.
+\]
+
+Aus dem ersten Syndrom allein können wir den Fehlerwert ablesen:
+\[
+  e_j = \frac{S_1}{\alpha^j}.
+\]
+
+\begin{bleistiftuebung}{2}{Auslöschung korrigieren}
+Aus Bleistiftübung 1 hast du $S_1$ und $S_2$ berechnet. Position der
+Auslöschung: $j = 2$.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Stelle $S_1 = e_2 \cdot \alpha^2$ um nach $e_2$.
+  Ergebnis als Bruch in GF: $e_2 = S_1 / \alpha^2 = S_1 \cdot
+  (\alpha^2)^{-1}$.
+
+  Tipp: in GF($2^3$) gilt $\alpha^7 = 1$. Daraus folgt
+  $\alpha^{-1} = \alpha^6$ und damit $\alpha^{-2} = \alpha^5$.
+  Aus Bleistiftübung 1 von Tag 7 weißt du: $\alpha^5 = 7$.
+
+\item Multipliziere $S_1$ mit $\alpha^{-2}$, um $e_2$ zu erhalten.
+
+\item Verifiziere mit der zweiten Gleichung: $S_2 = e_2 \cdot
+  \alpha^4$. Setze deinen $e_2$-Wert ein und prüfe, ob es stimmt.
+
+\item Korrigiere das empfangene Codewort: das ursprüngliche Symbol
+  an Position 2 ist $r_2 + e_2$ (bzw.\ in GF: $0 \oplus e_2 = e_2$).
+  Vergleiche mit dem Original aus Tag 7.
+\end{enumerate}
+\end{bleistiftuebung}
+
+\subsection*{Mehrere Auslöschungen}
+
+Bei $v$ Auslöschungen an Positionen $j_1, \dots, j_v$ haben wir $t$
+Gleichungen in $v$ Unbekannten:
+\[
+  S_i = \sum_{k=1}^{v} e_{j_k} \alpha^{i \cdot j_k}, \qquad i = 1, \dots, t.
+\]
+
+Die Koeffizienten-Matrix ist eine \textbf{Vandermonde-Matrix}:
+\[
+  \begin{pmatrix}
+    \alpha^{j_1} & \alpha^{j_2} & \cdots & \alpha^{j_v} \\
+    \alpha^{2 j_1} & \alpha^{2 j_2} & \cdots & \alpha^{2 j_v} \\
+    \vdots & & & \vdots \\
+    \alpha^{t j_1} & \alpha^{t j_2} & \cdots & \alpha^{t j_v}
+  \end{pmatrix}
+  \cdot
+  \begin{pmatrix} e_{j_1} \\ \vdots \\ e_{j_v} \end{pmatrix}
+  =
+  \begin{pmatrix} S_1 \\ \vdots \\ S_t \end{pmatrix}.
+\]
+
+Solange $v \le t$, ist das System eindeutig lösbar (Vandermonde-Matrix
+hat in einem Körper mit verschiedenen $\alpha^{j_k}$ vollen Rang). Per
+Hand kann man das für $v = 2$ noch durchziehen — für mehr lassen wir
+Python ran.
+
+% =============================================================
+\section{Python-Werkstatt: Auslöschungs-Decoder \normalfont(\textit{$\approx$ 35 min})}
+% =============================================================
+
+Wir setzen das Verfahren in Python um — diesmal in GF($2^8$), der
+echten Datamatrix-Welt.
+
+\begin{pythoneinheit}{1}{Syndrome berechnen}
+Lege eine neue Datei \texttt{syndrome.py} an (im selben Ordner wie
+\texttt{gf256.py} und \texttt{rs\_encoder.py} aus Tag 7):
+
+\pythoncodeteil{tag8/syndrome.py}{funktion}
+
+Test-Lauf:
+
+\pythoncodeteil{tag8/syndrome.py}{test}
+
+\paragraph{Aufgabe 1.1.}
+Verändere die Anzahl der gestörten Positionen (kippe nicht eines,
+sondern zwei Symbole). Was beobachtest du an den Syndromen?
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{2}{Auslöschungs-Decoder}
+Datei \texttt{erasure\_decoder.py}:
+
+\pythoncodeteil{tag8/erasure_decoder.py}{funktion}
+
+Test mit zwei Auslöschungen:
+
+\pythoncodeteil{tag8/erasure_decoder.py}{test}
+
+\paragraph{Aufgabe 2.1 — Bis an die Grenze.}
+Bei 4 Prüfsymbolen kannst du bis zu 4 Auslöschungen korrigieren.
+Probiere drei und vier Auslöschungen aus. Was passiert bei fünf?
+
+\paragraph{Aufgabe 2.2 — Was, wenn die Position falsch ist?}
+Was passiert, wenn du eine Auslöschungsposition angibst, an der
+\emph{kein} Fehler ist? (Trick: setze das Symbol an dieser Position
+auf den richtigen Wert, gib aber die Position trotzdem als
+„Auslöschung“ an.)
+\end{pythoneinheit}
+
+% =============================================================
+\section{Allgemeiner Decoder — eine Skizze \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+Der wirklich harte Fall ist: wir wissen \emph{nicht}, an welchen
+Positionen Fehler aufgetreten sind. Dann müssen wir aus den $t$
+Syndromen sowohl die Positionen als auch die Werte rekonstruieren.
+
+Das geht — für bis zu $\lfloor t/2 \rfloor$ Fehler — mit zwei
+klassischen Algorithmen:
+
+\begin{itemize}
+\item \textbf{Berlekamp-Massey-Algorithmus:} aus den Syndromen wird
+  ein \emph{Fehlerlokator-Polynom} berechnet, dessen Wurzeln genau
+  die inversen Fehlerpositionen sind. „Magie“ ist es nicht, aber
+  konzeptionell anspruchsvoll — Hochschulstoff.
+\item \textbf{Forney-Formel:} sobald die Positionen aus
+  Berlekamp-Massey bekannt sind, liefert eine geschlossene Formel
+  die Fehlerwerte.
+\end{itemize}
+
+Wir implementieren das nicht selbst. In der Praxis nimmt man eine
+fertige Bibliothek. Das ist nicht „Mogeln“ — das ist
+\emph{angemessen}. Niemand schreibt Reed-Solomon-Decoder von Hand,
+außer für didaktische Zwecke (oder im Hardware-Layer eines
+Speicher-Chips).
+
+% =============================================================
+\section{Praxis: \texttt{reedsolo}-Bibliothek \normalfont(\textit{$\approx$ 25 min})}
+% =============================================================
+
+Installiere die Bibliothek einmalig:
+\begin{verbatim}
+pip install reedsolo
+\end{verbatim}
+
+(In Thonny: \emph{Werkzeuge} → \emph{Pakete verwalten} → „reedsolo“
+suchen → \emph{Installieren}.)
+
+\begin{pythoneinheit}{3}{Encoder und Decoder mit reedsolo}
+\pythoncodeteil{tag8/with_reedsolo.py}{praxis}
+
+\paragraph{Aufgabe 3.1 — Korrekturgrenze}
+\pythoncodeteil{tag8/with_reedsolo.py}{grenze}
+
+Drei Symbol-Fehler bei nur zwei korrigierbaren — und schon kapituliert
+der Decoder. Das ist die Theorie aus Tag 6: bei $n - k = 4$
+Prüfsymbolen sind $\lfloor 4/2 \rfloor = 2$ Symbol-Fehler korrigierbar.
+
+\paragraph{Aufgabe 3.2 — Mit Auslöschungen tricksen.}
+Wenn du dem \texttt{reedsolo}-Decoder die Positionen verdächtiger
+Symbole übergibst (als „erase\_pos“), kann er bis zu 4 Symbole
+korrigieren — doppelt so viele wie ohne Positionswissen. Schau in der
+\texttt{reedsolo}-Doku nach, wie das geht, und probiere es aus.
+\end{pythoneinheit}
+
+% =============================================================
+\section{Reflexion und Brücke zu Tag 9 \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+\subsection*{Was wir heute gelernt haben}
+
+\begin{itemize}
+\item \textbf{Syndrome} verraten, dass Fehler aufgetreten sind, und
+  hängen nur von den Fehlern ab — nicht vom ursprünglichen Codewort.
+\item Bei \textbf{Auslöschungen} (bekannte Fehlerpositionen) reduziert
+  sich das Decoder-Problem auf ein lineares Gleichungssystem
+  (Vandermonde) — direkt lösbar.
+\item Bei „echten“ Fehlern müssen Position und Wert gemeinsam
+  rekonstruiert werden — das macht der \textbf{Berlekamp-Massey-Algorithmus}
+  (kombiniert mit der Forney-Formel) im Hintergrund jeder
+  Reed-Solomon-Bibliothek.
+\item Korrekturkraft: $n - k$ Auslöschungen \emph{oder}
+  $\lfloor (n-k)/2 \rfloor$ allgemeine Fehler.
+\item In der Praxis nimmt man \texttt{reedsolo} (Python) oder
+  äquivalente Bibliotheken — die Mathe ist im Inneren, wir
+  wissen jetzt, was passiert.
+\end{itemize}
+
+\subsection*{Drei Fragen zum Mitnehmen}
+
+\begin{enumerate}
+\item Beim Auslöschungs-Decoder hatten wir $v$ Unbekannte und $t$
+  Gleichungen, mit $v \le t$. Was wäre, wenn $v > t$? Anschaulich:
+  was kann der Decoder noch tun, was nicht mehr?
+
+\item Du hast in Aufgabe 3.2 gesehen, dass Auslöschungen
+  „doppelt so günstig“ sind wie echte Fehler. Welcher
+  Übertragungs-Kanal liefert dir „natürlich“ Auslöschungen statt
+  Fehler? (Tipp: ein zerkratztes Versandetikett auf einem Datamatrix —
+  was sieht der Scanner?)
+
+\item Wenn ein Datamatrix-Code zu sehr beschädigt ist und der Decoder
+  jenseits seiner Grenze liegt — was sollte das Scan-Programm
+  pragmatisch tun? Stiller Fehlversuch oder lautes „Nicht lesbar“?
+\end{enumerate}
+
+\subsection*{Vorschau Tag 9 — Einen Strichcode von Hand zeichnen}
+
+Die letzten zwei Tage haben wir mit Reed-Solomon-Mathematik
+verbracht. Bevor wir uns an einen Datamatrix-Code wagen, machen wir
+einen Schritt zurück und zeichnen einen \textbf{EAN-13-Strichcode von
+Hand} — den Strichcode-Typ kennst du schon aus Tag 1. Du wählst zwölf
+Ziffern (zum Beispiel dein Geburtsdatum), berechnest die Prüfziffer,
+übersetzt jede Ziffer in ihr Strichmuster und füllst eine
+Zeichenvorlage Modul für Modul aus. Anschließend ausdrucken und mit
+dem Handy scannen. Das ist die Generalprobe für das eigentliche Ziel
+— einen Datamatrix-Code mit deinem Namen drauf, weiter hinten im Buch.
