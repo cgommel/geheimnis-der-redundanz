@@ -13,7 +13,7 @@
 
 ## Layout
 
-### LY-01 — Marginalie verwaist nach Page-Break 🟥
+### LY-01 — Marginalie verwaist nach Page-Break 🟩
 - **Schwere**: hoch (User: „sowas geht gar nicht")
 - **Stelle**: Tag 6, Bleistiftübung 1 („Polynome rechnen.") — Übergang
   in der Nähe von Seite 52 → 53. Vermutlich auch an anderen Stellen
