@@ -24,19 +24,25 @@ Tag 7: RS-Encoder + GF(2⁸)       ← Wechsel auf 256 Elemente, Generator-     
 Tag 8: RS-Decoder                ← Auslöschungs-Decoder von Hand,            ⬜
                                     reedsolo-Library für die Praxis,
                                     Berlekamp-Massey nur als Skizze
-─── Intermezzo: Wir lernen zeichnen ───
-Tag 9: 1D-Strichcode selbst      ← Python-Grafik mit Pillow, Code 39         ⬜
-       zeichnen (NEU)               selbst codieren und ausdrucken,
-                                    mit dem Handy scannen
+─── Intermezzo: EAN-13 zweimal zeichnen ───
+Tag  9: EAN-13 berechnen und      ← Anwendungsetappe: eigenen 12-Ziffer-       ⬜
+        von Hand zeichnen (NEU)     Code wählen, Prüfziffer berechnen,
+                                    Encoding-Tabellen L/G/R lernen,
+                                    Strichcode mit der Zeichenvorlage
+                                    Modul für Modul ausfüllen, scannen
+Tag 10: EAN-13 mit Python         ← gleicher Code, jetzt automatisiert:       ⬜
+        zeichnen (NEU)              Pillow, schwarz-weiße Pixel, Encoder
+                                    in 30 Zeilen, beliebig viele Codes
+                                    auf Knopfdruck — Aha „Python sparrrt"
 ─── Synthese: Datamatrix ───
-Tag 10: Datamatrix-Symbol        ← Format, Layout, ECC-200, Daten-           ⬜
+Tag 11: Datamatrix-Symbol         ← Format, Layout, ECC-200, Daten-           ⬜
         (Theorie + Layout)          platzierungsalgorithmus
-Tag 11: Datamatrix selbst        ← Encoder + Decoder, eigenes Symbol         ⬜
+Tag 12: Datamatrix selbst         ← Encoder + Decoder, eigenes Symbol         ⬜
         zeichnen und decodieren     mit dem eigenen Namen drauf
 
 ─── Bonus, falls Greta noch Hunger hat ───
-Tag 12: QR-Codes im Vergleich    ← gleiche Mathe, anderes Layout             (opt.)
-Tag 13: Verkettete Codes         ← Voyager, CD-Audio, „warum Spotify nicht   (opt.)
+Tag 13: QR-Codes im Vergleich     ← gleiche Mathe, anderes Layout             (opt.)
+Tag 14: Verkettete Codes          ← Voyager, CD-Audio, „warum Spotify nicht   (opt.)
         und LDPC-Ausblick           knirscht"
 ```
 
@@ -84,37 +90,75 @@ und nutzt für den allgemeinen Fall (unbekannte Fehlerposition) die
 - Block 5: Reflexion — wie viele Fehler wurden korrigiert, was
   passiert jenseits der Grenze.
 
-## Tag 9 – Wir zeichnen einen 1D-Strichcode (Intermezzo)
+## Tag 9 – EAN-13 von Hand zeichnen (Intermezzo)
 
-**Ziel:** Greta kann mit Pillow Pixel-Bilder erzeugen, beherrscht das
-Code-39-Encoding und produziert einen scannbaren Strichcode mit dem
-eigenen Namen — ausgedruckt und mit dem Handy gelesen.
+**Ziel:** Greta beweist sich selbst, dass sie einen scannbaren
+Strichcode \emph{vollständig von Hand} hinbekommt — mit Bleistift und
+Lineal aus zwölf selbstgewählten Ziffern einen EAN-13, der vom
+Handy-Scanner anstandslos gelesen wird. Der Erkenntnisgewinn („das
+geht wirklich") ist der Kern dieses Intermezzos, nicht das
+Werkzeug-Lernen.
 
 **Warum dieser Tag:** Datamatrix-Code zu zeichnen ist konzeptionell
-und handwerklich anspruchsvoll. Bevor wir uns dort versuchen, üben
-wir die Grafik-Werkzeuge an einem trivialen 1D-Code.
+und handwerklich anspruchsvoll. Vorher wird eingeübt, wie man
+überhaupt einen druckbaren, scannbaren Code zeichnet — an einem
+1D-Format, das Greta aus Tag 1 schon kennt (Prüfziffer, Verifikation).
 
 **Bausteine:**
+
+- Block 1: Eigenen 12-Ziffer-Code wählen (z.\,B. Geburtsdatum
+  \texttt{ttmmjjjjxxxx}), Prüfziffer wie an Tag 1 berechnen. Im
+  Lösungsteil ausführlich vorgerechnet, damit der Zeichen-Code
+  garantiert korrekt ist.
+- Block 2: Encoding-Tabellen — L-, G- und R-Codes für die zehn
+  Ziffern, plus Paritätsmuster der Erstziffer (steuert L/G-Verteilung
+  in der linken Hälfte). Das ist neu gegenüber Tag 1.
+- Block 3: Aufbau eines EAN-13 — Hellzonen, Start-/Mittel-/Endguards,
+  95 Datenmodule, 6+6-Aufteilung, Klarschrift unter dem Code.
+- Block 4: Zeichenvorlage als separates Standalone-PDF (A4 quer): vier
+  Felder zum Probieren, eines davon mit einem fertig gezeichneten
+  Beispiel-EAN als Vorlage (andere Ziffern als Gretas Code, damit
+  nicht nur abgemalt wird). Modul-Hilfsraster, Klarschriftkästchen,
+  L/G/R-Markierung pro Position.
+- Block 5: Ausdrucken, scannen, debuggen — was passiert, wenn ein
+  einzelner Strich zu schmal/zu breit ist? Mindestmodulbreite,
+  Quiet-Zone, Druckqualität.
+- Block 6: Reflexion — EAN-13 hat (außer der Prüfziffer) keine
+  Fehlerkorrektur. Datamatrix-Vorschau: das Quadrat-Format hat
+  Reed-Solomon eingebaut, deshalb übersteht es Beschädigung.
+
+## Tag 10 – EAN-13 mit Python zeichnen (Intermezzo, Teil 2)
+
+**Ziel:** Nachdem Greta von Hand einen scannbaren EAN-13 hinbekommen
+hat, automatisiert sie denselben Vorgang in Python. Erkenntnisgewinn:
+„dasselbe, was eine Stunde Bleistift gekostet hat, sind in Python 30
+Zeilen und beliebig oft wiederholbar." Brücke zu Datamatrix, das wir
+sowieso nur noch programmatisch bauen können.
+
+**Warum direkt nach Tag 9:** Hand-Zeichnung gibt das Verständnis,
+Python-Zeichnung den praktischen Hebel. Greta hat alle Encoding-Tabellen
+schon im Kopf (Tag 9), Pillow kommt nur als Werkzeug dazu.
+
+**Bausteine:**
+
 - Block 1: Pillow installieren (`pip install Pillow`), erste
   schwarz-weiße Pixel-Bilder, Rechteck zeichnen, als PNG speichern.
-- Block 2: Code-39-Tabellen — 9 Striche pro Zeichen, davon 3 breit;
-  Start- und Endsymbol `*`. Alphabet: A–Z, 0–9, plus ein paar
-  Sonderzeichen.
-- Block 3: Encoder schreiben — Text → Bitstrom → Bild.
-- Block 4: Drucken + mit dem Handy scannen. Welche
-  Strich-zu-Lücken-Verhältnisse funktionieren am besten? Druckqualität,
-  Mindestbreite, Quiet-Zone vorne/hinten.
-- Block 5: Reflexion — Code 39 hat keine Fehlerkorrektur. Was wäre
-  die einfachste Erweiterung? (Brücke zu Datamatrix, das genau das
-  hat.)
+- Block 2: L-/G-/R-Tabellen aus Tag 9 als Python-Dictionaries.
+- Block 3: EAN-13-Encoder schreiben — 13 Ziffern → Bitstrom →
+  PNG-Bild mit konfigurierbarer Modulbreite. Quiet-Zonen, Klarschrift
+  unter dem Code (optional via PIL.ImageDraw + Font).
+- Block 4: Verifikation — den Greta-Code aus Tag 9 erzeugen, Hand-
+  und Python-Zeichnung überlagern (oder einfach beide scannen).
+- Block 5: Variation — eine Mini-Galerie scannbarer Strichcodes für
+  Familienmitglieder erzeugen (jeweils Geburtsdatum + Initialen).
+- Block 6: Reflexion — Skalierung. Was kostet ein Datamatrix mit
+  derselben Methode? (Spoiler: deutlich mehr als 30 Zeilen, deshalb
+  in den nächsten Tagen mit Bibliothek arbeiten.)
 
-**Bonus:** EAN-13 selbst zeichnen — Greta hat die Mathe schon (Tag 1),
-nur die Encoding-Tabellen sind anders (Set A/B/C). Als Heimarbeit.
-
-## Tag 10 – Datamatrix-Symbol: Theorie & Layout
+## Tag 11 – Datamatrix-Symbol: Theorie & Layout
 
 **Ziel:** Greta versteht den Aufbau eines Datamatrix-Codes (ECC-200)
-soweit, dass sie an Tag 11 einen vollständigen Encoder bauen kann.
+soweit, dass sie an Tag 12 einen vollständigen Encoder bauen kann.
 
 **Bausteine:**
 - Symbol-Layout: L-Pattern (zwei feste Kanten), Zeitsignal (zwei
@@ -128,7 +172,7 @@ soweit, dass sie an Tag 11 einen vollständigen Encoder bauen kann.
 - Datenplatzierungs-Algorithmus: das berühmte „Treppenmuster", das
   Daten- und ECC-Bytes über das Symbol verteilt.
 
-## Tag 11 – Datamatrix selbst zeichnen und decodieren
+## Tag 12 – Datamatrix selbst zeichnen und decodieren
 
 **Ziel:** Synthese. Greta hat einen funktionierenden Encoder UND
 Decoder für einen kleinen Datamatrix-Code.
@@ -147,13 +191,13 @@ Decoder für einen kleinen Datamatrix-Code.
 
 ## Bonus-Tage
 
-### Tag 12 – QR-Codes im Vergleich
+### Tag 13 – QR-Codes im Vergleich
 Strukturell sehr ähnlich zu Datamatrix, aber mit eigenen
 Codierungs-Tricks (vier ECC-Level: L, M, Q, H; Reed-Solomon ebenfalls
 über GF(2⁸); Maskierungs-Patterns). Kompakter Tag, weil die meiste
 Mathematik schon da ist.
 
-### Tag 13 – Verkettete Codes und Praxis-Geschichten
+### Tag 14 – Verkettete Codes und Praxis-Geschichten
 Voyager-Sonden mit verkettetem Faltungscode + Reed-Solomon.
 Audio-CDs mit CIRC. Modernere Verfahren: LDPC-Codes (kurz),
 Turbo-Codes. Sicherheit vs. Integrität: kryptographische Hashes,
@@ -163,7 +207,7 @@ digitale Signaturen — als Kontrast zu Reed-Solomon.
 
 Greta hat Tag 1 in 2 h, Tag 4 in 75 min durchgearbeitet — sie wird
 schneller. Plan rechnet trotzdem mit der 2 h pro Tag-Faustregel; bei
-zu schnellem Tempo ist Tag 12/13 die natürliche Reserve.
+zu schnellem Tempo ist Tag 13/14 die natürliche Reserve.
 
 ## Wie der Plan benutzt wird
 
