@@ -164,6 +164,26 @@
   `\addvspace{...}` setzen, oder `\nopagebreak[0]` plus
   `\needspace`-Bedarfssignal an die nächste Box anpassen.
 
+### LY-16 — Kolophon-Seite: Lizenz + Repo-Link im PDF 🟥
+- **Schwere**: niedrig (Wunsch, Public-Polish)
+- **Stelle**: eigene Kolophon-/Impressum-Seite (üblicherweise vorne im
+  Buch nach der Titelseite, oder ganz am Ende). Würde sich gut mit
+  LY-15 (Build-Provenance) auf derselben Seite zusammenlegen lassen.
+- **Befund**: das gedruckte/heruntergeladene PDF enthält aktuell keine
+  Lizenz-Info und keinen Hinweis auf das Repo. Wer das Buch in die
+  Hand bekommt, weiß nicht, dass er es weitergeben/anpassen darf
+  (CC BY-SA 4.0) und wo der Quellcode der Python-Snippets steht.
+- **Lösungsidee**:
+  - Kolophon-Seite mit:
+    - Lizenz-Hinweis fürs Buch (CC BY-SA 4.0 mit Logo/Text + Link)
+    - Code-Lizenz (MIT) und Verweis aufs Repo `latex/code/`
+    - Schriften-Hinweis (OFL-1.1) mit den Familien-Namen
+    - URL zum GitHub-Repo, damit Code-Snippets direkt
+      heruntergeladen werden können
+    - Optional: zusammen mit LY-15 die Build-Provenance hier mit drauf
+  - Pakete: `\usepackage{ccicons}` für die CC-Logo-Glyphen.
+  - Plazierung: nach `\frontmatter`, vor `\include{vorwort}`.
+
 ### LY-15 — Build-Provenance dezent ins PDF einblenden 🟥
 - **Schwere**: niedrig (Wunsch, kein Mangel)
 - **Stelle**: vermutlich Titelseite (klein unter dem Datum) oder
@@ -206,7 +226,24 @@
 
 ## Toolchain / Build
 
-*(noch leer)*
+### TC-01 — Python-Snippets beim Build neben das PDF legen 🟥
+- **Schwere**: niedrig (Wunsch, hilft beim Weitergeben)
+- **Stelle**: Makefile-`buch`- und Standalone-Targets, sowie das
+  CI-Release.
+- **Befund**: aktuell landet nur das PDF in `pdf/latex/`. Wer das
+  Buch bekommt, hat die `latex/code/tagN/*.py` nicht griffbereit —
+  müsste sie aus dem Repo holen.
+- **Lösungsidee**:
+  - **Variante A**: einfach `cp -R latex/code/ pdf/latex/code/` als
+    Make-Step nach jedem PDF-Build. Verzeichnis liegt direkt neben
+    dem PDF.
+  - **Variante B**: ZIP-Archiv `pdf/latex/code.zip` (oder pro
+    Standalone `pdf/latex/code-tagN.zip` mit Snippets bis Etappe N).
+    Handlicher, ein File für „PDF + Code zusammen".
+  - **Release-Asset**: zusätzlich zum PDF auch das Code-Bundle als
+    Asset hochladen.
+- **Offen**: Variante A (Verzeichnis) oder B (ZIP)? `__pycache__`
+  beim Kopieren ausschließen.
 
 ## Doku
 
