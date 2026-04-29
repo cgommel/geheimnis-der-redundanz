@@ -23,10 +23,11 @@ Vorwort, Titelseite). Der Polish-Sprint ist gemergt; Release
   Berlekamp-Massey nur als Skizze, `reedsolo`-Library für die
   Praxis. Code in `latex/code/tag8/{syndrome.py, erasure_decoder.py,
   with_reedsolo.py}`. Lösung in `latex/loesungen/tag8.tex`.
-- **Standalone-Master** für Vorab-PDFs ohne Mergen:
-  `latex/buch_tag7.tex`, `latex/buch_tag8.tex`,
-  `latex/buch_tag7_8.tex`. Targets: `make buch_tag7`,
-  `make buch_tag8`, `make buch_tag7_8`.
+- **Standalone-Master** für Vorab-PDFs: pro Etappe N ein
+  `latex/redundanz-tagN.tex`, der „Buch bis Etappe N" baut
+  (Etappen 1..N + Lösungen, ohne Hauptbuch-Titelseite). Targets:
+  `make redundanz-tag1` … `make redundanz-tag8`,
+  `make standalones` für alle.
 - **Hauptbuch** umfasst auf dem Branch jetzt 110 Seiten (Tag 1–8 +
   Anhang).
 
@@ -46,11 +47,12 @@ Arbeit. LY-01 (Marginalie verwaist nach Page-Break) ist bereits
 durch `\needspace{5\baselineskip}` gefixt — Eintrag aktualisieren,
 falls nochmal angefasst.
 
-### Standalone-PDFs für Greta (alle aktuell)
+### Standalone-PDFs für Greta
 
-- `pdf/latex/buch_tag7.pdf` — 13 Seiten
-- `pdf/latex/buch_tag8.pdf` — 15 Seiten
-- `pdf/latex/buch_tag7_8.pdf` — 28 Seiten (kompaktes Reed-Solomon-Heft)
+Pro Etappe N (1..8) ein `pdf/latex/redundanz-tagN.pdf`. Jeder
+Standalone enthält das Buch im Stand bis Etappe N — also wachsend
+von kleinen ~10-Seiten-Heften bei Etappe 1 bis fast Hauptbuch-Größe
+bei Etappe 8.
 
 ## Nächste Schritte (priorisiert)
 

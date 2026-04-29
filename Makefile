@@ -1,44 +1,47 @@
 # Build-Targets für das Buchprojekt.
 #
-# `make`            baut das LaTeX-Buch nach pdf/latex/buch.pdf.
-# `make test-code`  prüft alle Python-Snippets syntaktisch.
-# `make clean`      räumt LaTeX-Build-Artefakte auf.
-# `make shell`      öffnet eine Subshell im latex/-Verzeichnis (für ad-hoc latexmk).
+# `make` / `make buch`     baut das Hauptbuch (alle Etappen, mit Titelseite)
+#                          nach pdf/latex/geheimnis-der-redundanz.pdf.
+# `make redundanz-tagN`    baut den Standalone „Buch bis Etappe N" ohne
+#                          Titelseite nach pdf/latex/redundanz-tagN.pdf
+#                          (N = 1 .. 8).
+# `make standalones`       baut alle Standalones der Reihe nach.
+# `make test-code`         prüft alle Python-Snippets syntaktisch.
+# `make clean`             räumt LaTeX-Build-Artefakte auf.
+# `make shell`             öffnet eine Subshell im latex/-Verzeichnis.
 
-.PHONY: all buch buch_tag7 buch_tag8 buch_tag7_8 clean shell test-code container container-clean
+LATEX_DIR  := latex
+CODE_DIR   := $(LATEX_DIR)/code
+HAUPTBUCH  := geheimnis-der-redundanz
+ETAPPEN    := 1 2 3 4 5 6 7 8
+STANDALONES := $(addprefix redundanz-tag,$(ETAPPEN))
 
-LATEX_DIR := latex
-CODE_DIR := $(LATEX_DIR)/code
+.PHONY: all buch standalones $(STANDALONES) clean shell test-code container container-clean
 
 all: buch
 
+# --- Hauptbuch -------------------------------------------------------
+# latexmk gibt beim Cold-Start einen non-zero Exit-Code zurück, obwohl
+# das PDF erfolgreich gebaut wird (Glossar braucht zwei Durchläufe,
+# hyperref-Warnings beim ersten Durchlauf). Wir tolerieren das mit dem
+# vorangestellten "-" und prüfen am Ende explizit auf das PDF.
 buch: test-code
 	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
-	-cd $(LATEX_DIR) && latexmk -f
-	@test -f pdf/latex/buch.pdf && echo "✓ pdf/latex/buch.pdf"
+	-cd $(LATEX_DIR) && latexmk -f $(HAUPTBUCH).tex
+	@test -f pdf/latex/$(HAUPTBUCH).pdf && echo "✓ pdf/latex/$(HAUPTBUCH).pdf"
 
-# Standalone-Auszüge — Vorab-PDFs einzelner Kapitel (Greta-Material,
-# solange das Hauptbuch noch im Polish-Sprint hängt).
-# latexmk gibt bei diesen Auszügen einen non-zero Exit-Code zurück,
-# obwohl das PDF erfolgreich gebaut wird (Cold-Start-Quirk mit
-# Glossar plus hyperref-Warnings). Wir tolerieren das mit dem
-# vorangestellten "-" und prüfen am Ende explizit auf das PDF.
-buch_tag7: test-code
+# --- Standalones „Buch bis Etappe N" --------------------------------
+# Pro Etappe ein Master latex/redundanz-tagN.tex; sie teilen sich den
+# Body in latex/buch-rumpf.tex. Selber Cold-Start-Workaround.
+$(STANDALONES): test-code
 	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
-	-cd $(LATEX_DIR) && latexmk -f -jobname=buch_tag7 buch_tag7.tex
-	@test -f pdf/latex/buch_tag7.pdf && echo "✓ pdf/latex/buch_tag7.pdf"
+	-cd $(LATEX_DIR) && latexmk -f $@.tex
+	@test -f pdf/latex/$@.pdf && echo "✓ pdf/latex/$@.pdf"
 
-buch_tag8: test-code
-	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
-	-cd $(LATEX_DIR) && latexmk -f -jobname=buch_tag8 buch_tag8.tex
-	@test -f pdf/latex/buch_tag8.pdf && echo "✓ pdf/latex/buch_tag8.pdf"
+standalones: $(STANDALONES)
 
-buch_tag7_8: test-code
-	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
-	-cd $(LATEX_DIR) && latexmk -f -jobname=buch_tag7_8 buch_tag7_8.tex
-	@test -f pdf/latex/buch_tag7_8.pdf && echo "✓ pdf/latex/buch_tag7_8.pdf"
-
-# Syntaxprüfung aller Code-Snippets vor dem LaTeX-Build.
+# --- Code-Sanity ----------------------------------------------------
+# Syntaxprüfung aller Python-Snippets vor dem LaTeX-Build.
 # -B unterdrückt das Schreiben von .pyc-Dateien.
 test-code:
 	@find $(CODE_DIR) -name "*.py" -type f -print0 \

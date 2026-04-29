@@ -1,0 +1,22 @@
+% =============================================================
+% Standalone-Master — Buch bis einschließlich Etappe 8.
+%
+% Output: pdf/latex/redundanz-tag8.pdf
+%
+% Ohne Titelseite, sonst identisches Buch-Layout (Vorwort, TOC,
+% Etappen 1..8, Lösungen 1..8, Glossar, Index). Geteilter Body
+% in buch-rumpf.tex.
+% =============================================================
+
+\documentclass[
+  11pt,
+  a4paper,
+  twoside,
+  parskip=half,
+  numbers=noenddot,
+  open=right,
+]{scrbook}
+
+\def\maxetappe{8}
+
+\input{buch-rumpf}

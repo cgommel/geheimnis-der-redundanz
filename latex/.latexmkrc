@@ -1,6 +1,9 @@
 # latexmk-Konfiguration für das Buchprojekt.
 #
-# Aufruf via Makefile (im Repo-Root): `make` baut buch.tex.
+# Aufruf via Makefile (im Repo-Root):
+#   `make`                    → geheimnis-der-redundanz.tex (Hauptbuch)
+#   `make redundanz-tagN`     → redundanz-tagN.tex (Standalone)
+#   `make standalones`        → alle 8 Standalones der Reihe nach
 # Output (PDF und Build-Artefakte) landet in ../pdf/latex/.
 
 $pdf_mode = 5;        # XeLaTeX
@@ -10,5 +13,5 @@ $xelatex = 'xelatex -interaction=nonstopmode -synctex=1 -shell-escape -file-line
 
 $out_dir = '../pdf/latex';
 
-# Damit \include-Dateien beim Editieren erkannt werden:
-@default_files = ('buch.tex');
+# Wenn latexmk ohne Argument aufgerufen wird, bauen wir das Hauptbuch.
+@default_files = ('geheimnis-der-redundanz.tex');

@@ -148,6 +148,22 @@
   die `[N]`-Page-Marker im Log auf die Datei zurückrechnen, dann
   vor Ort umformulieren oder `\hyphenation`-Hilfe einsetzen.
 
+### LY-14 — Aufeinanderfolgende Aufgabenblöcke ohne Atemraum 🟥
+- **Schwere**: hoch (sichtbar im PDF — letzter Aufzählungspunkt einer
+  Bleistiftübung wird unter den nachfolgenden Block geschoben)
+- **Stelle**: Tag 1, Übergang Bleistiftübung 4 (a/b/c) → Python-Einheit 2
+  „Der EAN-13-Validator". Vermutlich überall, wo zwei
+  `aufgabe`-Umgebungen unmittelbar aufeinanderfolgen.
+- **Befund**: keine erkennbare Trennung zwischen den Boxen, der
+  Aufzählungspunkt (c) wird mittendrin abgeschnitten („478…" cut off),
+  dann startet sofort die nächste Box. Optisch katastrophal.
+- **Vermutung**: `aufgabe`-Umgebung setzt nach `\end{aufgabebox}`
+  keinen ausreichenden Vertikalabstand; der Page-Break-Algorithmus
+  optimiert dann auf knapp vor dem Marginpar der Folge-Box.
+- **Lösungsidee**: nach `\end{aufgabebox}` festen `\bigskip` oder
+  `\addvspace{...}` setzen, oder `\nopagebreak[0]` plus
+  `\needspace`-Bedarfssignal an die nächste Box anpassen.
+
 ### LY-04 — Section-Titel mit `\normalfont`-Zeitangabe 🟥
 - **Schwere**: kosmetisch
 - **Stelle**: alle Tag-Kapitel, z. B. „1.3 Das Paritätsbit — die

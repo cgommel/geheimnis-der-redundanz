@@ -72,6 +72,20 @@
   Path=fonts/stix-two/,
 ]
 
+% --- Fallback für fehlende Glyphen ---
+% Source Serif/Sans/Code-Pro decken nicht jeden Unicode-Math-Glyph
+% ab (z. B. ⊕ U+2295, ⌊⌋ U+230A/B, ↔ U+2194). Wenn solche Zeichen
+% direkt im Quelltext stehen — vor allem in verbatim/minted-Blöcken,
+% wo math-Mode nicht greift — würden sie als „Tofu" rendern.
+% STIX Two Math hat sie alle und ist sowieso schon geladen; per
+% newunicodechar lenken wir die nackten Unicode-Zeichen darauf um.
+\usepackage{newunicodechar}
+\newfontfamily\fallbacksym{STIXTwoMath-Regular.otf}[Path=fonts/stix-two/]
+\newunicodechar{⊕}{{\fallbacksym ⊕}}
+\newunicodechar{⌊}{{\fallbacksym ⌊}}
+\newunicodechar{⌋}{{\fallbacksym ⌋}}
+\newunicodechar{↔}{{\fallbacksym ↔}}
+
 % --- Glossar (Polish-Sprint M6) ---
 % automake=immediate ruft makeglossaries per \write18 auf (shell-escape
 % ist eh schon aktiv wegen minted), nonumberlist unterdrückt die
