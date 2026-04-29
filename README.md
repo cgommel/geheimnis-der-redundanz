@@ -70,3 +70,17 @@ Layout-Eigenschaften stehen in [`BUILD.md`](BUILD.md). Kurz:
 make           # baut das Hauptbuch nach pdf/latex/geheimnis-der-redundanz.pdf
 make container # reproduzierbarer Container-Build
 ```
+
+## Lizenz
+
+- **Buchtext** (Kapitel, Aufgaben, Diagramme, Lösungen):
+  [Creative Commons BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+  — siehe [`LICENSE`](LICENSE). Du darfst teilen und bearbeiten, auch
+  kommerziell, solange Du die Urheberschaft nennst und Bearbeitungen
+  unter derselben Lizenz weitergibst.
+- **Python-Snippets** unter [`latex/code/`](latex/code/):
+  [MIT](latex/code/LICENSE) — wiederverwendbar in eigenen Projekten
+  ohne Copyleft-Zwang.
+- **Vendored Schriften** unter [`latex/fonts/`](latex/fonts/) (Source Pro
+  Familie, STIX Two Math): [SIL Open Font License 1.1](https://openfontlicense.org)
+  — Lizenztexte je Familie unter `latex/fonts/<familie>/`.
