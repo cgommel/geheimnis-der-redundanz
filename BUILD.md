@@ -28,11 +28,17 @@ make container-clean
 ```bash
 sudo tlmgr install fvextra framed newunicodechar latexmk \
                    tcolorbox changepage tikzfill pdfcol \
-                   needspace collection-latexextra
-brew install --cask font-dejavu        # macOS / Homebrew
+                   needspace unicode-math collection-latexextra
+brew install --cask font-dejavu        # macOS / Homebrew (für Marginalien-Symbole)
 brew install pygments
 pip install reedsolo                   # für Etappe 8
 ```
+
+**Fonts** (Source Serif 4, Source Sans 3, Source Code Pro, STIX Two
+Math) liegen vendored unter [`latex/fonts/`](latex/fonts/) und werden
+über `fontspec`-`Path=` direkt aus dem Repo geladen — keine
+System-Installation nötig. Provenance und Lizenzen siehe
+[`latex/fonts/README.md`](latex/fonts/README.md).
 
 ## Vorab-PDFs einzelner Etappen
 

@@ -70,18 +70,17 @@
   „Erkennbar", „Korrigierbar") oder Tabelle drehen (Codes als
   Spalten, Eigenschaften als Zeilen).
 
-### LY-06 — hyperref kann Mathe in Section-Titeln nicht ⌬ 🟥
-- **Schwere**: kosmetisch beim Build (102 Warnungen), bei
-  PDF-Bookmarks sichtbar
-- **Stelle**: alle Tag-Kapitel; Section-Titel der Form
-  `\section{... ($\approx$ N min)}`
-- **Befund**: 102×
-  `Package hyperref Warning: Token not allowed in a PDF string
-  (Unicode): removing 'math shift' / '\approx'`. PDF-Bookmarks zeigen
-  „X.Y Titel ( N min)" ohne `≈`-Symbol.
-- **Lösungsidee**: `\texorpdfstring{$\approx$}{≈}` für Bookmarks,
-  oder eigener Befehl `\sectionmitzeit{Titel}{Zeitangabe}`, der das
-  Bookmark sauber setzt (deckt LY-04 mit ab).
+### LY-06 — hyperref kann Mathe in Section-Titeln nicht ⌬ 🟧
+- **Schwere**: kosmetisch beim Build (verbleibend ~21 Warnungen)
+- **Stand**: Hauptverursacher `$\approx$` in Section-Titeln
+  durch Unicode `≈` ersetzt (alle Tag-Kapitel auf einmal). Build
+  hatte mit unicode-math + Source Pro auch hart auf
+  `IntCalcError:DivisionByZero` gekracht; das ist mit weg.
+- **Verbleibend**: `$2^N$`, `$2^n$` etc. in Section-Titeln, z. B.
+  „GF$(2^8)$" → 21 hyperref-Warnungen.
+- **Lösungsidee**: für die GF-Sections per
+  `\texorpdfstring{$2^N$}{²ᴺ}` oder Unicode-Hochzahlen direkt
+  („GF(2⁸)") ersetzen.
 
 ### LY-07 — Underfull \vbox while output active (6×) 🟥
 - **Schwere**: niedrig
