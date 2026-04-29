@@ -1,0 +1,289 @@
+\chapter{Tag 7 — Reed-Solomon-Encoder mit Generator-Polynom}
+
+\begin{quote}
+Tag 6 hat dir die Reed-Solomon-Idee in ihrer mathematisch klarsten
+Form gezeigt: Daten als Polynom, an mehr Stellen auswerten, als für
+die Rekonstruktion nötig sind. In der Praxis baut man den Encoder
+anders herum — mit einem festen \textbf{Generator-Polynom} und einer
+Polynomdivision, die nach dem CRC-Schema von Tag 4 funktioniert.
+Diese Form ist effizienter und im Datamatrix-Standard so vorgesehen.
+Heute lernst du sie kennen und steigst dabei aus GF($2^3$) in
+GF($2^8$) um — der Welt mit 256 Elementen, die Datamatrix wirklich
+nutzt.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 7 kannst du \dots
+
+\begin{itemize}
+\item die \texttt{GF8}-Klasse aus Tag 5 zu einer
+  \texttt{GF256}-Klasse erweitern (vier Zeilen Code)
+\item erklären, was ein \textbf{primitives Element} ist und warum
+  $\alpha = 2$ in GF($2^8$) eines ist
+\item ein \textbf{Generator-Polynom} als Produkt von Linearfaktoren
+  konstruieren
+\item einen Reed-Solomon-Encoder im Generator-Polynom-Stil schreiben,
+  der \emph{systematisch} codiert (Daten + Prüfsymbole)
+\item verifizieren, dass ein gültiges Codewort durch das
+  Generator-Polynom teilbar ist
+\end{itemize}
+
+Material: Bleistift, kariertes Papier, deine GF($2^3$)-Multi\-pli\-ka\-tions\-tafel
+aus Tag 5, Thonny.
+
+% =============================================================
+\section{Wechsel auf GF($2^8$): vier Zeilen mehr Universum \normalfont(\textit{$\approx$ 25 min})}
+% =============================================================
+
+GF($2^3$) hatte 8 Elemente. Datamatrix arbeitet mit Bytes, also
+0 bis 255 — das sind 256 Werte. Der zugehörige Körper heißt
+GF($2^8$).
+
+\subsection*{Was sich ändert}
+
+Konzeptionell nichts: Polynome vom Grad $< 8$ über GF(2), modulo
+eines irreduziblen Polynoms vom Grad 8. Der Standard-Wahl in der
+Welt von AES und Reed-Solomon ist
+\[
+  p(x) = x^8 + x^4 + x^3 + x^2 + 1
+\]
+(als Bitfolge: \texttt{100011101}, hex \texttt{0x11D}).
+
+Praktisch: vier Stellen im Code aus Tag 5 anpassen.
+
+\begin{pythoneinheit}{1}{Die GF256-Klasse}
+Lege eine neue Datei \texttt{gf256.py} an:
+
+\pythoncodeteil{tag7/gf256.py}{klasse}
+
+\paragraph{Aufgabe 1.1 — Was hat sich geändert?}
+Vergleiche mit \texttt{gf8.py} aus Tag 5. Welche vier Zeilen sind
+anders? Warum reicht das?
+
+\paragraph{Aufgabe 1.2 — Inverse via Fermat.}
+In GF($2^8$) gibt es $255$ Nicht-Null-Elemente. Aus dem Satz von
+Fermat folgt: $a^{255} = 1$ für jedes $a \ne 0$, also
+$a^{254} = a^{-1}$. Damit kann man Inverse ohne Probier-Schleife
+berechnen.
+
+\pythoncodeteil{tag7/gf256.py}{inverse}
+\end{pythoneinheit}
+
+\subsection*{Primitives Element}
+
+Ein \textbf{primitives Element} eines Körpers ist ein Element, dessen
+Potenzen $\alpha^0, \alpha^1, \alpha^2, \dots$ die ganze
+multiplikative Gruppe abdecken. Bei GF($2^8$) sind das 255 Potenzen
+(alle Nicht-Null-Elemente).
+
+In GF($2^8$) mit unserem Modulo-Polynom ist $\alpha = 2$ — also
+das Polynom $x$ — ein primitives Element. Das spielt für
+Reed-Solomon eine zentrale Rolle, denn die \emph{Stützstellen} unseres
+RS-Codes werden $\alpha^0, \alpha^1, \dots, \alpha^{n-1}$ sein.
+
+\begin{bleistiftuebung}{1}{Potenzen von $\alpha$ in GF($2^3$)}
+Wir bleiben für die Bleistiftrechnungen in GF($2^3$), weil GF($2^8$)
+per Hand zu zäh wird. Setze $\alpha = 2$ (also das Polynom $x$).
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Berechne $\alpha^1, \alpha^2, \alpha^3, \alpha^4, \alpha^5,
+  \alpha^6, \alpha^7$ in GF($2^3$). Nutze die Multiplikationstafel
+  von Tag 5.
+\item Was ist $\alpha^7$? Was ist $\alpha^8$, $\alpha^9$?
+\item Wie viele verschiedene Werte hat die Folge $\alpha^0, \alpha^1,
+  \alpha^2, \dots$? Vergleiche mit der Anzahl der Nicht-Null-Elemente
+  in GF($2^3$).
+\end{enumerate}
+\end{bleistiftuebung}
+
+\begin{pythoneinheit}{1.5}{Verifikation: $\alpha = 2$ ist primitiv in GF($2^8$)}
+\pythoncodeteil{tag7/gf256.py}{alpha}
+
+Wenn die Ausgabe „255“ lautet, hat $\alpha = 2$ in GF($2^8$) volle
+Ordnung — alle 255 Nicht-Null-Elemente werden als Potenz erreicht.
+\end{pythoneinheit}
+
+% =============================================================
+\section{Generator-Polynom: das andere Gesicht von Reed-Solomon \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+\subsection*{Die Idee}
+
+Wir bauen ein festes Polynom $g(x)$, das genau diese Eigenschaft hat:
+es hat als Nullstellen die ersten $t$ Stützstellen $\alpha^0, \alpha^1,
+\dots, \alpha^{t-1}$.
+
+Konkret als Produkt von Linearfaktoren:
+\[
+  g(x) = (x - \alpha^0)(x - \alpha^1)(x - \alpha^2) \cdots
+         (x - \alpha^{t-1}).
+\]
+
+In GF gilt $-a = a$, also $(x - \alpha^i) = (x + \alpha^i)$.
+
+\subsection*{Warum hilft das?}
+
+Ein Codewort sind die Koeffizienten eines Polynoms $c(x)$ vom Grad
+$< n$. Die Code-\emph{Bedingung} ist: $c(x)$ ist durch $g(x)$
+\emph{teilbar}. Das ist äquivalent dazu, dass $c(\alpha^i) = 0$ für
+$i = 0, 1, \dots, t-1$ — die ersten $t$ Auswertungen des Codepolynoms
+sind 0.
+
+\textbf{Brücke zu CRC (Tag 4):} dort haben wir genau dasselbe gemacht
+— Daten plus Nullen, Polynomdivision modulo eines Generator-Polynoms,
+Rest sind die Prüfbits, sodass das gesendete Wort durch $G(x)$
+teilbar ist. Bei CRC waren die Koeffizienten in GF(2). Bei
+Reed-Solomon sind sie in GF($2^8$). Sonst alles gleich.
+
+\begin{bleistiftuebung}{2}{Generator-Polynom für RS$(5,3)$ über GF($2^3$)}
+RS$(5,3)$ hat $k=3$ Datensymbole und $n=5$ Symbole insgesamt, also
+$t = 2$ Prüfsymbole — korrigiert einen Fehler.
+
+Berechne das Generator-Polynom
+\[
+  g(x) = (x + \alpha)(x + \alpha^2)
+\]
+in GF($2^3$), mit $\alpha = 2$.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Setze die Werte aus Bleistiftübung 1 ein: $\alpha = 2$, $\alpha^2 = 4$.
+\item Multipliziere $(x + 2)(x + 4)$ aus. Vorsicht in den
+  GF($2^3$)-Koeffizienten: Addition ist XOR, Multiplikation aus der
+  Tafel.
+\item Bringe das Ergebnis in die Form $g(x) = x^2 + g_1 x + g_0$.
+  Welche Werte haben $g_0$ und $g_1$?
+\end{enumerate}
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Systematische Codierung — analog zu CRC \normalfont(\textit{$\approx$ 30 min})}
+% =============================================================
+
+Bei einer \textbf{systematischen} Codierung erscheinen die Daten
+\textbf{wörtlich} im Codewort; nur ein paar Prüfsymbole werden hinten
+angehängt. Das ist erwünscht, weil ein Empfänger die Daten ohne
+Decoder-Schritt ablesen kann (sofern das Codewort fehlerfrei
+ankam).
+
+\subsection*{Das Verfahren}
+
+\begin{enumerate}
+\item Hänge $t$ Nullen an die $k$ Datensymbole — das ist
+  $d(x) \cdot x^t$.
+\item Teile durch $g(x)$ modulo GF($2^8$). Der Rest $r(x)$ hat Grad
+  $< t$ und besteht aus den $t$ Prüfsymbolen.
+\item Codewort: $c(x) = d(x) \cdot x^t + r(x)$ (denn $r$ ergänzt
+  das Verschwinden zur Teilbarkeit durch $g$).
+\end{enumerate}
+
+\begin{bleistiftuebung}{3}{Ein RS$(5,3)$-Codewort von Hand}
+Datensymbole: $d_2 d_1 d_0 = (2, 5, 3)$ — die Zahlen aus
+Tag 6. Generatorpolynom $g(x)$: das Ergebnis aus Bleistiftübung 2.
+
+\begin{enumerate}[label=(\alph*), leftmargin=*]
+\item Schreibe das Datenpolynom auf:
+  $d(x) = 3 + 5x + 2x^2$. Multipliziere mit $x^2$ (also zwei Nullen
+  hinten anhängen): $d(x) \cdot x^2 = 3 x^2 + 5 x^3 + 2 x^4$ — als
+  Liste von Koeffizienten $(0, 0, 3, 5, 2)$ vom niedrigsten Grad
+  zum höchsten.
+\item Führe die Polynomdivision durch $g(x)$ in GF($2^3$) durch.
+  Vorgehen wie bei CRC: Vom höchsten Term abwärts den $g$-Vielfachen
+  abziehen (in GF: addieren).
+\item Schreibe die letzten zwei Symbole als $(p_1, p_0)$ — das sind
+  die Prüfsymbole. Codewort:
+  $c(x) = d(x) \cdot x^2 + r(x)$.
+\item Verifiziere: $c(\alpha) = 0$ und $c(\alpha^2) = 0$.
+  (Horner-Schema, oder einfach an den jeweiligen Stützstellen
+  einsetzen.)
+\end{enumerate}
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Python-Werkstatt: Encoder in GF($2^8$) \normalfont(\textit{$\approx$ 35 min})}
+% =============================================================
+
+Jetzt bauen wir das in der echten Datamatrix-Welt — GF($2^8$). Lege
+eine neue Datei \texttt{rs\_encoder.py} an (im selben Ordner wie
+\texttt{gf256.py} aus oben).
+
+\begin{pythoneinheit}{2}{Generator-Polynom-Bau}
+\pythoncodeteil{tag7/rs_encoder.py}{generator}
+
+\paragraph{Aufgabe 2.1 — Verifikation.}
+Setze $\alpha^1 = 2$, $\alpha^2 = 4$, $\alpha^3 = 8$, $\alpha^4 = 16$
+in das Generator-Polynom ein. Alle vier Werte müssen 0 ergeben (denn
+das sind ja die Wurzeln). Schreibe vier Zeilen Code, die das prüfen.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{3}{Systematischer Encoder}
+\pythoncodeteil{tag7/rs_encoder.py}{encoder}
+
+\paragraph{Aufgabe 3.1 — Eigene Nachricht.}
+Ändere den Test auf deinen Namen statt \texttt{“GRETA“}. Schau dir
+die Prüfsymbole an. Sind sie sinnvoll oder zufällig aussehende Zahlen?
+
+\paragraph{Aufgabe 3.2 — Plausibilitätsprüfung.}
+Ein gültiges Codewort hat an $\alpha^0, \alpha^1, \dots, \alpha^{t-1}$
+jeweils Wert 0. Die Funktion \texttt{ist\_durch\_g\_teilbar} im Code
+unten prüft das.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{4}{Codewort-Verifikation}
+\pythoncodeteil{tag7/rs_encoder.py}{check}
+
+\paragraph{Aufgabe 4.1 — Ein Bit kippen.}
+Ändere ein Symbol im Codewort (z.\,B. das dritte Datensymbol) und
+rufe \texttt{ist\_durch\_g\_teilbar} erneut auf. Was siehst du?
+Welches der vier Auswertungspunkte zeigt zuerst, dass etwas faul ist?
+\end{pythoneinheit}
+
+% =============================================================
+\section{Reflexion und Brücke zu Tag 8 \normalfont(\textit{$\approx$ 15 min})}
+% =============================================================
+
+\subsection*{Was wir heute gelernt haben}
+
+\begin{itemize}
+\item GF($2^8$) ist GF($2^3$) in groß — gleiche Mathematik, nur 256
+  statt 8 Elemente. Die GF256-Klasse hat sich um vier Zeilen Code
+  von der GF8-Klasse unterschieden.
+\item Ein \textbf{primitives Element} $\alpha$ erzeugt mit seinen
+  Potenzen die ganze multiplikative Gruppe — in GF($2^8$) sind das
+  255 verschiedene Werte.
+\item Das \textbf{Generator-Polynom} $g(x) = (x+\alpha^0)(x+\alpha^1)
+  \cdots (x+\alpha^{t-1})$ ist die zentrale Konstruktion: ein Codewort
+  ist genau dann gültig, wenn es durch $g(x)$ teilbar ist.
+\item \textbf{Systematische Codierung} (Daten + Prüfsymbole)
+  funktioniert genau wie CRC — Polynomdivision modulo $g$, der Rest
+  sind die Prüfsymbole.
+\end{itemize}
+
+\subsection*{Drei Fragen zum Mitnehmen}
+
+\begin{enumerate}
+\item Warum legen wir die Wurzeln des Generator-Polynoms gerade auf
+  $\alpha^0, \alpha^1, \dots$ und nicht auf irgendwelche andere Werte?
+  (Tipp: hat damit zu tun, dass der Decoder die Syndrome berechnen
+  können muss.)
+\item Bei CRC haben wir Polynomdivision in GF(2) gemacht. Heute in
+  GF($2^8$). Was wäre der Mehraufwand, das in GF($2^{16}$) zu tun?
+  Welche Codes funktionieren mit GF($2^{16}$)?
+\item Beim Decoder werden wir das Codewort an $\alpha^0, \dots,
+  \alpha^{t-1}$ auswerten — die Werte heißen \emph{Syndrome}. Was
+  ergeben die Syndrome bei einem fehlerfreien Codewort? Bei einem
+  Codewort mit genau einem Fehler an Position $j$ und
+  Fehlerwert $e$?
+\end{enumerate}
+
+\subsection*{Vorschau Tag 8}
+
+Morgen drehen wir den Spieß um: Wir empfangen ein Codewort, das
+unterwegs verfälscht wurde. Erst der einfache Fall —
+\textbf{Auslöschungs-Decoder}, wenn wir wissen, \emph{wo} die Fehler
+sitzen (analog zur Detektivarbeit aus Tag 2 mit der ISBN-10). Dann
+der harte Fall — \textbf{allgemeiner Decoder}, der auch die
+Positionen finden muss. Den letzten Algorithmus
+(\emph{Berlekamp-Massey}) sehen wir nur als Skizze; für die Praxis
+nutzen wir die Python-Bibliothek \texttt{reedsolo}, die genau das
+für uns macht.

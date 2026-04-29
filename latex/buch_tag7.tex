@@ -1,0 +1,52 @@
+% =============================================================
+% Standalone-Master: nur Tag 7 plus zugehörige Lösungen.
+%
+% Greta-Vorab-PDF, damit sie morgen Material hat — bevor wir das
+% Kapitel im Hauptbuch durch den Polish-Sprint geschickt haben.
+%
+% Build:
+%   cd latex && latexmk -jobname=buch_tag7 buch_tag7.tex
+% Output landet in pdf/latex/buch_tag7.pdf.
+% =============================================================
+
+\documentclass[
+  11pt,
+  a4paper,
+  twoside,
+  parskip=half,
+  numbers=noenddot,
+  open=right,
+]{scrbook}
+
+\input{praeambel}
+\input{farben}
+\input{befehle}
+\input{glossar}
+
+\begin{document}
+
+\frontmatter
+
+\begin{titlepage}
+  \centering
+  \vspace*{5cm}
+  {\Huge\bfseries Tag 7\par}
+  \vspace{0.6cm}
+  {\Large\bfseries Reed-Solomon-Encoder mit Generator-Polynom\par}
+  \vspace{1.2cm}
+  {\Large\itshape Vorab-Auszug aus „Das Geheimnis der Redundanz"\par}
+  \vfill
+  {\large \today\par}
+  \vspace*{1.5cm}
+\end{titlepage}
+
+\mainmatter
+\setcounter{chapter}{6}   % damit „7 Tag 7 — …" als Kapitel-Nummer steht
+\include{kapitel/tag7}
+
+\appendix
+\chapter*{Lösungen}
+\addcontentsline{toc}{chapter}{Lösungen}
+\input{loesungen/tag7}
+
+\end{document}

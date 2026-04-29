@@ -5,7 +5,7 @@
 # `make clean`      räumt LaTeX-Build-Artefakte auf.
 # `make shell`      öffnet eine Subshell im latex/-Verzeichnis (für ad-hoc latexmk).
 
-.PHONY: all buch clean shell test-code container container-clean
+.PHONY: all buch buch_tag7 clean shell test-code container container-clean
 
 LATEX_DIR := latex
 CODE_DIR := $(LATEX_DIR)/code
@@ -15,6 +15,12 @@ all: buch
 buch: test-code
 	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
 	cd $(LATEX_DIR) && latexmk
+
+# Standalone-Auszug nur Tag 7 (Vorab-PDF, solange Tag 7 noch im
+# Polish-Sprint hängt und das Hauptbuch nicht gemergt ist).
+buch_tag7: test-code
+	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
+	cd $(LATEX_DIR) && latexmk -jobname=buch_tag7 buch_tag7.tex
 
 # Syntaxprüfung aller Code-Snippets vor dem LaTeX-Build.
 # -B unterdrückt das Schreiben von .pyc-Dateien.

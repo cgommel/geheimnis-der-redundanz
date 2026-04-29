@@ -38,3 +38,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.iml
+
+# Claude-Code-spezifische Workspace-Settings
+.claude/
