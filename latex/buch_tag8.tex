@@ -1,0 +1,48 @@
+% Standalone-Master: nur Tag 8 plus zugehörige Lösungen.
+% Setzt voraus, dass Greta Tag 7 schon gelesen hat (gleiche Welt:
+% GF(2^8) und Generator-Polynom-Encoder).
+%
+% Build:
+%   make buch_tag8
+
+\documentclass[
+  11pt,
+  a4paper,
+  twoside,
+  parskip=half,
+  numbers=noenddot,
+  open=right,
+]{scrbook}
+
+\input{praeambel}
+\input{farben}
+\input{befehle}
+\input{glossar}
+
+\begin{document}
+
+\frontmatter
+
+\begin{titlepage}
+  \centering
+  \vspace*{5cm}
+  {\Huge\bfseries Tag 8\par}
+  \vspace{0.6cm}
+  {\Large\bfseries Reed-Solomon-Decoder\par}
+  \vspace{1.2cm}
+  {\Large\itshape Vorab-Auszug aus „Das Geheimnis der Redundanz"\par}
+  \vfill
+  {\large \today\par}
+  \vspace*{1.5cm}
+\end{titlepage}
+
+\mainmatter
+\setcounter{chapter}{7}
+\include{kapitel/tag8}
+
+\appendix
+\chapter*{Lösungen}
+\addcontentsline{toc}{chapter}{Lösungen}
+\input{loesungen/tag8}
+
+\end{document}
