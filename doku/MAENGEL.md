@@ -164,6 +164,27 @@
   `\addvspace{...}` setzen, oder `\nopagebreak[0]` plus
   `\needspace`-Bedarfssignal an die nächste Box anpassen.
 
+### LY-15 — Build-Provenance dezent ins PDF einblenden 🟥
+- **Schwere**: niedrig (Wunsch, kein Mangel)
+- **Stelle**: vermutlich Titelseite (klein unter dem Datum) oder
+  Impressum-/Kolophon-Seite. Auch denkbar: Footer auf Frontmatter-
+  Seiten.
+- **Befund**: aktuell steht im PDF nur `\today`. Bei Vorab-Versionen
+  weiß man nicht, aus welchem Branch/Commit das PDF stammt — das ist
+  besonders bei Greta-Material relevant, weil mehrere Stände zirkulieren.
+- **Lösungsidee**:
+  - **Variante A**: Build-Zeit-Hook im Makefile schreibt eine
+    `latex/_gitinfo.tex` mit `\def\gitbranch{…}` und
+    `\def\gitsha{…}` (kurze SHA), wird von `praeambel.tex`
+    per `\InputIfFileExists` geladen. Kein Netz, kein Paket, deterministisch.
+  - **Variante B**: `gitinfo2`-Paket (oder `vc`-Toolkit) — installiert
+    Git-Hooks, die Branch/SHA in eine `.tex`-Datei schreiben. Bequemer,
+    aber Hooks setzt nicht jedes Working Copy automatisch.
+  - **Format-Vorschlag**: `Branch · short-SHA · Build-Datum` in
+    \footnotesize, evtl. grau, am unteren Rand der Titelseite.
+- **Hinweis**: das CI-Release-PDF sollte auf den Tag (z. B.
+  `v2026.04.30`) zurückfallen, falls Branch=detached HEAD.
+
 ### LY-04 — Section-Titel mit `\normalfont`-Zeitangabe 🟥
 - **Schwere**: kosmetisch
 - **Stelle**: alle Tag-Kapitel, z. B. „1.3 Das Paritätsbit — die
