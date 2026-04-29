@@ -49,6 +49,11 @@
 % --- Farben & Hyperlinks ---
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
+% pdfpagelabels ist hyperref-Default; wir setzen nur plainpages=false,
+% damit hyperref beim \pagenumbering-Wechsel Frontmatter→Mainmatter
+% keine Duplikat-Warnung wirft und PDF-Reader die Buchseiten-Labels
+% (i, ii, …, 1, 2, …) korrekt anzeigen.
+\hypersetup{plainpages=false}
 
 % --- Layout-Bausteine ---
 % tcolorbox: nur die Libraries laden, die wir tatsächlich brauchen

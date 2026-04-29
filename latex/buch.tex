@@ -11,10 +11,13 @@
   a4paper,
   twoside,
   parskip=half,
-  headings=normalsize,
   numbers=noenddot,
   open=right,
 ]{scrbook}
+
+% headings=normalsize gehört nicht in die Klassen-Optionen (würde
+% als „Unused option" gemeldet), sondern in \KOMAoptions.
+\KOMAoptions{headings=normalsize}
 
 \input{praeambel}
 \input{farben}
@@ -24,6 +27,7 @@
 \begin{document}
 
 \frontmatter
+\pagestyle{plain}
 
 % --- Custom Titelseite ---
 \begin{titlepage}
@@ -43,6 +47,7 @@
 \tableofcontents
 
 \mainmatter
+\pagestyle{scrheadings}
 
 \include{kapitel/tag1}
 \include{kapitel/tag2}

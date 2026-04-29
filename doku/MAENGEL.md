@@ -116,14 +116,14 @@
   oder `sort=de` Option auf einzelne Einträge mit Umlauten
   (z.\,B.\ Auslöschung, Bündelfehler, Übertragung).
 
-### LY-11 — Unused option `headings` 🟥
+### LY-11 — Unused option `headings` 🟩
 - **Schwere**: kosmetisch
 - **Stelle**: `buch.tex` `\documentclass[…, headings=normalsize, …]`
 - **Befund**: `LaTeX Warning: Unused global option(s): [headings]`.
   scrbook erwartet `headings=` zur Klassen-Zeit, das war unsere
   Schreibweise; aber KOMA übernimmt scheinbar die Form anders.
-- **Lösungsidee**: in `\KOMAoptions{headings=…}` übersetzen oder
-  einfach entfernen.
+- **Lösung**: aus den Klassen-Optionen entfernt, stattdessen
+  `\KOMAoptions{headings=normalsize}` direkt nach `\documentclass`.
 
 ### LY-12 — DejaVu Serif hat keine echten Kapitälchen 🟥
 - **Schwere**: kosmetisch (unsichtbar bisher, weil Fallback brauchbar
