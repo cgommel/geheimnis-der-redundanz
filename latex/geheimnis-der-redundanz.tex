@@ -1,0 +1,39 @@
+% =============================================================
+% Hauptbuch — alle Etappen, mit Titelseite.
+%
+% Output: pdf/latex/geheimnis-der-redundanz.pdf
+%
+% Standalones (Buch bis Etappe N) liegen unter
+% redundanz-tagN.tex. Beide Master-Sorten teilen sich den
+% gemeinsamen Body in buch-rumpf.tex.
+% =============================================================
+
+\documentclass[
+  11pt,
+  a4paper,
+  twoside,
+  parskip=half,
+  numbers=noenddot,
+  open=right,
+]{scrbook}
+
+% Beim Erweitern um neue Etappen: hier hochziehen.
+\def\maxetappe{8}
+
+% Eigene Titelseite — kommt im scrbook in den Frontmatter-Bereich.
+\def\hauptbuchtitelseite{%
+  \begin{titlepage}
+    \centering
+    \vspace*{5cm}
+    {\Huge\bfseries Das Geheimnis der Redundanz\par}
+    \vspace{1.2cm}
+    {\Large\itshape Von der Prüfziffer zum Datamatrix\par}
+    \vfill
+    {\large Christoph Gommel\par}
+    \vspace{0.4cm}
+    {\large \today\par}
+    \vspace*{1.5cm}
+  \end{titlepage}%
+}
+
+\input{buch-rumpf}

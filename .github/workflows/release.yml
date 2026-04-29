@@ -2,9 +2,10 @@ name: release
 
 # Bei einem Tag der Form v* wird das Buch gebaut und als
 # GitHub-Release veröffentlicht. Beispiel:
-#   git tag v0.1.0-tag1bis5
-#   git push origin v0.1.0-tag1bis5
-# → erzeugt eine Release "v0.1.0-tag1bis5" mit buch.pdf als Asset.
+#   git tag v2026.04.30
+#   git push origin v2026.04.30
+# → erzeugt eine Release "v2026.04.30" mit
+#   geheimnis-der-redundanz.pdf als Asset.
 
 on:
   push:
@@ -25,13 +26,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Repo auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Buildx einrichten
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Container-Image bauen
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: build/Dockerfile
@@ -54,4 +55,4 @@ jobs:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           name: ${{ github.event.inputs.tag || github.ref_name }}
           generate_release_notes: true
-          files: pdf/latex/buch.pdf
+          files: pdf/latex/geheimnis-der-redundanz.pdf

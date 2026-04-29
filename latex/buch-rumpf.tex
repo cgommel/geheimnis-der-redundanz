@@ -1,0 +1,64 @@
+% =============================================================
+% Gemeinsamer Buch-Rumpf für alle Master-Dateien.
+%
+% Die Master-Dateien (geheimnis-der-redundanz.tex und alle
+% redundanz-tagN.tex) setzen die zwei Steuer-Makros …
+%
+%   \def\maxetappe{N}              % wieviele Etappen ins Buch?
+%   \def\hauptbuchtitelseite{...}  % Titelseite-Block, leer für Standalones
+%
+% … laden danach den scrbook-Klassenkopf (das passiert in jedem
+% Master direkt nach \documentclass) und greifen schließlich per
+% \input{buch-rumpf} auf den hier definierten Body zu.
+% =============================================================
+
+\input{praeambel}
+\input{farben}
+\input{befehle}
+\input{glossar}
+
+% Defaults, falls ein Master vergisst sie zu setzen.
+\providecommand{\maxetappe}{8}
+\providecommand{\hauptbuchtitelseite}{}
+
+\begin{document}
+
+\frontmatter
+\hauptbuchtitelseite
+\pagestyle{plain}
+
+\include{vorwort}
+\tableofcontents
+
+\mainmatter
+\pagestyle{scrheadings}
+
+% Etappen 1 .. \maxetappe der Reihe nach einbinden. \include sorgt
+% pro Datei für eigenen aux-File und Pagebreak.
+\foreach \etappennr in {1,...,\maxetappe}{%
+  \include{kapitel/tag\etappennr}%
+}
+
+% Lösungen zu allen bisher behandelten Etappen, gesammelt im Anhang.
+\appendix
+\chapter{Lösungen}
+
+\begin{quote}
+Erst nach eigenem Versuch ansehen — der Aha-Moment beim Selber-Lösen
+ist wichtiger als die fertige Lösung am Ende.
+\end{quote}
+
+\foreach \etappennr in {1,...,\maxetappe}{%
+  \input{loesungen/tag\etappennr}%
+}
+
+% \glsaddall zeigt alle Glossar-Einträge (auch die, die im Text nicht
+% per \gls{...} referenziert wurden). Solange wir die Markups nicht
+% systematisch durch alle Kapitel gezogen haben, ist das die
+% praktikable Variante.
+\glsaddall
+\printglossary[title=Glossar, toctitle=Glossar]
+
+\printindex
+
+\end{document}

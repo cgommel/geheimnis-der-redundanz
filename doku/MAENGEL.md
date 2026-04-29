@@ -70,18 +70,17 @@
   „Erkennbar", „Korrigierbar") oder Tabelle drehen (Codes als
   Spalten, Eigenschaften als Zeilen).
 
-### LY-06 — hyperref kann Mathe in Section-Titeln nicht ⌬ 🟥
-- **Schwere**: kosmetisch beim Build (102 Warnungen), bei
-  PDF-Bookmarks sichtbar
-- **Stelle**: alle Tag-Kapitel; Section-Titel der Form
-  `\section{... ($\approx$ N min)}`
-- **Befund**: 102×
-  `Package hyperref Warning: Token not allowed in a PDF string
-  (Unicode): removing 'math shift' / '\approx'`. PDF-Bookmarks zeigen
-  „X.Y Titel ( N min)" ohne `≈`-Symbol.
-- **Lösungsidee**: `\texorpdfstring{$\approx$}{≈}` für Bookmarks,
-  oder eigener Befehl `\sectionmitzeit{Titel}{Zeitangabe}`, der das
-  Bookmark sauber setzt (deckt LY-04 mit ab).
+### LY-06 — hyperref kann Mathe in Section-Titeln nicht ⌬ 🟧
+- **Schwere**: kosmetisch beim Build (verbleibend ~21 Warnungen)
+- **Stand**: Hauptverursacher `$\approx$` in Section-Titeln
+  durch Unicode `≈` ersetzt (alle Tag-Kapitel auf einmal). Build
+  hatte mit unicode-math + Source Pro auch hart auf
+  `IntCalcError:DivisionByZero` gekracht; das ist mit weg.
+- **Verbleibend**: `$2^N$`, `$2^n$` etc. in Section-Titeln, z. B.
+  „GF$(2^8)$" → 21 hyperref-Warnungen.
+- **Lösungsidee**: für die GF-Sections per
+  `\texorpdfstring{$2^N$}{²ᴺ}` oder Unicode-Hochzahlen direkt
+  („GF(2⁸)") ersetzen.
 
 ### LY-07 — Underfull \vbox while output active (6×) 🟥
 - **Schwere**: niedrig
@@ -148,6 +147,22 @@
 - **Lösungsidee**: bei der Microtype-Polish-Phase pro Eintrag über
   die `[N]`-Page-Marker im Log auf die Datei zurückrechnen, dann
   vor Ort umformulieren oder `\hyphenation`-Hilfe einsetzen.
+
+### LY-14 — Aufeinanderfolgende Aufgabenblöcke ohne Atemraum 🟥
+- **Schwere**: hoch (sichtbar im PDF — letzter Aufzählungspunkt einer
+  Bleistiftübung wird unter den nachfolgenden Block geschoben)
+- **Stelle**: Tag 1, Übergang Bleistiftübung 4 (a/b/c) → Python-Einheit 2
+  „Der EAN-13-Validator". Vermutlich überall, wo zwei
+  `aufgabe`-Umgebungen unmittelbar aufeinanderfolgen.
+- **Befund**: keine erkennbare Trennung zwischen den Boxen, der
+  Aufzählungspunkt (c) wird mittendrin abgeschnitten („478…" cut off),
+  dann startet sofort die nächste Box. Optisch katastrophal.
+- **Vermutung**: `aufgabe`-Umgebung setzt nach `\end{aufgabebox}`
+  keinen ausreichenden Vertikalabstand; der Page-Break-Algorithmus
+  optimiert dann auf knapp vor dem Marginpar der Folge-Box.
+- **Lösungsidee**: nach `\end{aufgabebox}` festen `\bigskip` oder
+  `\addvspace{...}` setzen, oder `\nopagebreak[0]` plus
+  `\needspace`-Bedarfssignal an die nächste Box anpassen.
 
 ### LY-04 — Section-Titel mit `\normalfont`-Zeitangabe 🟥
 - **Schwere**: kosmetisch

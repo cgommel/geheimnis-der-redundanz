@@ -57,8 +57,9 @@ Lösungen zu allen Aufgaben stehen gesammelt im Anhang.
 
 Aktuelle PDF-Ausgaben liegen unter
 [**Releases**](https://github.com/cgommel/geheimnis-der-redundanz/releases).
-Jeder Release-Tag liefert das vollständige Buch als `buch.pdf`,
-gebaut aus dem Stand des entsprechenden Commits.
+Jeder Release-Tag liefert das vollständige Buch als
+`geheimnis-der-redundanz.pdf`, gebaut aus dem Stand des
+entsprechenden Commits.
 
 ## Aus den Quellen bauen
 
@@ -66,6 +67,6 @@ Bauanleitung, Container-Setup, Verzeichnisstruktur und
 Layout-Eigenschaften stehen in [`BUILD.md`](BUILD.md). Kurz:
 
 ```bash
-make           # baut das Buch nach pdf/latex/buch.pdf
+make           # baut das Hauptbuch nach pdf/latex/geheimnis-der-redundanz.pdf
 make container # reproduzierbarer Container-Build
 ```

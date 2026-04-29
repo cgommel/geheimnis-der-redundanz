@@ -14,11 +14,42 @@
             headheight=15pt]{geometry}
 
 % --- Schriften ---
+% Source Pro Familie als Hausschriften, vendored unter latex/fonts/
+% (siehe latex/fonts/README.md für Provenance). Source Serif für den
+% Fließtext, Source Sans für Überschriften/Marginalien, Source Code
+% für Quelltexte. Math-Formeln werden weiter unten via unicode-math
+% gesetzt (STIX Two Math passt visuell zu Source Serif).
 \usepackage{fontspec}
-\setmainfont{DejaVu Serif}[Scale=0.95]
-\setsansfont{DejaVu Sans}[Scale=0.95]
-\setmonofont{DejaVu Sans Mono}[Scale=0.85]
-% Eigener Font für die Marginalien-Symbole (✏ ⌨ ⚙ aus DejaVu Sans).
+\setmainfont{SourceSerif4}[
+  Path=fonts/source-serif/,
+  Extension=.otf,
+  UprightFont=*-Regular,
+  ItalicFont=*-It,
+  BoldFont=*-Bold,
+  BoldItalicFont=*-BoldIt,
+  Scale=1.00,
+]
+\setsansfont{SourceSans3}[
+  Path=fonts/source-sans/,
+  Extension=.otf,
+  UprightFont=*-Regular,
+  ItalicFont=*-It,
+  BoldFont=*-Bold,
+  BoldItalicFont=*-BoldIt,
+  Scale=0.95,
+]
+\setmonofont{SourceCodePro}[
+  Path=fonts/source-code-pro/,
+  Extension=.otf,
+  UprightFont=*-Regular,
+  ItalicFont=*-It,
+  BoldFont=*-Bold,
+  BoldItalicFont=*-BoldIt,
+  Scale=0.88,
+]
+% Marginalien-Symbole (✏ ⌨ ⚙) brauchen einen Symbol-fähigen Font.
+% Source Sans hat die Glyphen nicht; wir behalten DejaVu Sans als
+% Fallback nur dafür (System-Font, im Container via fonts-dejavu).
 \newfontfamily\markerfont{DejaVu Sans}
 
 % --- Sprache, Mikrotypografie ---
@@ -32,7 +63,28 @@
 \usepackage{microtype}
 
 % --- Mathematik (\bmod, \le, \ge, \checkmark, …) ---
-\usepackage{amsmath, amssymb}
+% amsmath für Mathematik-Umgebungen (align, gather, …).
+% unicode-math + STIX Two Math ersetzt die Computer-Modern-Math-
+% Schriften; Stilfamilie passt visuell zu Source Serif.
+\usepackage{amsmath}
+\usepackage{unicode-math}
+\setmathfont{STIXTwoMath-Regular.otf}[
+  Path=fonts/stix-two/,
+]
+
+% --- Fallback für fehlende Glyphen ---
+% Source Serif/Sans/Code-Pro decken nicht jeden Unicode-Math-Glyph
+% ab (z. B. ⊕ U+2295, ⌊⌋ U+230A/B, ↔ U+2194). Wenn solche Zeichen
+% direkt im Quelltext stehen — vor allem in verbatim/minted-Blöcken,
+% wo math-Mode nicht greift — würden sie als „Tofu" rendern.
+% STIX Two Math hat sie alle und ist sowieso schon geladen; per
+% newunicodechar lenken wir die nackten Unicode-Zeichen darauf um.
+\usepackage{newunicodechar}
+\newfontfamily\fallbacksym{STIXTwoMath-Regular.otf}[Path=fonts/stix-two/]
+\newunicodechar{⊕}{{\fallbacksym ⊕}}
+\newunicodechar{⌊}{{\fallbacksym ⌊}}
+\newunicodechar{⌋}{{\fallbacksym ⌋}}
+\newunicodechar{↔}{{\fallbacksym ↔}}
 
 % --- Glossar (Polish-Sprint M6) ---
 % automake=immediate ruft makeglossaries per \write18 auf (shell-escape
