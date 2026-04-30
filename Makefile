@@ -31,7 +31,10 @@ all: buch
 # das PDF erfolgreich gebaut wird (Glossar braucht zwei Durchläufe,
 # hyperref-Warnings beim ersten Durchlauf). Wir tolerieren das mit dem
 # vorangestellten "-" und prüfen am Ende explizit auf das PDF.
-buch: test-code
+#
+# Etappe 9 (im Hauptbuch und im Auszug) bindet pdf/zeichenvorlage.pdf
+# via pdfpages ein — die Vorlage muss also vor dem Buch-Build da sein.
+buch: test-code $(PDF_DIR)/zeichenvorlage.pdf
 	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
 	-cd $(LATEX_DIR) && latexmk -f $(HAUPTBUCH).tex
 	@cp $(BUILD_DIR)/$(HAUPTBUCH).pdf $(PDF_DIR)/
@@ -47,16 +50,23 @@ $(STANDALONES): test-code
 	@cp $(BUILD_DIR)/$@.pdf $(PDF_DIR)/
 	@test -f $(PDF_DIR)/$@.pdf && echo "✓ $(PDF_DIR)/$@.pdf"
 
+# Etappe 9 hängt zusätzlich von der Werkstattbogen-Datei ab.
+redundanz-tag9: $(PDF_DIR)/zeichenvorlage.pdf
+
 standalones: $(STANDALONES)
 
 # --- Werkstatt-Vorlagen (Etappe 9 ff.) -------------------------------
-# zeichenvorlage.pdf          — leere Werkstatt-Bögen zum Selber-Zeichnen
-# zeichenvorlage-loesung.pdf  — gleiches Format, aber komplett ausgefüllt
-$(VORLAGEN): test-code
+# zeichenvorlage.pdf — Werkstatt-Bögen zum Selber-Zeichnen, plus ein
+# vorausgefülltes Vorbild auf Seite 1.
+$(PDF_DIR)/zeichenvorlage.pdf: $(LATEX_DIR)/zeichenvorlage.tex \
+                               $(LATEX_DIR)/zeichenfeld.tex \
+                               $(LATEX_DIR)/ean13-encoding.tex
 	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
-	-cd $(LATEX_DIR) && latexmk -f $@.tex
-	@cp $(BUILD_DIR)/$@.pdf $(PDF_DIR)/
-	@test -f $(PDF_DIR)/$@.pdf && echo "✓ $(PDF_DIR)/$@.pdf"
+	-cd $(LATEX_DIR) && latexmk -f zeichenvorlage.tex
+	@cp $(BUILD_DIR)/zeichenvorlage.pdf $(PDF_DIR)/
+	@test -f $(PDF_DIR)/zeichenvorlage.pdf && echo "✓ $(PDF_DIR)/zeichenvorlage.pdf"
+
+zeichenvorlage: $(PDF_DIR)/zeichenvorlage.pdf
 
 vorlagen: $(VORLAGEN)
 
