@@ -69,9 +69,7 @@ Handy abweist, weil eine Ziffer falsch war.
 So sieht das Ergebnis aus, das du am Ende dieser Etappe auf Papier
 gezeichnet haben sollst:
 
-\begin{center}
-\barcodehonig
-\end{center}
+\noindent\makebox[\linewidth][c]{\eanbarcode{4270004371635}}
 
 Das ist der EAN-13 unseres Honigglases, gerendert mit derselben Logik,
 die du gleich kennenlernst. Weiße Module = leerlassen, schwarze Module =
@@ -100,19 +98,93 @@ gesetzt: Ein EAN-13, der mit \texttt{0} beginnt, hat alle linken
 Ziffern in L-Codierung — und sieht für einen UPC-A-Scanner exakt aus
 wie ein UPC-A.
 
-\subsection*{Das Modul als Bauteil}
+\subsection*{Anatomie eines EAN-13}
 
-Bevor wir uns die Tabellen anschauen: Ein EAN-13 besteht aus
-\textbf{Modulen} — gleich breiten schwarzen oder weißen Streifen. Die
-Modulbreite ist genormt; bei einem klassischen Strichcode auf einer
-Konsumverpackung sind das etwa $0{,}33$\,mm. Ein schwarzer Strich kann
-ein, zwei, drei oder vier Module breit sein — entscheidend ist nur,
-wie viele Module nebeneinander schwarz sind, und wie viele weiß.
+Bevor wir uns in die Codetabellen stürzen, lohnt ein Blick auf den
+ganzen Aufbau. Ein EAN-13 setzt sich aus fünf Bauteilen zusammen:
+Hellzone, Modul, Guard, Datenstelle und Klarschrift.
 
-Jede Ziffer wird durch \textbf{7 Module} dargestellt — eine Folge
+\paragraph{Hellzone (Quiet Zone)}
+Links und rechts vom eigentlichen Strichcode gehört ein Stück
+\emph{weißer} Fläche dazu — links 11 Module breit, rechts 7 Module.
+Das ist nicht Restraum oder Verschönerung, sondern \emph{Pflicht}.
+Der Scanner tastet von links nach rechts und schaut auf die Lichtreflexion;
+er braucht erst eine ausreichend lange weiße Fläche, dann den ersten
+schwarzen Strich, um zu wissen: „hier fängt der Code an". Wenn links
+direkt neben dem Code schwarze Schrift, ein Logo oder ein anderer
+Strichcode anschließt, scheitert die Erkennung. Beim Zeichnen also
+unbedingt freilassen.
+
+\paragraph{Modul}
+Das \textbf{Modul} ist die kleinste Einheit des Codes — ein gleich
+breiter schwarzer oder weißer Streifen. Die Modulbreite ist genormt;
+bei einem klassischen Strichcode auf einer Konsumverpackung sind das
+etwa $0{,}33$\,mm. Auf unserer Zeichenvorlage ist ein Modul deutlich
+großzügiger ausgelegt — sonst wäre Hand-Zeichnen ein Geduldsspiel mit
+der Lupe. Ein schwarzer Strich kann \textbf{1, 2, 3 oder 4 Module}
+breit sein, entscheidend ist nur, wie viele Module nebeneinander
+schwarz sind und wie viele weiß. Mehr als 4 in Folge kommt im
+EAN-Encoding nicht vor — das ist Teil der Konstruktion und hilft dem
+Scanner bei der Plausibilitätsprüfung.
+
+\paragraph{Guards}
+Innerhalb des Strichcodes gibt es drei feste Stellen mit
+\emph{Markierungen}, die nicht für Daten zählen, sondern dem Scanner
+als Anker dienen:
+
+\begin{itemize}
+\item \textbf{Start-Guard} ganz links, Muster \texttt{101} (3 Module:
+  schwarz–weiß–schwarz)
+\item \textbf{Mittel-Guard} in der Mitte, Muster \texttt{01010}
+  (5 Module: weiß–schwarz–weiß–schwarz–weiß)
+\item \textbf{End-Guard} ganz rechts, Muster \texttt{101} (3 Module,
+  gleich wie Start)
+\end{itemize}
+
+Die Guards sind etwas \emph{länger} als die Daten-Striche — sie ragen
+nach unten in den Klarschrift-Bereich hinein. Beim Anschauen siehst
+du das sofort: die Sechsergruppen der Klarschrift werden von den drei
+„Aussparungen" der Guards optisch sauber getrennt.
+
+\paragraph{Datenstellen}
+Zwischen den Guards stehen die eigentlichen Daten: links sechs
+Ziffern à 7 Module $=$ 42 Module, rechts genauso. Plus die drei
+Guards mit zusammen $3+5+3 = 11$ Module ergibt sich die feste
+Gesamtbreite von 95 Modulen.
+
+\paragraph{Klarschrift}
+Unter dem Strichcode stehen die 13 Ziffern in lesbarer Schrift. Der
+Scanner braucht sie nicht — sie sind ausschließlich für Menschen, die
+den Code zur Not auch von Hand abtippen können. Die führende Ziffer
+sitzt links neben den Strichen, in der Hellzone, weil sie eben nicht
+durch Striche kodiert wird, sondern durch das L/G-Paritätsmuster der
+nächsten sechs Ziffern.
+
+\begin{center}
+\begin{tabular}{l r l}
+\toprule
+\textbf{Bauteil}        & \textbf{Module} & \textbf{Muster / Inhalt} \\
+\midrule
+Hellzone links          & 11 (weiß)       & --- \\
+Start-Guard             &  3              & \texttt{101} \\
+6 linke Datenziffern    & 42              & $6 \times 7$ \\
+Mittel-Guard            &  5              & \texttt{01010} \\
+6 rechte Datenziffern   & 42              & $6 \times 7$ \\
+End-Guard               &  3              & \texttt{101} \\
+Hellzone rechts         &  7 (weiß)       & --- \\
+\midrule
+Strichbereich gesamt    & \textbf{95}     & ohne Hellzonen \\
+Symbolbreite gesamt     & \textbf{113}    & mit Hellzonen \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Jede Datenziffer wird durch \textbf{7 Module} dargestellt — als Folge
 aus 7 Bits, wobei \texttt{0} für weiß und \texttt{1} für schwarz
-steht. Welche der drei Tabellen man verwendet (L, G oder R), hängt
-davon ab, an welcher Position die Ziffer im Strichcode steht.
+steht. Welche der drei Codetabellen verwendet wird (L, G oder R),
+hängt davon ab, wo die Ziffer im Code steht und was die führende
+Ziffer als Paritätsmuster vorgibt. Schauen wir uns das jetzt im
+Detail an.
 
 \subsection*{Die L-Codes (linke Hälfte, ungerade Parität)}
 
@@ -208,3 +280,140 @@ Welche Codetabellen-Folge ergibt sich für einen EAN, der mit
 \texttt{9} beginnt? Und für einen, der mit \texttt{0} beginnt — und
 warum sieht der dann „wie ein UPC-A" aus?
 \end{bleistiftuebung}
+
+% =============================================================
+\section{Die Werkstatt — Strich für Strich \normalfont(\textit{≈ 50 min})}
+% =============================================================
+
+Jetzt wird gezeichnet. Du brauchst:
+
+\begin{itemize}
+\item \textbf{Werkstatt-Bogen} (\texttt{zeichenvorlage.pdf}) auf
+  Standard-Papier ausgedruckt — A4, hochkant. Auf Seite~1 ist ein
+  \emph{Vorbild-Feld} bereits ausgefüllt (Erstziffer \texttt{4},
+  Code \texttt{4012345678901}); rechts daneben ist ein leeres Feld
+  für deinen ersten eigenen Versuch. Seite~2 hat zwei Reserve-Felder.
+\item Lineal mit Millimeter-Skala, Bleistift, Radiergummi
+\item Einen \emph{dünnen} Fineliner (Strichbreite 0{,}3 oder 0{,}4\,mm)
+  für die endgültigen Striche. Bleistift zuerst, Tinte zum Schluss
+  — was getrocknet ist, lässt sich nicht mehr radieren.
+\end{itemize}
+
+\subsection*{Reihenfolge — pro Feld die fünf Schritte}
+
+\begin{enumerate}
+\item \textbf{EAN eintragen.} In die Kopfzeile des Felds. Wir nehmen
+  den Honig-Code \texttt{4270004371635}.
+
+\item \textbf{Hilfstabelle ausfüllen.} Spalte für Spalte. Erst die
+  Ziffern (Position 2 bis 13). Dann die Codetabelle (L/G/R) — für die
+  linke Hälfte das Pattern aus der Erstziffer, für die rechte immer R.
+  Zuletzt die 7 Bits aus dem Spickzettel unten auf dem Werkstatt-Bogen.
+
+\item \textbf{Hellzone freihalten.} Links 11 Module, rechts 7 Module.
+  Da kommt nichts hin. Der Scanner braucht den Kontrast.
+
+\item \textbf{Striche zeichnen.} Modul für Modul. Wo eine \texttt{1}
+  in den 7 Bits steht, wird das Modul schwarz. Aufeinanderfolgende
+  schwarze Module werden zu einem dickeren Strich verschmolzen — der
+  Fineliner zieht einfach durch. Die Guards (Start, Mittel, End) sind
+  auf dem Bogen schon markiert; die ragen 3 Module weiter nach unten
+  als die Datenstriche.
+
+\item \textbf{Klarschrift eintragen.} Die 13 Ziffern unter den Code.
+  Die Erstziffer \texttt{4} ganz links in der Hellzone, dann die
+  beiden Sechsergruppen unter ihrer jeweiligen Hälfte.
+\end{enumerate}
+
+\paragraph{Worauf zu achten ist}
+\begin{itemize}
+\item \textbf{Modulbreite einhalten.} Wenn ein 2-Modul-Strich plötzlich
+  zu einem 3-Modul-Strich wird, weil die Hand abgerutscht ist, scheitert
+  der Scan. Lieber mit Bleistift vorzeichnen und erst dann mit dem
+  Fineliner drüber.
+\item \textbf{Weiß ist auch Daten.} Lass die weißen Module so weiß wie
+  die Hellzonen — keine grauen Bleistift-Reste, sonst fragt sich der
+  Scanner, ob das jetzt schwarz oder weiß sein soll.
+\item \textbf{Striche bis ganz oben.} Alle Datenstriche enden oben auf
+  derselben Höhe. Wenn ein Strich kürzer als die Nachbarn ist, sieht
+  der Scanner das als „Zeile fertig" — und liest gar nicht weiter.
+\end{itemize}
+
+% =============================================================
+\section{Scannen, Debuggen \normalfont(\textit{≈ 25 min})}
+% =============================================================
+
+Wenn das erste Feld fertig gezeichnet ist, kommt die Mutprobe: passt
+das Handy oder fluppt es nicht?
+
+\subsection*{App zum Scannen}
+
+Die eingebauten Kamera-Apps lesen meist nur QR-Codes — für EAN-13
+brauchst du eine eigene App.
+
+\begin{itemize}
+\item \textbf{iPhone:} \textbf{Barcode Scanners} von Cognex
+  (kostenlos im App Store). Liest EAN-13 zuverlässig.
+\item \textbf{Android:} \textbf{Binary Eye}, kostenlos und werbefrei
+  (im Play Store \emph{und} im quelloffenen F-Droid-Store erhältlich).
+\end{itemize}
+
+\textbf{Wichtig:} Wenn du eine App neu installieren musst, frag
+einen Erwachsenen. Die Stores fragen nach einem Konto und
+Berechtigungen — solche Entscheidungen triffst du nicht alleine.
+
+\subsection*{Wenn der Scan nicht klappt}
+
+Anfänger-Codes funktionieren oft erst beim zweiten oder dritten
+Versuch. Die häufigsten Fehler:
+
+\begin{itemize}
+\item \textbf{Hellzone zu schmal.} Wenn neben dem Code Tinte oder Text
+  steht, hat der Scanner keinen Kontrast-Anker. Auf dem Werkstatt-Bogen
+  sind die Hellzonen großzügig markiert — bitte freilassen.
+\item \textbf{Verlaufende Striche.} Schwarze Striche verlaufen am
+  Übergang ins Weiße, wenn der Stift zu fett ist. Lieber dünner.
+\item \textbf{Schiefe Strichhöhe.} Beim Tasten sucht der Scanner eine
+  horizontale Linie durch das Bild. Wenn deine Striche unterschiedlich
+  hoch enden, kann der Tast-Strich auf halber Strecke aus dem Code
+  herausfallen. Lineal benutzen.
+\item \textbf{Falsche Bits.} Wenn die Hilfstabelle ein Bit falsch
+  enthält, wird das ganze Symbol abgewiesen — die Prüfziffer passt
+  dann nicht mehr. Doppelprüfen.
+\end{itemize}
+
+Wenn dein gezeichneter Honig-Code zum ersten Mal piept: Glückwunsch.
+Du hast einen Strichcode \emph{von Hand} gebaut, den eine Maschine
+liest. Das schaffen die wenigsten — und du verstehst jetzt nicht nur
+\emph{dass} es funktioniert, sondern \emph{warum}.
+
+% =============================================================
+\section{Reflexion und Brücke zu Tag 10 \normalfont(\textit{≈ 10 min})}
+% =============================================================
+
+EAN-13 ist eine Kombination aus zwei Schichten: ein \emph{Encoding}
+(welche Ziffer wird zu welchem 7-Bit-Muster) und eine \emph{Prüfung}
+(die Prüfziffer aus Tag 1). Wenn du eine Strichhöhe anders machst,
+fällt der Scanner aus dem Bild. Wenn du eine \texttt{1} statt einer
+\texttt{0} setzt, kann er das Symbol manchmal noch dekodieren — aber
+am Ende stimmt die Prüfziffer nicht und das Ergebnis wird verworfen.
+
+\textbf{Was EAN-13 \emph{nicht} kann:} Fehler korrigieren. Die
+Prüfziffer erkennt einen Tippfehler, sagt aber nicht, \emph{wo} der
+Fehler ist oder wie er behoben werden kann. Wenn der Scanner den
+Code nicht zweifelsfrei lesen kann, bittet er um „nochmal halten" —
+oder du musst die 13 Ziffern von Hand abtippen.
+
+Das ist der Moment, wo Datamatrix interessant wird. Auf einem
+Datamatrix sind Reed-Solomon-Prüfsymbole \emph{im} Code drin (das ist
+der Stoff aus den Tagen 6 bis 8) — der Decoder kann fehlende oder
+falsche Module rekonstruieren, ohne nochmal scannen zu müssen.
+
+\subsection*{Vorschau Tag 10 — Strichcode mit Python zeichnen}
+
+Heute hast du ungefähr eine Stunde mit Bleistift, Lineal und
+Fineliner zugebracht. Morgen schreiben wir den gleichen Encoder in
+ungefähr 30 Zeilen Python, mit der \texttt{Pillow}-Bibliothek. Das
+gibt dir zwei Aha-Erlebnisse: \emph{wie wenig Code} es ist (weil du
+das Encoding jetzt komplett verstehst), und \emph{wie viel schneller}
+es geht — auf Knopfdruck dutzende Codes statt eine Stunde pro Stück.

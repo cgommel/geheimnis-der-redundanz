@@ -122,8 +122,13 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning, calc}
 
-% --- TikZ-Renderer für EAN-13-Strichcodes (Etappe 9 ff.) ---
-\input{ean13-tikz}
+% --- EAN-13-Encoding + Renderer (Etappe 9 ff.) ---
+% Eigener parametrisierter Renderer mit Lookup-Tabellen, statt GS1 —
+% damit haben wir Kontrolle über jedes einzelne Modul (für die
+% Zeichenvorlage in Etappe 9 brauchen wir das, um die Module ins
+% Hilfsraster einzeichnen zu können).
+\usepackage{xstring}
+\input{ean13-encoding}
 
 % --- Tabellen ---
 \usepackage{booktabs, array, longtable}

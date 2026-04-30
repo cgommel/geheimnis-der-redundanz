@@ -20,8 +20,9 @@ PDF_DIR    := pdf
 HAUPTBUCH  := geheimnis-der-redundanz
 ETAPPEN    := 1 2 3 4 5 6 7 8 9
 STANDALONES := $(addprefix redundanz-tag,$(ETAPPEN))
+VORLAGEN    := zeichenvorlage
 
-.PHONY: all buch standalones $(STANDALONES) clean shell test-code container container-clean
+.PHONY: all buch standalones $(STANDALONES) vorlagen $(VORLAGEN) clean shell test-code container container-clean
 
 all: buch
 
@@ -47,6 +48,17 @@ $(STANDALONES): test-code
 	@test -f $(PDF_DIR)/$@.pdf && echo "✓ $(PDF_DIR)/$@.pdf"
 
 standalones: $(STANDALONES)
+
+# --- Werkstatt-Vorlagen (Etappe 9 ff.) -------------------------------
+# zeichenvorlage.pdf          — leere Werkstatt-Bögen zum Selber-Zeichnen
+# zeichenvorlage-loesung.pdf  — gleiches Format, aber komplett ausgefüllt
+$(VORLAGEN): test-code
+	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
+	-cd $(LATEX_DIR) && latexmk -f $@.tex
+	@cp $(BUILD_DIR)/$@.pdf $(PDF_DIR)/
+	@test -f $(PDF_DIR)/$@.pdf && echo "✓ $(PDF_DIR)/$@.pdf"
+
+vorlagen: $(VORLAGEN)
 
 # --- Code-Sanity ----------------------------------------------------
 # Syntaxprüfung aller Python-Snippets vor dem LaTeX-Build.
