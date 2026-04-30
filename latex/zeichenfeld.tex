@@ -1,0 +1,223 @@
+% =============================================================
+% latex/zeichenfeld.tex
+%
+% \zeichenfeld[<ean>]{<feld-nr>}
+%
+%   Rendert ein Werkstatt-Feld zum Selber-Zeichnen eines EAN-13-
+%   Strichcodes. Bestandteile:
+%     - Kopfzeile mit Feld-Nummer und EAN-Klartext (leer oder
+%       eingetragen)
+%     - Hilfstabelle: pro Position 1..13 die Spalten Ziffer, Set
+%       (L/G/R) und 7 Bits, entweder leer oder vorausgefüllt
+%     - Zeichenfeld in echter EAN-Größe (1 Modul = 1mm), mit
+%       feinem Modul-Hilfsraster und Markern für die Bauteil-
+%       grenzen (Hellzonen, Guards, Datenstellen).
+%     - Klarschrift-Zeile unter dem Code (Kästchen oder gefüllt)
+%
+%   Wenn das optionale [<ean>] mitgegeben wird, wird der Bogen
+%   als Lösung gerendert (Tabelle ausgefüllt, Strichcode in den
+%   Modulen schwarz gemalt). Ohne Argument bleibt alles leer und
+%   muss mit Bleistift/Fineliner ausgefüllt werden.
+%
+% Voraussetzungen: TikZ, xstring, ean13-encoding (alle in
+% praeambel.tex geladen).
+% =============================================================
+
+\makeatletter
+
+% --- Hilfstabelle: 13 Spalten, 4 Zeilen, breit für Bits ---
+% Spaltenbreite 11mm, y-Skala großzügig damit Hand-Schrift reinpasst.
+% Bits sind in der ausgefüllten Variante 45° gedreht (sonst kollidieren
+% die 7 Zeichen mit der Nachbarspalte).
+\NewDocumentCommand{\@zfTabelle}{m}{%
+  \begin{tikzpicture}[x=11mm, y=6mm, baseline=0]
+    % Zeilen-Beschriftung links
+    \node[anchor=east, font=\small\bfseries] at (0.4,4)   {Position};
+    \node[anchor=east, font=\small\bfseries] at (0.4,3)   {Ziffer};
+    \node[anchor=east, font=\small\bfseries] at (0.4,2)   {Set};
+    \node[anchor=east, font=\small\bfseries] at (0.4,0.6) {7 Bits};
+    %
+    % Position 1 ist die Erstziffer — sie hat eine Ziffer, aber kein
+    % Set und keine 7 Bits (sie wird nicht direkt codiert, sondern
+    % steckt im Paritätsmuster der Folge-Ziffern). Wir zeichnen nur
+    % das Ziffer-Feld und markieren Set + Bits mit „—".
+    \node[font=\small] at (1,4) {1};
+    \IfStrEq{#1}{}{%
+      \draw[gray] (1-0.4, 2.55) rectangle (1+0.4, 3.45);% Ziffer
+    }{%
+      \StrChar{#1}{1}[\@zfZ]%
+      \node[font=\small] at (1,3) {\@zfZ};
+    }
+    \node[font=\small, text=gray] at (1,2)   {---};
+    \node[font=\small, text=gray] at (1,0.6) {---};
+    %
+    % Positionen 2..13: voll bzw. leere Kästchen.
+    \foreach \p in {2,...,13}{%
+      \node[font=\small] at (\p,4) {\p};
+      \IfStrEq{#1}{}{%
+        \draw[gray] (\p-0.4, 2.55) rectangle (\p+0.4, 3.45);% Ziffer
+        \draw[gray] (\p-0.35, 1.55) rectangle (\p+0.35, 2.45);% Set
+        \draw[gray] (\p-0.45, -0.2) -- (\p+0.45, 1.4);% Bits-Schreiblinie
+      }{%
+        \StrChar{#1}{\p}[\@zfZ]%
+        \node[font=\small] at (\p,3) {\@zfZ};
+        \node[font=\small\ttfamily] at (\p,2) {\eantableset{#1}{\p}};
+        \node[font=\small\ttfamily, rotate=45] at (\p,0.6) {\eantablebits{#1}{\p}};
+      }
+    }%
+    \draw[gray, line width=0.3pt] (0.5, 3.6) -- (13.5, 3.6);
+  \end{tikzpicture}%
+}
+
+% --- Strichcode-Zeichenbereich mit Raster ---
+\NewDocumentCommand{\@zfCode}{m}{%
+  \begin{tikzpicture}[x=1mm, y=1mm, baseline=0]
+    % Hellzonen-Rahmen (gestrichelt, sehr dezent)
+    \draw[gray!50, dashed, line width=0.2pt] (-11,-3) rectangle (102,33);
+    %
+    % Modul-Hilfsraster: durchgezogene vertikale Linien an jeder
+    % Modul-Grenze. Linienbreite bewusst über der Aliasing-Schwelle
+    % (~0.4pt), damit alle 96 Linien beim Drucken gleich dick wirken
+    % und Greta die Module abzählen kann, ohne das Lineal anzulegen.
+    \foreach \x in {0,1,...,95}{%
+      \draw[gray!55, line width=0.4pt] (\x,-3) -- (\x,33);%
+    }
+    % Obere und untere Begrenzung der Daten-Strichhöhe.
+    \draw[gray!70, line width=0.5pt] (0,0)  -- (95,0);
+    \draw[gray!70, line width=0.5pt] (0,33) -- (95,33);
+    %
+    % Marker für Bauteil-Grenzen (oben drüber, zwei Reihen damit nichts kollidiert)
+    % Reihe oben: Bezeichner der Sechsergruppen
+    \node[anchor=south, font=\scriptsize\sffamily] at (24,38)     {Ziffern 2--7 (links)};
+    \node[anchor=south, font=\scriptsize\sffamily] at (71,38)     {Ziffern 8--13 (rechts)};
+    % Reihe unten: Guards
+    \node[anchor=south, font=\scriptsize\sffamily] at (1.5,33.5)  {Start};
+    \node[anchor=south, font=\scriptsize\sffamily] at (47.5,33.5) {Mitte};
+    \node[anchor=south, font=\scriptsize\sffamily] at (93.5,33.5) {Ende};
+    %
+    % Vertikale Strichlinien zur Bauteil-Trennung (etwas kräftiger,
+    % über den Strichbereich nach oben/unten hinaus)
+    \draw[gray!60, line width=0.4pt] (0,-5) -- (0,36);   % Start-Guard begin
+    \draw[gray!60, line width=0.4pt] (3,-5) -- (3,36);   % Start-Guard end
+    \draw[gray!60, line width=0.4pt] (45,-5) -- (45,36); % Mittel-Guard begin
+    \draw[gray!60, line width=0.4pt] (50,-5) -- (50,36); % Mittel-Guard end
+    \draw[gray!60, line width=0.4pt] (92,-5) -- (92,36); % End-Guard begin
+    \draw[gray!60, line width=0.4pt] (95,-5) -- (95,36); % End-Guard end
+    %
+    % Ziffer-Trennungen — alle 7 Module innerhalb der Datenbereiche.
+    % Auch nach oben/unten verlängert, damit das Zähl-Raster für
+    % die Sechsergruppen optisch sofort erkennbar ist.
+    \foreach \x in {10,17,24,31,38, 57,64,71,78,85}{%
+      \draw[gray!50, line width=0.25pt] (\x,-5) -- (\x,36);%
+    }
+    %
+    % Wenn EAN mitgegeben: Module schwarz füllen
+    \IfStrEq{#1}{}{}{%
+      \eanbits{#1}{\@zfBits}%
+      \foreach \bit [count=\j from 0] in \@zfBits {%
+        \ifnum\bit=1
+          \def\@zfBo{0}%
+          \ifnum\j<3\relax\def\@zfBo{-3}\fi
+          \ifnum\j>91\relax\def\@zfBo{-3}\fi
+          \ifnum\j>44\relax\ifnum\j<50\relax\def\@zfBo{-3}\fi\fi
+          \fill[black] (\j,\@zfBo) rectangle ({\j+1},33);%
+        \fi
+      }%
+    }%
+    %
+    % Klarschrift-Bereich unten: Kästchen oder gefüllt
+    \IfStrEq{#1}{}{%
+      % leere Kästchen für 1 + 6 + 6 Ziffern
+      \draw[gray] (-9,-8) rectangle (-2,-3);
+      \foreach \i in {0,...,5}{\draw[gray] (3+\i*7, -8) rectangle (3+\i*7+7, -3);}%
+      \foreach \i in {0,...,5}{\draw[gray] (50+\i*7, -8) rectangle (50+\i*7+7, -3);}%
+    }{%
+      % Voll: Ziffern an denselben Positionen wie die Kästchen oben,
+      % damit der Mustercode optisch zur leeren Vorlage passt.
+      \StrChar{#1}{1}[\@zfF]%
+      \node[anchor=center, font=\sffamily\large] at (-5.5,-5.5) {\@zfF};
+      \foreach \i in {0,...,5}{%
+        \StrChar{#1}{\the\numexpr\i+2\relax}[\@zfDi]%
+        \node[anchor=center, font=\sffamily\large] at ({3+\i*7+3.5},-5.5) {\@zfDi};%
+      }%
+      \foreach \i in {0,...,5}{%
+        \StrChar{#1}{\the\numexpr\i+8\relax}[\@zfDi]%
+        \node[anchor=center, font=\sffamily\large] at ({50+\i*7+3.5},-5.5) {\@zfDi};%
+      }%
+    }%
+  \end{tikzpicture}%
+}
+
+% --- Komplettes Feld ---
+\NewDocumentCommand{\zeichenfeld}{O{} m}{%
+  \par\noindent
+  \begin{minipage}{\linewidth}
+    \rule{\linewidth}{0.4pt}\par\smallskip
+    \textbf{\large Feld #2}\hfill
+    \textbf{EAN:}~\IfStrEq{#1}{}{%
+      \framebox[7em]{\strut}%
+    }{%
+      \texttt{#1}%
+    }\par
+    \medskip
+    \centerline{\@zfTabelle{#1}}
+    \medskip
+    \centerline{\@zfCode{#1}}
+  \end{minipage}\par
+  \vspace{1em}
+}
+
+% --- Cheat-Sheet: Codetabellen + Paritätsmuster, kompakt ---
+% Soll am Fuß der Werkstatt-Seite stehen, damit Greta beim Ausfüllen
+% nichts nachschlagen muss.
+\NewDocumentCommand{\zeichenfeldcheatsheet}{}{%
+  \par\smallskip
+  \noindent\textbf{\small Spickzettel — Codetabellen und Paritätsmuster}\par
+  \smallskip
+  \noindent
+  \begin{minipage}[t]{0.62\linewidth}
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{c|c|c|c}
+      \toprule
+      \textbf{Ziffer} & \textbf{L-Code} & \textbf{G-Code} & \textbf{R-Code} \\
+      \midrule
+      0 & \texttt{0001101} & \texttt{0100111} & \texttt{1110010} \\
+      1 & \texttt{0011001} & \texttt{0110011} & \texttt{1100110} \\
+      2 & \texttt{0010011} & \texttt{0011011} & \texttt{1101100} \\
+      3 & \texttt{0111101} & \texttt{0100001} & \texttt{1000010} \\
+      4 & \texttt{0100011} & \texttt{0011101} & \texttt{1011100} \\
+      5 & \texttt{0110001} & \texttt{0111001} & \texttt{1001110} \\
+      6 & \texttt{0101111} & \texttt{0000101} & \texttt{1010000} \\
+      7 & \texttt{0111011} & \texttt{0010001} & \texttt{1000100} \\
+      8 & \texttt{0110111} & \texttt{0001001} & \texttt{1001000} \\
+      9 & \texttt{0001011} & \texttt{0010111} & \texttt{1110100} \\
+      \bottomrule
+    \end{tabular}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.35\linewidth}
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{c|l}
+      \toprule
+      \textbf{Erstziffer} & \textbf{Pattern} \\
+      \midrule
+      0 & \texttt{LLLLLL} \\
+      1 & \texttt{LLGLGG} \\
+      2 & \texttt{LLGGLG} \\
+      3 & \texttt{LLGGGL} \\
+      4 & \texttt{LGLLGG} \\
+      5 & \texttt{LGGLLG} \\
+      6 & \texttt{LGGGLL} \\
+      7 & \texttt{LGLGLG} \\
+      8 & \texttt{LGLGGL} \\
+      9 & \texttt{LGGLGL} \\
+      \bottomrule
+    \end{tabular}\par\smallskip
+    \scriptsize\itshape
+    Position 8--13 (rechte Hälfte) immer R-Code.
+  \end{minipage}%
+  \par\medskip
+}
+
+\makeatother

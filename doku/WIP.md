@@ -1,102 +1,137 @@
 # Work in Progress
 
-> Aktueller Arbeitsstand und nächste Schritte. Letzter Update vor
-> drohender Conversation-Kompaktierung — soll als persistenter Anker
-> dienen, wenn die Chat-Historie verkürzt wird.
+> Aktueller Arbeitsstand und nächste Schritte. Soll als persistenter
+> Anker dienen, wenn die Chat-Historie verkürzt wird.
 
-## Stand: 2026-04-29 (nach Tag 7 + Tag 8)
+## Stand: 2026-04-30 (mitten in Etappe 9)
 
-### Was im Buch ist (`main`-Branch)
+### Was auf `main` ist
 
-`main` hatte bis gerade Tag 1–6 plus Polish (Glossar, Index-Header,
-Vorwort, Titelseite). Der Polish-Sprint ist gemergt; Release
-`v2026.04.29.1` ist live.
+- Etappen 1–8 vollständig (Reed-Solomon Encoder + Decoder)
+- Hausschriften: Source Serif 4 / Source Sans 3 / Source Code Pro /
+  STIX Two Math, vendored unter `latex/fonts/` (OFL-1.1)
+- Output-Naming umgestellt:
+  - Hauptbuch: `pdf/latex/geheimnis-der-redundanz.pdf` (110 Seiten)
+  - Standalones: `pdf/latex/redundanz-tagN.pdf` (Buch bis Etappe N,
+    18→108 Seiten, ohne Hauptbuch-Titelseite)
+  - Helper `latex/buch-rumpf.tex` parametrisiert über `\maxetappe`
+- Pagestyle: Frontmatter `plain`, Mainmatter `scrheadings`
+- Lizenzen: CC BY-SA 4.0 fürs Buch, MIT für die Code-Snippets,
+  OFL-1.1 für die Schriften
+- README öffentlich-tauglich, technisches in `BUILD.md`
+- CI: Action-Versionen Node-24-fähig
+- Letztes Release: **`v2026.04.29.2`** + **`v2026.04.30`**
 
-### Was auf `feature/tag7-8` liegt (noch nicht gemergt)
+### Was auf `feature/tag9` liegt (in Arbeit, noch nicht gemergt)
 
-- **Tag 7** — Reed-Solomon-Encoder mit Generator-Polynom, Wechsel auf
-  GF($2^8$), systematische Codierung. `latex/kapitel/tag7.tex` plus
-  `latex/code/tag7/{gf256.py, rs_encoder.py}` mit Region-Markern.
-  Lösung in `latex/loesungen/tag7.tex`.
-- **Tag 8** — Reed-Solomon-Decoder, Auslöschungs-Decoder vollständig
-  von Hand und in Python (Vandermonde + Gauß in GF($2^8$)),
-  Berlekamp-Massey nur als Skizze, `reedsolo`-Library für die
-  Praxis. Code in `latex/code/tag8/{syndrome.py, erasure_decoder.py,
-  with_reedsolo.py}`. Lösung in `latex/loesungen/tag8.tex`.
-- **Standalone-Master** für Vorab-PDFs: pro Etappe N ein
-  `latex/redundanz-tagN.tex`, der „Buch bis Etappe N" baut
-  (Etappen 1..N + Lösungen, ohne Hauptbuch-Titelseite). Targets:
-  `make redundanz-tag1` … `make redundanz-tag8`,
-  `make standalones` für alle.
-- **Hauptbuch** umfasst auf dem Branch jetzt 110 Seiten (Tag 1–8 +
-  Anhang).
+**Etappe 9 — EAN-13 von Hand zeichnen** (Branch von `main`, nach
+`v2026.04.30`).
 
-### Branch-Status
+Aktuell fertig:
 
-- `feature/tag7-8` ist gepusht, Commits: M5/M8 → Polish → Tag 7 → Tag 8 + Standalones.
-- Noch nicht gemergt nach `main`. Vor Merge ist (a) Tag 7-Review
-  durch Onkel offen, (b) Tag 8-Review noch gar nicht erfolgt.
-- CI auf `feature/tag7-8` lief beim letzten Stand grün (Build mit dem
-  erweiterten Container-Image: trixie + texlive-plain-generic +
-  texlive-extra-utils).
+- `latex/kapitel/tag9.tex`:
+  - Lernziele + Material-Block
+  - **Block 1** — Repetition Prüfziffer am Honig-EAN `4270004371635`
+    (Glas „Sommer in Radebeul" von Gommels Bienen)
+  - **Block 2** — Drei Codetabellen: Story UPC-A → EAN-13, Modul-Konzept,
+    L/G/R-Tabellen kombiniert, Erstziffer-Paritätsmuster, Beispiel mit
+    Honig-EAN
+  - Bleistift-Übungen 1 (Prüfziffer) und 2 (Encoding-Folge ablesen)
+- `latex/loesungen/tag9.tex`: Lösungen zu Übungen 1 und 2
+- `latex/redundanz-tag9.tex`: Standalone-Master „Buch bis Etappe 9"
+- `latex/ean13-tikz.tex`: TikZ-Renderer
+  - `\eanbarcodebits{<95 Bits>}{<first>}{<left6>}{<right6>}` —
+    rendert vorberechnete Bit-Liste
+  - `\barcodehonig` — Convenience-Wrapper für den Honig-EAN
+  - Wird via `praeambel.tex` automatisch geladen
+- `Makefile`: `ETAPPEN := 1..9`, `redundanz-tag9` Target funktioniert
+
+### Wo wir mitten drin sind: Barcode-Renderer „lebensecht"
+
+Der EAN-13-Renderer läuft, wurde aber durch User-Feedback noch nicht
+endgültig akzeptiert. Iterationsverlauf:
+
+1. Erste Version: Striche gerendert, aber Guards gingen nach **oben**
+   raus — falsch.
+2. Korrigiert: Daten-Strich-Bottom y=3, Guard-Strich-Bottom y=0 (Guards
+   ragen 3 Module nach unten).
+3. User: „besser, aber noch nicht lebensecht."
+4. Aktuelle Version (im letzten Commit): Daten y=0, Guards y=-3,
+   Klarschrift bei y=-0.5 mit `\ttfamily\large`. Klarschrift-Strings
+   ohne `\,`-Kerning (kompakter, mehr OCR-B-Look).
+
+### Idee, die noch offen ist
+
+- **Generalisieren** zu `\eanbarcode{<13-Ziffern>}` — der Renderer
+  baut die Bit-Liste selbst aus L/G/R-Lookup + Pattern. xstring +
+  csname-Tabellen. Aktuell ist nur `\barcodehonig` hartkodiert.
+  Brauchen wir spätestens für die Zeichenvorlage (anderer Beispiel-EAN
+  `4012345678901`).
+- Alternative wäre das CTAN-Paket `ean` zu nutzen, hab aber noch nicht
+  geprüft, ob es mit XeLaTeX + Source-Schriften gut zusammenspielt.
 
 ### Mängelliste (`doku/MAENGEL.md`)
 
-13 Layout-Punkte zur Abarbeitung. Stand: alle offen, keiner in
-Arbeit. LY-01 (Marginalie verwaist nach Page-Break) ist bereits
-durch `\needspace{5\baselineskip}` gefixt — Eintrag aktualisieren,
-falls nochmal angefasst.
+16 Punkte gesammelt, alle offen außer LY-01 und LY-11 (erledigt).
+Highlights:
 
-### Standalone-PDFs für Greta
-
-Pro Etappe N (1..8) ein `pdf/latex/redundanz-tagN.pdf`. Jeder
-Standalone enthält das Buch im Stand bis Etappe N — also wachsend
-von kleinen ~10-Seiten-Heften bei Etappe 1 bis fast Hauptbuch-Größe
-bei Etappe 8.
+- **LY-14** — Aufeinanderfolgende `aufgabe`-Boxen ohne Atemraum
+  (sichtbar in Tag 1, hochpriorisiert für den Polish-Sprint)
+- **LY-15** — Build-Provenance (Branch + Commit-ID) dezent ins PDF
+- **LY-16** — Kolophon-Seite mit Lizenz-Hinweis und Repo-URL
+- **TC-01** — Python-Snippets beim Build neben das PDF legen
 
 ## Nächste Schritte (priorisiert)
 
-1. **Onkel reviewt Tag 7 + 8** inhaltlich. Korrekturen kommen als
-   Hotfix-Commits auf `feature/tag7-8`.
-2. **Merge `feature/tag7-8` → `main`**, neuer Tag (z.\,B.\
-   `v2026.04.30`) → Release-PDF auf GitHub.
-3. **Tag 9** (Intermezzo „1D-Strichcode mit Pillow zeichnen", Code
-   39) als nächster Branch `feature/tag9`. Greta soll am eigenen
-   Strichcode mit Handy scannen.
-4. **Tag 10/11**: Datamatrix Theorie & Praxis.
-5. **Mängellisten-Sprint**: gesammelte LY-XX-Punkte aus
-   `doku/MAENGEL.md` durcharbeiten.
-6. **Bonus-Tage** 12/13 (QR-Codes, Voyager) bei Greta-Tempo.
+1. **Barcode-Renderer lebensecht** — User-Feedback abwarten zur
+   aktuellen Version (Guards y=-3, Klarschrift `\large`). Falls
+   weiterhin nicht passend: vermutlich Generalisierung zum
+   parametrisierten `\eanbarcode{...}` mit weiteren Anpassungen.
+2. **Block 3 schreiben** — EAN-13-Aufbau-Diagramm: Hellzonen, Guards,
+   6+6-Aufteilung, Klarschrift. Mit visualisierten Längen, vermutlich
+   ein zweiter TikZ-Block, der den Honig-EAN nochmal mit Annotationen
+   zeigt.
+3. **Block 4 schreiben** — Hand-Zeichnen-Werkstatt mit Verweis auf die
+   Zeichenvorlage.
+4. **Zeichenvorlage** als A4-quer Standalone-PDF: 4 Felder zum Probieren,
+   eines mit dem Beispiel-EAN `4012345678901` vorausgefüllt.
+5. **Block 5** — Drucken/Scannen/Debuggen.
+6. **Block 6** — Reflexion + Brücke zu Etappe 10 (Pillow + EAN-13
+   automatisiert).
+7. **Hauptbuch** auf `\maxetappe=9` hochziehen.
+8. **Merge nach `main`**, neuer Release-Tag.
 
 ## Konventionen, die wir uns gesetzt haben
 
 - Erst sammeln in `doku/MAENGEL.md`, dann systematisch fixen — keine
   Hotfixes ohne Eintrag.
-- Nach jedem Push: `gh run list` schauen, ob CI grün ist (lokale und
-  Container-Welt können driften).
+- Nach jedem Push: `gh run list` schauen, ob CI grün ist.
 - Commit-Messages ohne Claude-Spuren, auf Deutsch.
 - Farben in CMYK, Anführungszeichen Unicode (Babel-`"`-Shorthand ist
-  global abgeschaltet).
-- Standalone-Master für Vorab-PDFs einzelner Tage — Pattern
-  `latex/buch_tagN.tex` plus Makefile-Target `make buch_tagN`.
-- Latexmk-Cold-Start-Glossar-Quirk: Standalone-Targets nutzen `-f`
-  und ignorierten Exit-Code, mit `test -f` als finaler Check.
-- Tag in Branch-Name: `feature/tagN` für ein einzelnes Kapitel,
-  `feature/tagN-M` für mehrere.
+  global abgeschaltet — wenn doch ASCII-`"` reinrutscht, wird's mit
+  dem Folge-Buchstaben zu Babel-Kuriositäten wie „Radebeulßum" statt
+  „Radebeul" zum").
+- Standalone-Master pro Etappe N: `latex/redundanz-tagN.tex` mit
+  `\def\maxetappe{N}` plus `\input{buch-rumpf}`. Hauptbuch
+  `latex/geheimnis-der-redundanz.tex` mit `\maxetappe=8` (ggf.
+  hochzuziehen) und Titelseite.
+- Tag in Branch-Name: `feature/tagN` für eine einzelne Etappe.
+- Greta hat Praktikum mit Onkel (Imker, „Gommels Bienen", Honig
+  „Sommer in Radebeul"). EAN dieses Glases: `4270004371635`.
+  Persönlicher Anker für die Etappe.
+- Iterativ vorgehen: pro Block Build → User schaut → korrigieren.
+  Der User ist pingelig (mit Recht), und jede Iteration ist klein.
 
 ## Lokale Voraussetzungen
 
 ```bash
 sudo tlmgr install fvextra framed newunicodechar latexmk \
                    tcolorbox changepage tikzfill pdfcol \
-                   needspace collection-latexextra
-brew install --cask font-dejavu
+                   needspace unicode-math collection-latexextra
+brew install --cask font-dejavu        # nur für Marginalien-Symbole
 brew install pygments
-pip install reedsolo  # für Tag 8 Python-Einheit 3
+pip install reedsolo                   # für Etappe 8
 ```
 
-Im Container ist alles drin (`build/Dockerfile` mit Debian Trixie +
-`texlive-plain-generic` + `texlive-extra-utils`); `reedsolo` müsste
-für Container-Builds noch ergänzt werden — bisher nicht eingebaut,
-weil `make test-code` nur Syntax prüft (`py_compile` braucht keine
-Imports zu auflösen).
+Schriften (Source Pro Familie, STIX Two Math) sind im Repo unter
+`latex/fonts/` vendored — keine System-Installation nötig.

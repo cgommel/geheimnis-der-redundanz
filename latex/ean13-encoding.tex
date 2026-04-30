@@ -1,0 +1,162 @@
+% =============================================================
+% latex/ean13-encoding.tex
+%
+% Lookup-Tabellen + parametrisierter EAN-13-Renderer.
+% Stellt die Befehle bereit:
+%
+%   \eanbarcode{<13-stelliger EAN>}
+%       rendert den Strichcode als TikZ-Bild (Modulbreite 1mm,
+%       Strichhöhe 30 Module für Daten und 33 für Guards,
+%       Klarschrift in Source Sans 3).
+%
+%   \eanbits{<13-stelliger EAN>}{\MACRO}
+%       schreibt die komma-separierte 95-Bit-Liste in \MACRO,
+%       für Wiederverwendung in der Zeichenvorlage.
+%
+%   \eantableset{<EAN>}{<pos>}   gibt 'L', 'G' oder 'R' an Position <pos>.
+%                                Position 1 ist die Erstziffer (kein Strich),
+%                                ergibt '-'. Position 2..7 ist die linke
+%                                Hälfte (L oder G), Position 8..13 immer R.
+%   \eantablebits{<EAN>}{<pos>}  gibt die 7 Bits an Position <pos>
+%                                als String '0001101' (Position 1: leer).
+%
+% Voraussetzungen: TikZ und xstring (in praeambel.tex geladen).
+% =============================================================
+
+\makeatletter
+
+% --- L/G/R-Codes als 7-Bit-Komma-Listen ---
+\expandafter\def\csname eanL@0\endcsname{0,0,0,1,1,0,1}
+\expandafter\def\csname eanL@1\endcsname{0,0,1,1,0,0,1}
+\expandafter\def\csname eanL@2\endcsname{0,0,1,0,0,1,1}
+\expandafter\def\csname eanL@3\endcsname{0,1,1,1,1,0,1}
+\expandafter\def\csname eanL@4\endcsname{0,1,0,0,0,1,1}
+\expandafter\def\csname eanL@5\endcsname{0,1,1,0,0,0,1}
+\expandafter\def\csname eanL@6\endcsname{0,1,0,1,1,1,1}
+\expandafter\def\csname eanL@7\endcsname{0,1,1,1,0,1,1}
+\expandafter\def\csname eanL@8\endcsname{0,1,1,0,1,1,1}
+\expandafter\def\csname eanL@9\endcsname{0,0,0,1,0,1,1}
+
+\expandafter\def\csname eanG@0\endcsname{0,1,0,0,1,1,1}
+\expandafter\def\csname eanG@1\endcsname{0,1,1,0,0,1,1}
+\expandafter\def\csname eanG@2\endcsname{0,0,1,1,0,1,1}
+\expandafter\def\csname eanG@3\endcsname{0,1,0,0,0,0,1}
+\expandafter\def\csname eanG@4\endcsname{0,0,1,1,1,0,1}
+\expandafter\def\csname eanG@5\endcsname{0,1,1,1,0,0,1}
+\expandafter\def\csname eanG@6\endcsname{0,0,0,0,1,0,1}
+\expandafter\def\csname eanG@7\endcsname{0,0,1,0,0,0,1}
+\expandafter\def\csname eanG@8\endcsname{0,0,0,1,0,0,1}
+\expandafter\def\csname eanG@9\endcsname{0,0,1,0,1,1,1}
+
+\expandafter\def\csname eanR@0\endcsname{1,1,1,0,0,1,0}
+\expandafter\def\csname eanR@1\endcsname{1,1,0,0,1,1,0}
+\expandafter\def\csname eanR@2\endcsname{1,1,0,1,1,0,0}
+\expandafter\def\csname eanR@3\endcsname{1,0,0,0,0,1,0}
+\expandafter\def\csname eanR@4\endcsname{1,0,1,1,1,0,0}
+\expandafter\def\csname eanR@5\endcsname{1,0,0,1,1,1,0}
+\expandafter\def\csname eanR@6\endcsname{1,0,1,0,0,0,0}
+\expandafter\def\csname eanR@7\endcsname{1,0,0,0,1,0,0}
+\expandafter\def\csname eanR@8\endcsname{1,0,0,1,0,0,0}
+\expandafter\def\csname eanR@9\endcsname{1,1,1,0,1,0,0}
+
+% --- Paritätsmuster der Erstziffer (als String LLGLGG etc.) ---
+\expandafter\def\csname eanP@0\endcsname{LLLLLL}
+\expandafter\def\csname eanP@1\endcsname{LLGLGG}
+\expandafter\def\csname eanP@2\endcsname{LLGGLG}
+\expandafter\def\csname eanP@3\endcsname{LLGGGL}
+\expandafter\def\csname eanP@4\endcsname{LGLLGG}
+\expandafter\def\csname eanP@5\endcsname{LGGLLG}
+\expandafter\def\csname eanP@6\endcsname{LGGGLL}
+\expandafter\def\csname eanP@7\endcsname{LGLGLG}
+\expandafter\def\csname eanP@8\endcsname{LGLGGL}
+\expandafter\def\csname eanP@9\endcsname{LGGLGL}
+
+% --- Bit-Stream-Zusammenbau ---
+% \eanbits{<13>}{\OUT}: schreibt die 95-Bit-Komma-Liste in \OUT.
+\NewDocumentCommand{\eanbits}{mm}{%
+  \StrChar{#1}{1}[\@eanFirstD]%
+  \edef\@eanPattern{\csname eanP@\@eanFirstD\endcsname}%
+  % Start-Guard
+  \xdef#2{1,0,1}%
+  % Linke 6 Ziffern, Pattern aus \@eanPattern auswählen
+  \foreach \@p in {1,...,6}{%
+    \StrChar{#1}{\the\numexpr\@p+1\relax}[\@eanZ]%
+    \StrChar{\@eanPattern}{\@p}[\@eanS]%
+    \xdef#2{#2,\csname ean\@eanS @\@eanZ\endcsname}%
+  }%
+  % Mittel-Guard
+  \xdef#2{#2,0,1,0,1,0}%
+  % Rechte 6 Ziffern (immer R)
+  \foreach \@p in {1,...,6}{%
+    \StrChar{#1}{\the\numexpr\@p+7\relax}[\@eanZ]%
+    \xdef#2{#2,\csname eanR@\@eanZ\endcsname}%
+  }%
+  % End-Guard
+  \xdef#2{#2,1,0,1}%
+}
+
+% --- Renderer ---
+% \eanbarcodebits{<bits>}{<first>}{<left6>}{<right6>}: rendert eine
+% vorberechnete Bit-Liste. Daten-Striche y=0..33, Guard-Striche y=-3..33.
+\newcommand{\eanbarcodebits}[4]{%
+  \begin{tikzpicture}[x=1mm, y=1mm, baseline=(current bounding box.south)]
+    \foreach \bit [count=\j from 0] in {#1}{%
+      \ifnum\bit=1
+        \def\bo{0}%
+        \ifnum\j<3\relax\def\bo{-3}\fi
+        \ifnum\j>91\relax\def\bo{-3}\fi
+        \ifnum\j>44\relax\ifnum\j<50\relax\def\bo{-3}\fi\fi
+        \fill[black] (\j,\bo) rectangle ({\j+1},33);%
+      \fi
+    }%
+    \node[anchor=north, font=\sffamily, inner sep=2pt] at (-5,-0.5) {#2};%
+    \node[anchor=north, font=\sffamily, inner sep=2pt] at (24,-0.5) {#3};%
+    \node[anchor=north, font=\sffamily, inner sep=2pt] at (71,-0.5) {#4};%
+  \end{tikzpicture}%
+}
+
+% \eanbarcode{<13>}: bequeme Form, baut Bit-Liste und rendert.
+\NewDocumentCommand{\eanbarcode}{m}{%
+  \eanbits{#1}{\@eanFullBits}%
+  \StrLeft{#1}{1}[\@eanFirst]%
+  \StrMid{#1}{2}{7}[\@eanLeft]%
+  \StrMid{#1}{8}{13}[\@eanRight]%
+  \expandafter\eanbarcodebits\expandafter{\@eanFullBits}{\@eanFirst}{\@eanLeft}{\@eanRight}%
+}
+
+% --- Hilfen für die Zeichenvorlagen-Tabelle ---
+% \eantableset{<EAN>}{<pos>} → 'L', 'G', 'R' oder '-'
+\NewDocumentCommand{\eantableset}{mm}{%
+  \ifnum#2=1 -\else
+    \ifnum#2>7 R\else
+      \StrChar{#1}{1}[\@eanFirstD]%
+      \edef\@eanPattern{\csname eanP@\@eanFirstD\endcsname}%
+      \StrChar{\@eanPattern}{\the\numexpr#2-1\relax}[\@eanS]%
+      \@eanS%
+    \fi
+  \fi
+}
+
+% \eantablebits{<EAN>}{<pos>} → 7-Bit-String '0001101' oder leer
+\NewDocumentCommand{\eantablebits}{mm}{%
+  \ifnum#2=1 \else
+    \ifnum#2>7
+      \StrChar{#1}{#2}[\@eanZ]%
+      \@eanCSToStr{eanR@\@eanZ}%
+    \else
+      \StrChar{#1}{1}[\@eanFirstD]%
+      \edef\@eanPattern{\csname eanP@\@eanFirstD\endcsname}%
+      \StrChar{\@eanPattern}{\the\numexpr#2-1\relax}[\@eanS]%
+      \StrChar{#1}{#2}[\@eanZ]%
+      \@eanCSToStr{ean\@eanS @\@eanZ}%
+    \fi
+  \fi
+}
+
+% Hilfsmacro: csname-Inhalt (Komma-Liste) als String ohne Kommata ausgeben
+\newcommand{\@eanCSToStr}[1]{%
+  \edef\@tmpcs{\csname #1\endcsname}%
+  \StrSubstitute{\@tmpcs}{,}{}%
+}
+
+\makeatother

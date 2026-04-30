@@ -43,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: geheimnis-der-redundanz-pdf
-          path: pdf/latex/geheimnis-der-redundanz.pdf
+          path: pdf/geheimnis-der-redundanz.pdf
           if-no-files-found: error

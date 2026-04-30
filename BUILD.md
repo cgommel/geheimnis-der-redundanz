@@ -7,12 +7,16 @@ Pygments).
 ## Schnellstart
 
 ```bash
-make                    # Hauptbuch nach pdf/latex/geheimnis-der-redundanz.pdf
-make redundanz-tag5     # Standalone „Buch bis Etappe 5" (Etappen 1..5 + Lösungen)
-make standalones        # alle Standalones (redundanz-tag1.pdf .. redundanz-tag8.pdf)
+make                    # Hauptbuch nach pdf/geheimnis-der-redundanz.pdf
+make redundanz-tag5     # Auszug zu Etappe 5 (nur Etappe 5 + Lösung 5)
+make standalones        # alle Auszüge (redundanz-tag1.pdf .. redundanz-tag9.pdf)
 make test-code          # prüft die Python-Snippets syntaktisch
-make clean              # entfernt Build-Artefakte
+make clean              # entfernt build/ und pdf/
 ```
+
+**Verzeichnisse:** Fertige PDFs landen in `pdf/`, alle LaTeX-Zwischen-
+dateien (aux, log, toc, idx, glo, …) liegen separat in `build/latex/`.
+Beide sind gitignored.
 
 ## Container-Build (empfohlen)
 
@@ -42,24 +46,26 @@ Math) liegen vendored unter [`latex/fonts/`](latex/fonts/) und werden
 System-Installation nötig. Provenance und Lizenzen siehe
 [`latex/fonts/README.md`](latex/fonts/README.md).
 
-## Standalones „Buch bis Etappe N"
+## Auszüge pro Etappe
 
-Pro Etappe N (1..8) gibt es einen Master `latex/redundanz-tagN.tex`,
-der das Buch im Stand bis Etappe N rendert — vollständig (Vorwort,
-Inhaltsverzeichnis, Etappen 1..N, Lösungen 1..N, Glossar, Index),
-nur ohne die Hauptbuch-Titelseite. Damit kann eine Lesende die Etappe
-in Kontext der vorigen Etappen lesen, ohne das ganze Buch zu kennen.
+Pro Etappe N (1..9) gibt es einen Master `latex/redundanz-tagN.tex`,
+der genau diese Etappe plus den dazu passenden Lösungsblock rendert —
+ohne Titelseite, Vorwort, Inhaltsverzeichnis, Glossar oder Index.
+Damit ist jeder Auszug ein handliches PDF, das man einer Person zum
+Lesen genau dieser Etappe geben kann.
 
 ```bash
-make redundanz-tag1    # Buch bis Etappe 1
-make redundanz-tag5    # Buch bis Etappe 5
-make standalones       # alle Standalones der Reihe nach
+make redundanz-tag1    # Auszug Etappe 1
+make redundanz-tag5    # Auszug Etappe 5
+make standalones       # alle Auszüge der Reihe nach
 ```
 
-Alle Standalones teilen sich den Body in `latex/buch-rumpf.tex`; der
-Master setzt nur `\maxetappe` und (für das Hauptbuch) die Titelseite.
-Eine neue Etappe hinzufügen heißt: `\maxetappe` im Hauptbuch
-hochziehen plus eine kurze `latex/redundanz-tag(N+1).tex` anlegen.
+Alle Auszüge teilen sich den Body in `latex/auszug-rumpf.tex`; der
+Master setzt nur `\auszugetappe`. Das Hauptbuch verwendet weiter den
+Body in `latex/buch-rumpf.tex` mit `\maxetappe`. Eine neue Etappe
+hinzufügen heißt: `\maxetappe` im Hauptbuch hochziehen, eine kurze
+`latex/redundanz-tag(N+1).tex` anlegen, und im Makefile `ETAPPEN`
+um die neue Zahl ergänzen.
 
 ## Verzeichnisstruktur
 
@@ -68,8 +74,9 @@ hochziehen plus eine kurze `latex/redundanz-tag(N+1).tex` anlegen.
 ├── Makefile                          ← Build-Targets (make, container, clean, …)
 ├── latex/                            ← Single Source of Truth (LaTeX-native)
 │   ├── geheimnis-der-redundanz.tex   Hauptbuch-Master (Titelseite + alle Etappen)
-│   ├── redundanz-tagN.tex            Standalone-Master „Buch bis Etappe N"
-│   ├── buch-rumpf.tex                Gemeinsamer Body, parametrisiert über \maxetappe
+│   ├── redundanz-tagN.tex            Auszug-Master pro Etappe N
+│   ├── buch-rumpf.tex                Body fürs Hauptbuch (Loop über \maxetappe)
+│   ├── auszug-rumpf.tex              Body für die Auszüge (nur \auszugetappe)
 │   ├── praeambel.tex                 Pakete, Geometrie, Schriften, Kopfzeile
 │   ├── farben.tex                    CMYK-Farbset für die Aufgabentypen
 │   ├── befehle.tex                   Aufgaben-Umgebungen, Code-Snippet-Wrapper
@@ -96,9 +103,10 @@ hochziehen plus eine kurze `latex/redundanz-tag(N+1).tex` anlegen.
 │   ├── LAYOUT_BRIEFING.md            Designentscheidungen für das Layout
 │   ├── MAENGEL.md                    Sammelliste für den Polish-Sprint
 │   └── WIP.md                        Aktueller Arbeitsstand
-└── pdf/latex/                        ← Build-Output (gitignored)
+├── build/latex/                      ← LaTeX-Zwischenfiles (gitignored)
+└── pdf/                              ← fertige PDFs (gitignored)
     ├── geheimnis-der-redundanz.pdf       Hauptbuch
-    └── redundanz-tagN.pdf                Standalones bis Etappe N
+    └── redundanz-tagN.pdf                Auszug Etappe N
 ```
 
 ## Layout

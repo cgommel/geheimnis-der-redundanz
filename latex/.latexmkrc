@@ -11,7 +11,7 @@ $pdf_mode = 5;        # XeLaTeX
 # -shell-escape ist nötig für minted (Pygments) und unseren \pythoncodeteil.
 $xelatex = 'xelatex -interaction=nonstopmode -synctex=1 -shell-escape -file-line-error %O %S';
 
-$out_dir = '../pdf/latex';
+$out_dir = '../build/latex';
 
 # Wenn latexmk ohne Argument aufgerufen wird, bauen wir das Hauptbuch.
 @default_files = ('geheimnis-der-redundanz.tex');

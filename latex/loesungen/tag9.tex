@@ -1,0 +1,46 @@
+\section*{Tag 9 — Strichcode von Hand}
+
+\subsection*{Bleistift-Übung 1: Prüfziffer von \texttt{4270004371635}}
+
+Die EAN-13-Prüfziffer berechnet sich aus den ersten zwölf Ziffern wie
+folgt: jede Ziffer mit Gewicht $1$ multiplizieren, wenn sie an einer
+\emph{ungeraden} Position steht (1., 3., 5., \dots), und mit Gewicht
+$3$ an einer \emph{geraden} Position. Alles aufsummieren, modulo 10
+nehmen, vom Ergebnis 10 abziehen und nochmal modulo 10 (für den Fall,
+dass die Prüfziffer 0 sein muss).
+
+Konkret für die ersten zwölf Ziffern \texttt{427000437163}:
+
+\begin{align*}
+S &= 4{\cdot}1 + 2{\cdot}3 + 7{\cdot}1 + 0{\cdot}3 + 0{\cdot}1 + 0{\cdot}3
+   + 4{\cdot}1 + 3{\cdot}3 + 7{\cdot}1 + 1{\cdot}3 + 6{\cdot}1 + 3{\cdot}3 \\
+  &= 4 + 6 + 7 + 0 + 0 + 0 + 4 + 9 + 7 + 3 + 6 + 9 \\
+  &= 55
+\end{align*}
+
+$55 \bmod 10 = 5$, also Prüfziffer
+$= (10 - 5) \bmod 10 = \mathbf{5}$.
+
+Vergleich mit der gedruckten EAN: \texttt{427000437163\textbf{5}}. Das
+passt. Auch der Validator aus Tag 1 sagt \texttt{True}:
+
+\begin{minted}{python}
+ean13_ist_gueltig("4270004371635")  # → True
+\end{minted}
+
+\subsection*{Bleistift-Übung 2: Encoding-Folge ablesen}
+
+\paragraph{Erstziffer 9} Aus der Tabelle: \texttt{LGGLGL}. Eine
+EAN mit führender 9 verwendet auf den sechs linken Positionen also
+abwechselnd L- und G-Codes nach diesem Schema, gefolgt von sechs
+R-Codes auf der rechten Seite.
+
+\paragraph{Erstziffer 0} Aus der Tabelle: \texttt{LLLLLL}. Alle
+sechs linken Ziffern werden mit dem L-Code gesetzt — das ist genau
+das, was ein UPC-A macht. Da auch die rechten Codes (R) zwischen
+EAN-13 und UPC-A identisch sind und die Strich-Positionen gleich
+liegen, ist der Strich-Teil eines EAN-13 mit führender 0 \emph{Bit
+für Bit identisch} mit einem UPC-A der Ziffern 2 bis 13. Genau
+deshalb akzeptieren UPC-A-Scanner einen EAN-13 ohne Umbau, sofern
+er mit \texttt{0} beginnt — die ersten sieben Ziffern liest der
+Scanner einfach als „normalen" 12-stelligen UPC.

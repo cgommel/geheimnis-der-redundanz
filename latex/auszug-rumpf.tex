@@ -1,0 +1,33 @@
+% =============================================================
+% Auszug-Helper — rendert genau eine Etappe + ihre Lösung als
+% schlankes Standalone-PDF.
+%
+% Master-Dateien (redundanz-tagN.tex) setzen \auszugetappe=N und
+% laden danach diese Datei via \input{auszug-rumpf}. Kein Vorwort,
+% kein Inhaltsverzeichnis, kein Glossar, kein Index — nur das
+% Kapitel und der dazu passende Lösungsblock.
+% =============================================================
+
+\input{praeambel}
+\input{farben}
+\input{befehle}
+\input{glossar}
+
+\providecommand{\auszugetappe}{1}
+
+\begin{document}
+
+\pagestyle{scrheadings}
+
+% Kapitel-Counter so setzen, dass das nächste \chapter aus
+% kapitel/tagN.tex genau die Nummer N ergibt.
+\setcounter{chapter}{\numexpr\auszugetappe-1\relax}
+
+\input{kapitel/tag\auszugetappe}
+
+% Lösung als unnummerierter Anhang.
+\appendix
+\chapter*{Lösung zu Etappe \auszugetappe}
+\input{loesungen/tag\auszugetappe}
+
+\end{document}
