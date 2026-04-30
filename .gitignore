@@ -1,4 +1,5 @@
 # Build-Artefakte
+build/latex/
 pdf/
 *.aux
 *.log

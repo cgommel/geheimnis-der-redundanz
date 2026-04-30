@@ -1,17 +1,22 @@
 # Build-Targets für das Buchprojekt.
 #
 # `make` / `make buch`     baut das Hauptbuch (alle Etappen, mit Titelseite)
-#                          nach pdf/latex/geheimnis-der-redundanz.pdf.
-# `make redundanz-tagN`    baut den Standalone „Buch bis Etappe N" ohne
-#                          Titelseite nach pdf/latex/redundanz-tagN.pdf
-#                          (N = 1 .. 8).
-# `make standalones`       baut alle Standalones der Reihe nach.
+#                          nach pdf/geheimnis-der-redundanz.pdf.
+# `make redundanz-tagN`    baut den Auszug zu Etappe N (nur Etappe N
+#                          plus zugehörige Lösung) nach pdf/redundanz-tagN.pdf
+#                          (N = 1 .. 9).
+# `make standalones`       baut alle Auszüge der Reihe nach.
 # `make test-code`         prüft alle Python-Snippets syntaktisch.
-# `make clean`             räumt LaTeX-Build-Artefakte auf.
+# `make clean`             räumt Build-Artefakte und PDFs auf.
 # `make shell`             öffnet eine Subshell im latex/-Verzeichnis.
+#
+# LaTeX-Zwischendateien landen unter build/latex/, fertige PDFs werden
+# nach pdf/ kopiert. Beide sind gitignored.
 
 LATEX_DIR  := latex
 CODE_DIR   := $(LATEX_DIR)/code
+BUILD_DIR  := build/latex
+PDF_DIR    := pdf
 HAUPTBUCH  := geheimnis-der-redundanz
 ETAPPEN    := 1 2 3 4 5 6 7 8 9
 STANDALONES := $(addprefix redundanz-tag,$(ETAPPEN))
@@ -26,17 +31,20 @@ all: buch
 # hyperref-Warnings beim ersten Durchlauf). Wir tolerieren das mit dem
 # vorangestellten "-" und prüfen am Ende explizit auf das PDF.
 buch: test-code
-	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
+	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
 	-cd $(LATEX_DIR) && latexmk -f $(HAUPTBUCH).tex
-	@test -f pdf/latex/$(HAUPTBUCH).pdf && echo "✓ pdf/latex/$(HAUPTBUCH).pdf"
+	@cp $(BUILD_DIR)/$(HAUPTBUCH).pdf $(PDF_DIR)/
+	@test -f $(PDF_DIR)/$(HAUPTBUCH).pdf && echo "✓ $(PDF_DIR)/$(HAUPTBUCH).pdf"
 
-# --- Standalones „Buch bis Etappe N" --------------------------------
-# Pro Etappe ein Master latex/redundanz-tagN.tex; sie teilen sich den
-# Body in latex/buch-rumpf.tex. Selber Cold-Start-Workaround.
+# --- Auszüge pro Etappe ---------------------------------------------
+# Pro Etappe N gibt es einen Master latex/redundanz-tagN.tex; sie
+# rendern jeweils nur die eine Etappe + ihre Lösung. Selber Cold-Start-
+# Workaround wie beim Hauptbuch.
 $(STANDALONES): test-code
-	mkdir -p pdf/latex/kapitel $(LATEX_DIR)/.snippets
+	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
 	-cd $(LATEX_DIR) && latexmk -f $@.tex
-	@test -f pdf/latex/$@.pdf && echo "✓ pdf/latex/$@.pdf"
+	@cp $(BUILD_DIR)/$@.pdf $(PDF_DIR)/
+	@test -f $(PDF_DIR)/$@.pdf && echo "✓ $(PDF_DIR)/$@.pdf"
 
 standalones: $(STANDALONES)
 
@@ -50,7 +58,7 @@ test-code:
 
 clean:
 	cd $(LATEX_DIR) && latexmk -C
-	rm -rf pdf/latex $(LATEX_DIR)/.snippets
+	rm -rf $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
 
 shell:
 	cd $(LATEX_DIR) && exec $$SHELL

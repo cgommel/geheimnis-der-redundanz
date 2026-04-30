@@ -1,11 +1,9 @@
 % =============================================================
-% Standalone-Master — Buch bis einschließlich Etappe 1.
+% Auszug-Master — nur Etappe 1 plus zugehörige Lösung.
 %
-% Output: pdf/latex/redundanz-tag1.pdf
+% Output: pdf/redundanz-tag1.pdf
 %
-% Ohne Titelseite, sonst identisches Buch-Layout (Vorwort, TOC,
-% Etappen 1..1, Lösungen 1..1, Glossar, Index). Geteilter Body
-% in buch-rumpf.tex.
+% Geteilter Body in auszug-rumpf.tex.
 % =============================================================
 
 \documentclass[
@@ -17,6 +15,6 @@
   open=right,
 ]{scrbook}
 
-\def\maxetappe{1}
+\def\auszugetappe{1}
 
-\input{buch-rumpf}
+\input{auszug-rumpf}
