@@ -13,7 +13,7 @@
 LATEX_DIR  := latex
 CODE_DIR   := $(LATEX_DIR)/code
 HAUPTBUCH  := geheimnis-der-redundanz
-ETAPPEN    := 1 2 3 4 5 6 7 8
+ETAPPEN    := 1 2 3 4 5 6 7 8 9
 STANDALONES := $(addprefix redundanz-tag,$(ETAPPEN))
 
 .PHONY: all buch standalones $(STANDALONES) clean shell test-code container container-clean

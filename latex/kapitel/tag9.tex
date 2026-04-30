@@ -1,0 +1,210 @@
+\chapter{Tag 9 — Wir zeichnen einen Strichcode mit der Hand}
+
+\begin{quote}
+Bisher hat Python jede Aufgabe abgenommen, sobald sie mathematisch
+verstanden war. Heute drehen wir den Spieß um: du nimmst Bleistift,
+Lineal und einen schwarzen Filzstift und zeichnest einen
+EAN-13-Strichcode \emph{Modul für Modul} auf Papier. Am Ende soll
+dein Handy ihn abscannen — kein Drucker, kein Software-Helfer,
+nur dein Wissen aus den letzten Tagen plus eine ruhige Hand.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 9 kannst du \dots
+
+\begin{itemize}
+\item die drei Encoding-Sets eines EAN-13 lesen: L (links gerade), G
+  (links ungerade), R (rechts)
+\item erklären, wie die führende Ziffer das Paritätsmuster der linken
+  Hälfte steuert — und warum dieser Umweg überhaupt nötig ist
+\item einen 13-stelligen EAN auf eine vorbereitete Zeichenvorlage
+  übertragen — Modul für Modul, Strich für Strich
+\item den selbstgezeichneten Strichcode mit dem Handy scannen
+\item erklären, warum EAN-13 \emph{nur} Fehler erkennen kann, aber
+  keine korrigieren — und warum Datamatrix das anders macht
+\end{itemize}
+
+\paragraph{Material} Ein Lineal mit Millimeter-Skala, ein Fineliner
+(Strichbreite 0{,}3 oder 0{,}4\,mm) und die Zeichenvorlage zu dieser
+Etappe — ein separates A4-Heft mit \emph{mehreren} Barcode-Feldern.
+Mehrere Felder deshalb, weil der erste Versuch fast nie auf Anhieb
+sitzt; falls doch, hast du Reserve für eigene Codes.
+
+% =============================================================
+\section{Prüfziffer nachrechnen am eigenen EAN \normalfont(\textit{≈ 15 min})}
+% =============================================================
+
+An Tag 1 hast du die EAN-13-Prüfziffer kennengelernt. Heute brauchst
+du wieder einen konkreten 13-stelligen Code — denn diesen Code wirst
+du gleich \emph{auf Papier zeichnen}, und dafür muss er stimmen.
+
+Wir nehmen für die ganze Etappe einen ganz bestimmten Code: den von
+einem 500-Gramm-Glas Honig „Sommer in Radebeul“ von \textbf{Gommels
+Bienen}. Auf der Rückseite des Glases steht der EAN
+
+\begin{center}
+{\Large\ttfamily 4\,270004\,371635}
+\end{center}
+
+\begin{bleistiftuebung}{1}{Prüfziffer nachrechnen}
+Verifiziere die Prüfziffer der EAN \texttt{4270004371635} nach der
+Methode aus Tag 1: Decke die letzte Ziffer ab, berechne sie aus den
+ersten zwölf Ziffern, und vergleiche mit der gedruckten Ziffer.
+
+Im Lösungsanhang findest du die komplette Schritt-für-Schritt-Rechnung —
+\textbf{bitte erst dort nachsehen}, nachdem du es selbst probiert hast.
+\end{bleistiftuebung}
+
+Wenn das Ergebnis deiner Methode mit der gedruckten Prüfziffer
+übereinstimmt, weißt du: der Code, den du gleich zeichnen wirst, ist
+\emph{technisch sauber}. Nichts ist frustrierender, als am Ende einer
+Stunde Zeichnen einen Strichcode in den Händen zu halten, den dein
+Handy abweist, weil eine Ziffer falsch war.
+
+% =============================================================
+\section{Drei Codetabellen — und warum es drei sein müssen \normalfont(\textit{≈ 25 min})}
+% =============================================================
+
+So sieht das Ergebnis aus, das du am Ende dieser Etappe auf Papier
+gezeichnet haben sollst:
+
+\begin{center}
+\barcodehonig
+\end{center}
+
+Das ist der EAN-13 unseres Honigglases, gerendert mit derselben Logik,
+die du gleich kennenlernst. Weiße Module = leerlassen, schwarze Module =
+schwarz machen. So einfach — und so geduldig.
+
+\subsection*{Die kleine Geschichte des EAN-13}
+
+In den USA wurde 1973 der \textbf{UPC-A} eingeführt — ein 12-stelliger
+Strichcode für Konsumgüter. Layout: 6 Ziffern links, 6 Ziffern rechts,
+zwei Codetabellen (eine für jede Hälfte). Funktionierte gut.
+
+Drei Jahre später wollte Europa mitspielen, brauchte aber eine
+\emph{13.} Ziffer für die Länderkennung (4 = Deutschland, 8 =
+Italien, etc.). Es gab nur ein Problem: Der UPC-A-Scanner-Park war
+schon ausgerollt. Niemand wollte alle Scanner umrüsten.
+
+Die Lösung der EAN-13-Erfinder ist eine elegante Pirouette: Sie haben
+die Strich-Geometrie \emph{nicht} verändert. Es bleibt bei 12
+Strich-Positionen. Stattdessen führten sie auf der linken Seite eine
+\emph{zweite} Codetabelle ein. Pro Ziffer kann man jetzt zwischen
+zwei Mustern wählen — L oder G — und welches Muster wo verwendet
+wird, codiert die 13. Ziffer „unsichtbar" mit.
+
+Damit das alte UPC-A weiterhin funktioniert, wurde die Konvention
+gesetzt: Ein EAN-13, der mit \texttt{0} beginnt, hat alle linken
+Ziffern in L-Codierung — und sieht für einen UPC-A-Scanner exakt aus
+wie ein UPC-A.
+
+\subsection*{Das Modul als Bauteil}
+
+Bevor wir uns die Tabellen anschauen: Ein EAN-13 besteht aus
+\textbf{Modulen} — gleich breiten schwarzen oder weißen Streifen. Die
+Modulbreite ist genormt; bei einem klassischen Strichcode auf einer
+Konsumverpackung sind das etwa $0{,}33$\,mm. Ein schwarzer Strich kann
+ein, zwei, drei oder vier Module breit sein — entscheidend ist nur,
+wie viele Module nebeneinander schwarz sind, und wie viele weiß.
+
+Jede Ziffer wird durch \textbf{7 Module} dargestellt — eine Folge
+aus 7 Bits, wobei \texttt{0} für weiß und \texttt{1} für schwarz
+steht. Welche der drei Tabellen man verwendet (L, G oder R), hängt
+davon ab, an welcher Position die Ziffer im Strichcode steht.
+
+\subsection*{Die L-Codes (linke Hälfte, ungerade Parität)}
+
+\emph{L} steht für \emph{left-hand odd-parity}: Codes für die linke
+Hälfte mit einer ungeraden Anzahl schwarzer Module. Jeder L-Code
+beginnt mit \texttt{0} (weiß) und endet mit \texttt{1} (schwarz).
+
+\begin{center}
+\begin{tabular}{c c c c c}
+\toprule
+\textbf{Ziffer} & \textbf{L-Code} & \textbf{G-Code} & \textbf{R-Code} & \textbf{schwarze Module}\\
+\midrule
+0 & \texttt{0001101} & \texttt{0100111} & \texttt{1110010} & 3 / 4 / 4 \\
+1 & \texttt{0011001} & \texttt{0110011} & \texttt{1100110} & 3 / 4 / 4 \\
+2 & \texttt{0010011} & \texttt{0011011} & \texttt{1101100} & 3 / 4 / 4 \\
+3 & \texttt{0111101} & \texttt{0100001} & \texttt{1000010} & 5 / 2 / 2 \\
+4 & \texttt{0100011} & \texttt{0011101} & \texttt{1011100} & 3 / 4 / 4 \\
+5 & \texttt{0110001} & \texttt{0111001} & \texttt{1001110} & 3 / 4 / 4 \\
+6 & \texttt{0101111} & \texttt{0000101} & \texttt{1010000} & 5 / 2 / 2 \\
+7 & \texttt{0111011} & \texttt{0010001} & \texttt{1000100} & 5 / 2 / 2 \\
+8 & \texttt{0110111} & \texttt{0001001} & \texttt{1001000} & 5 / 2 / 2 \\
+9 & \texttt{0001011} & \texttt{0010111} & \texttt{1110100} & 3 / 4 / 4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Beziehung zwischen den drei Tabellen}
+\begin{itemize}
+\item \textbf{R-Code} = L-Code, jedes Bit invertiert (aus \texttt{0}
+  wird \texttt{1} und umgekehrt). Schwarz und Weiß tauschen.
+\item \textbf{G-Code} = R-Code, rückwärts gelesen. Spiegelung.
+\item Daraus folgt: G hat dieselbe Bit-Anzahl wie R, aber die L- und
+  G-Codes lassen sich \emph{nicht} ineinander umwandeln, ohne über R
+  zu gehen.
+\end{itemize}
+
+Du musst die Tabelle nicht auswendig können — sie steht in der
+Zeichenvorlage unten auf jedem Blatt.
+
+\subsection*{Die führende Ziffer als Paritätsmuster}
+
+Auf der linken Hälfte des EAN-13 stehen die Ziffern 2 bis 7 (sechs
+Stück). Pro Ziffer wird entweder L oder G verwendet — und genau diese
+Wahl, sechs Mal hintereinander, codiert die führende (erste)
+Ziffer:
+
+\begin{center}
+\begin{tabular}{c l}
+\toprule
+\textbf{Erstziffer} & \textbf{L/G-Muster der nächsten 6 Ziffern} \\
+\midrule
+0 & \texttt{LLLLLL} \\
+1 & \texttt{LLGLGG} \\
+2 & \texttt{LLGGLG} \\
+3 & \texttt{LLGGGL} \\
+4 & \texttt{LGLLGG} \\
+5 & \texttt{LGGLLG} \\
+6 & \texttt{LGGGLL} \\
+7 & \texttt{LGLGLG} \\
+8 & \texttt{LGLGGL} \\
+9 & \texttt{LGGLGL} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Auf der rechten Hälfte stehen die Ziffern 8 bis 13 (auch sechs
+Stück) — die werden immer in R-Codierung gesetzt, ohne Variation.
+
+\subsection*{Beispiel: unser Honig-EAN}
+
+Unser Code ist \texttt{4270004371635}. Die führende Ziffer ist
+\textbf{4}, also lautet das Paritätsmuster \texttt{LGLLGG}. Daraus
+folgt für die ersten sieben sichtbaren Ziffern (Position 2 bis 7) die
+Codetabelle:
+
+\begin{center}
+\begin{tabular}{c c c c c c c}
+\toprule
+\textbf{Position} & 2 & 3 & 4 & 5 & 6 & 7 \\
+\textbf{Ziffer}   & 2 & 7 & 0 & 0 & 0 & 4 \\
+\textbf{Tabelle}  & L & G & L & L & G & G \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Die rechten Ziffern \texttt{371635} werden alle in R-Codierung
+gesetzt. Die führende Ziffer \texttt{4} wird \emph{nicht} als Strich
+gezeichnet — sie ist nur unten in Klarschrift sichtbar, ihre
+Information liegt im L/G-Muster der linken Hälfte.
+
+\begin{bleistiftuebung}{2}{Encoding-Folge ablesen}
+Welche Codetabellen-Folge ergibt sich für einen EAN, der mit
+\texttt{9} beginnt? Und für einen, der mit \texttt{0} beginnt — und
+warum sieht der dann „wie ein UPC-A" aus?
+\end{bleistiftuebung}
