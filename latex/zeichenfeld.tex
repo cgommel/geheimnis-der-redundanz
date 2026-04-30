@@ -75,13 +75,16 @@
     % Hellzonen-Rahmen (gestrichelt, sehr dezent)
     \draw[gray!50, dashed, line width=0.2pt] (-11,-3) rectangle (102,33);
     %
-    % Sehr feines Modul-Hilfsraster: vertikale Linien an Modul-Grenzen
+    % Modul-Hilfsraster: durchgezogene vertikale Linien an jeder
+    % Modul-Grenze. Linienbreite bewusst über der Aliasing-Schwelle
+    % (~0.4pt), damit alle 96 Linien beim Drucken gleich dick wirken
+    % und Greta die Module abzählen kann, ohne das Lineal anzulegen.
     \foreach \x in {0,1,...,95}{%
-      \draw[gray!25, line width=0.05pt] (\x,-3) -- (\x,33);%
+      \draw[gray!55, line width=0.4pt] (\x,-3) -- (\x,33);%
     }
-    % Untere und obere Begrenzung der Daten-Strichhöhe (y=0..33)
-    \draw[gray!40, line width=0.15pt] (0,0) -- (95,0);
-    \draw[gray!40, line width=0.15pt] (0,33) -- (95,33);
+    % Obere und untere Begrenzung der Daten-Strichhöhe.
+    \draw[gray!70, line width=0.5pt] (0,0)  -- (95,0);
+    \draw[gray!70, line width=0.5pt] (0,33) -- (95,33);
     %
     % Marker für Bauteil-Grenzen (oben drüber, zwei Reihen damit nichts kollidiert)
     % Reihe oben: Bezeichner der Sechsergruppen
