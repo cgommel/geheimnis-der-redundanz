@@ -41,18 +41,21 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Buch bauen
+      - name: Alle PDFs bauen
         run: |
           docker run --rm \
             -v "$GITHUB_WORKSPACE:/work" \
             -w /work \
             redundancy-book:release \
-            make
+            make alles
 
-      - name: Release erstellen mit PDF als Asset
+      - name: Release erstellen mit allen PDFs als Assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           name: ${{ github.event.inputs.tag || github.ref_name }}
           generate_release_notes: true
-          files: pdf/geheimnis-der-redundanz.pdf
+          files: |
+            pdf/geheimnis-der-redundanz.pdf
+            pdf/redundanz-tag*.pdf
+            pdf/zeichenvorlage.pdf

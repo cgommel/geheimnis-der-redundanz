@@ -22,9 +22,14 @@ ETAPPEN    := 1 2 3 4 5 6 7 8 9
 STANDALONES := $(addprefix redundanz-tag,$(ETAPPEN))
 VORLAGEN    := zeichenvorlage
 
-.PHONY: all buch standalones $(STANDALONES) vorlagen $(VORLAGEN) clean shell test-code container container-clean
+.PHONY: all alles buch standalones $(STANDALONES) vorlagen $(VORLAGEN) zeichenvorlage clean shell test-code container container-clean
 
 all: buch
+
+# `make alles` baut Hauptbuch + alle Auszüge + alle Werkstatt-Vorlagen.
+# Wird vom CI-Release verwendet, damit jedes PDF einzeln als Asset
+# hochgeladen werden kann.
+alles: buch standalones $(PDF_DIR)/zeichenvorlage.pdf
 
 # --- Hauptbuch -------------------------------------------------------
 # latexmk gibt beim Cold-Start einen non-zero Exit-Code zurück, obwohl
@@ -35,7 +40,7 @@ all: buch
 # Etappe 9 (im Hauptbuch und im Auszug) bindet pdf/zeichenvorlage.pdf
 # via pdfpages ein — die Vorlage muss also vor dem Buch-Build da sein.
 buch: test-code $(PDF_DIR)/zeichenvorlage.pdf
-	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
+	mkdir -p $(BUILD_DIR)/kapitel $(PDF_DIR) $(LATEX_DIR)/.snippets
 	-cd $(LATEX_DIR) && latexmk -f $(HAUPTBUCH).tex
 	@cp $(BUILD_DIR)/$(HAUPTBUCH).pdf $(PDF_DIR)/
 	@test -f $(PDF_DIR)/$(HAUPTBUCH).pdf && echo "✓ $(PDF_DIR)/$(HAUPTBUCH).pdf"

@@ -31,17 +31,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Buch bauen
+      - name: Alle PDFs bauen
         run: |
           docker run --rm \
             -v "$GITHUB_WORKSPACE:/work" \
             -w /work \
             redundancy-book:ci \
-            make
+            make alles
 
-      - name: PDF als Artefakt hochladen
+      - name: PDFs als Artefakte hochladen
         uses: actions/upload-artifact@v7
         with:
-          name: geheimnis-der-redundanz-pdf
-          path: pdf/geheimnis-der-redundanz.pdf
+          name: pdfs
+          path: pdf/*.pdf
           if-no-files-found: error
