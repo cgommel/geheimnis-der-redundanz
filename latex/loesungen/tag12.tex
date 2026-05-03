@@ -1,0 +1,98 @@
+\section*{Tag 12 — Reed-Solomon-Prüfbytes für Datamatrix}
+
+\subsection*{Bleistift-Übung 1: Polynomdivision von Hand — die ersten zwei Schritte}
+
+Ausgangssituation:
+
+\[
+  D = [73,\; 80,\; 79,\; 74,\; 72,\; 0,\; 0,\; 0,\; 0,\; 0,\; 0,\; 0]
+\]
+
+Generator-Polynom (in der Datamatrix-GF($2^8$) für $t = 7$).
+\texttt{generator\_polynom(7)} gibt die Koeffizienten vom konstanten
+Term zum höchsten Grad — wir lesen sie aber bei der Division
+\emph{vom höchsten Grad zum konstanten} ab:
+
+\begin{minted}{python}
+>>> from gf256_dm import GF256DM
+>>> from rs_dm import generator_polynom
+>>> g = generator_polynom(7)
+>>> [gk.wert for gk in g]
+[23, 68, 144, 134, 240, 92, 254, 1]      # konstant zuerst
+>>> [gk.wert for gk in reversed(g)]
+[1, 254, 92, 240, 134, 144, 68, 23]      # höchster Grad zuerst
+\end{minted}
+
+\paragraph{Schritt 1: Leitkoeffizient von $D$ ist 73.}
+Multipliziere $g$ (höchster Grad zuerst) mit $73$ in der
+Datamatrix-GF($2^8$):
+
+\begin{minted}{python}
+>>> [(GF256DM(73) * gk).wert for gk in reversed(g)]
+[73, 120, 175, 241, 150, 41, 153, 246]
+\end{minted}
+
+XOR diese 8 Werte auf die Stellen 1 bis 8 von $D$:
+
+\begin{center}
+\small
+\begin{tabular}{r r r r r r r r r r r r r}
+\toprule
+Stelle & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 \\
+\midrule
+$D$-vorher  &  73 &  80 &  79 &  74 &  72 &   0 &   0 &   0 &   0 &   0 &   0 &   0 \\
+$73 \cdot g$ &  73 & 120 & 175 & 241 & 150 &  41 & 153 & 246 &     &     &     &     \\
+$D$-nachher &   0 &  40 & 224 & 187 & 222 &  41 & 153 & 246 &   0 &   0 &   0 &   0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Stelle 1 ist nun $0$. Neuer Leitkoeffizient (an Stelle 2): $40$.
+
+\paragraph{Schritt 2: Leitkoeffizient ist 40.}
+$40 \cdot g$ (höchster Grad zuerst):
+
+\begin{minted}{python}
+>>> [(GF256DM(40) * gk).wert for gk in reversed(g)]
+[40, 255, 8, 98, 206, 228, 191, 2]
+\end{minted}
+
+XOR auf die Stellen 2 bis 9:
+
+\begin{center}
+\small
+\begin{tabular}{r r r r r r r r r r r r r}
+\toprule
+Stelle & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 \\
+\midrule
+$D$-vorher  & 0 &  40 & 224 & 187 & 222 &  41 & 153 & 246 &   0 &   0 &   0 &   0 \\
+$40 \cdot g$&   &  40 & 255 &   8 &  98 & 206 & 228 & 191 &   2 &     &     &     \\
+$D$-nachher & 0 &   0 &  31 & 179 & 188 & 231 & 125 &  73 &   2 &   0 &   0 &   0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Stellen 1 und 2 sind nun $0$. Drei weitere Schritte (Stellen 3, 4, 5)
+und die Datenstellen sind alle ausgenullt — übrig bleiben in den
+Stellen 6 bis 12 die sieben Prüfbytes.
+
+Python rechnet das durch:
+
+\begin{minted}{python}
+>>> from rs_dm import reed_solomon_ecc
+>>> reed_solomon_ecc([73, 80, 79, 74, 72], 7)
+[70, 186, 97, 167, 44, 40, 243]
+\end{minted}
+
+\subsection*{Bleistift-Übung 2: GRETA-ECC ausrechnen lassen}
+
+\begin{minted}{python}
+>>> reed_solomon_ecc([72, 83, 70, 85, 66], 7)
+[64, 90, 71, 128, 186, 106, 125]
+\end{minted}
+
+Die zwölf Codewort-Bytes für GRETA sind also:
+\texttt{[72, 83, 70, 85, 66, 64, 90, 71, 128, 186, 106, 125]}.
+
+Bewahre die Liste auf — in Etappe 14 wirst du sie als Zeichenvorlage
+für dein eigenes Symbol brauchen.

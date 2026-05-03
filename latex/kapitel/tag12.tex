@@ -1,0 +1,231 @@
+\chapter{Tag 12 — Reed-Solomon-Prüfbytes für Datamatrix}
+
+\begin{quote}
+Heute kommt der Aha-Moment, für den wir die ganze Reed-Solomon-Mathe
+aus Etappe 6, 7 und 8 gebaut haben. Wir nehmen unsere fünf
+HONIG-Codewort-Bytes von gestern und berechnen die sieben
+Prüfbytes, die ein Datamatrix-Decoder zur Fehlerkorrektur braucht.
+Der Encoder von Tag 7 funktioniert dafür fast 1:1 — wir müssen nur
+\emph{ein} Detail anpassen: das Modulo-Polynom für GF($2^8$).
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 12 kannst du \dots
+
+\begin{itemize}
+\item erklären, warum Datamatrix ein \emph{anderes} Modulo-Polynom
+  als unser Tag-7-Code verwendet — und dass das nur Konvention ist
+\item eine neue GF($2^8$)-Klasse aus der alten kopieren und genau
+  eine Konstante austauschen
+\item das Generator-Polynom für 7 Prüfsymbole im Datamatrix-Stil
+  bauen
+\item für deine HONIG-Codewörter \texttt{[73, 80, 79, 74, 72]} die
+  sieben Prüfbytes berechnen lassen — mit deinem eigenen Code, nicht
+  mit einer fertigen Bibliothek
+\end{itemize}
+
+\paragraph{Material} Bleistift, Karopapier, Laptop mit Thonny und
+deinem Code aus Tag 7 als Referenz.
+
+% =============================================================
+\section{Erinnerung: was Reed-Solomon an Tag 7 gemacht hat \normalfont(\textit{≈ 15 min})}
+% =============================================================
+
+In Tag 7 haben wir einen Reed-Solomon-Encoder gebaut, der
+\textbf{drei Schritte} macht:
+
+\begin{enumerate}
+\item \textbf{Generator-Polynom $g(x)$ aufstellen}: ein Produkt von
+  Linearfaktoren über GF($2^8$),
+  $g(x) = (x - \alpha^1)(x - \alpha^2) \cdots (x - \alpha^t)$,
+  mit $\alpha = 2$ als primitivem Element und $t$ als Anzahl der
+  Prüfsymbole.
+\item \textbf{Daten mit Nullen auffüllen}: an die Datenfolge werden
+  $t$ Nullen angehängt — das wird das Eingabe-Polynom $D(x)$.
+\item \textbf{Polynomdivision modulo $g(x)$}: wie schriftliche
+  Division, nur dass Subtraktion durch XOR ersetzt wird (das ist
+  Addition in GF($2^8$)). Der Rest ist die Prüfbyte-Folge.
+\end{enumerate}
+
+Dieser Algorithmus ist \emph{universell} — er funktioniert für jeden
+endlichen Körper und jede Anzahl Prüfsymbole. Das einzige, was sich
+zwischen Anwendungen unterscheidet, sind:
+
+\begin{itemize}
+\item das \textbf{Modulo-Polynom}, mit dem GF($2^8$) konstruiert wird
+\item die \textbf{Anzahl der Prüfsymbole} $t$ (bestimmt durch die
+  Symbol-Größe)
+\end{itemize}
+
+\section{Datamatrix nutzt ein anderes Modulo-Polynom \normalfont(\textit{≈ 15 min})}
+
+Du erinnerst dich an Tag 5: GF($2^n$) wird konstruiert, indem man
+modulo eines \emph{irreduziblen} Polynoms vom Grad $n$ rechnet. Es
+gibt mehrere irreduzible Polynome — welches man wählt, ist Konvention.
+
+Tag 7 hat das \emph{klassische} Reed-Solomon-Polynom verwendet:
+
+\[
+  \texttt{0x11D} = x^8 + x^4 + x^3 + x^2 + 1
+  \quad (\text{Bitmuster } \texttt{1\,0001\,1101})
+\]
+
+\textbf{Datamatrix} (im Standard ISO/IEC 16022) wählt aber ein
+anderes:
+
+\[
+  \texttt{0x12D} = x^8 + x^5 + x^3 + x^2 + 1
+  \quad (\text{Bitmuster } \texttt{1\,0010\,1101})
+\]
+
+Beide sind irreduzibel. Beide ergeben Körper mit 256 Elementen.
+Beide funktionieren mit $\alpha = 2$ als primitivem Element. Aber:
+die \emph{Multiplikationstabellen sind unterschiedlich}, und damit
+auch die α-Potenzen, das Generator-Polynom und am Ende die
+Prüfbytes. Wenn du den falschen Polynom-Wert nimmst, scannt das
+Handy dein Symbol nicht.
+
+\subsection*{Eine ganz neue GF-Klasse?}
+
+Wir müssen nicht alles neu bauen. Wir kopieren die GF256-Klasse aus
+Tag 7 und ändern \emph{eine einzige Zeile}: die \texttt{MOD\_POLY}-
+Konstante.
+
+\begin{pythoneinheit}{1}{GF256DM — die Datamatrix-Variante}
+\pythoncodeteil{tag12/gf256_dm.py}{klasse}
+
+Vergleich zu Tag 7: identisch bis auf die erste Konstante in der
+Klasse (\texttt{MOD\_POLY = 0x12D} statt \texttt{0x11D}). Die
+Multiplikation, die Potenzierung, die Addition (XOR) — alles
+genauso wie zuvor.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{2}{α-Potenzen-Tabelle als Sanity-Check}
+\pythoncodeteil{tag12/gf256_dm.py}{alpha}
+
+Wenn $\alpha = 2$ wirklich primitiv ist, müssen $\alpha^0, \alpha^1,
+\ldots, \alpha^{254}$ alle 255 Nicht-Null-Elemente von GF($2^8$)
+genau einmal liefern, und $\alpha^{255}$ muss wieder $1$ sein.
+Genau das prüft das Snippet — und gibt \texttt{True} aus, wenn das
+Datamatrix-Polynom in Ordnung ist.
+\end{pythoneinheit}
+
+\section{Generator-Polynom für 7 Prüfsymbole \normalfont(\textit{≈ 15 min})}
+
+Für ein 12$\times$12-Datamatrix brauchen wir $t = 7$ Prüfbytes. Das
+Generator-Polynom ist also:
+
+\[
+  g(x) = (x - \alpha^1)(x - \alpha^2)(x - \alpha^3)(x - \alpha^4)
+       (x - \alpha^5)(x - \alpha^6)(x - \alpha^7).
+\]
+
+Sieben Linearfaktoren ergeben ein Polynom vom Grad 7 mit 8
+Koeffizienten. Wir müssen sie nicht von Hand ausrechnen — die
+Funktion aus Tag 7 macht das (jetzt mit der Datamatrix-GF):
+
+\begin{pythoneinheit}{3}{generator\_polynom — übernommen aus Tag 7}
+\pythoncodeteil{tag12/rs_dm.py}{generator}
+
+Identisch zur Tag-7-Variante, nur mit \texttt{from gf256\_dm import
+\dots}~statt der alten GF-Klasse. Eingabe: Anzahl der Prüfsymbole.
+Ausgabe: Liste der Polynom-Koeffizienten als GF256DM-Objekte, vom
+höchsten Grad zum niedrigsten.
+\end{pythoneinheit}
+
+% =============================================================
+\section{Polynomdivision für HONIG \normalfont(\textit{≈ 25 min})}
+% =============================================================
+
+\begin{bleistiftuebung}{1}{Polynomdivision von Hand — die ersten zwei Schritte}
+Aus Etappe 11 hast du die HONIG-Datenbytes \texttt{[73, 80, 79, 74,
+72]}. Wir hängen sieben Nullen an (für die sieben Prüfbytes):
+
+\[
+  D = [73,\; 80,\; 79,\; 74,\; 72,\; 0,\; 0,\; 0,\; 0,\; 0,\; 0,\; 0]
+\]
+
+Schreibe \emph{nur} den ersten Schritt der Polynomdivision modulo
+$g(x)$ auf:
+
+\begin{itemize}
+\item Der Leitkoeffizient ist 73 ($\alpha^?$ — schlag in deiner
+  GF-Tabelle nach, welche Potenz das ist).
+\item Multipliziere $g(x)$ mit diesem Leitkoeffizienten — gibt 8
+  GF($2^8$)-Produkte.
+\item Subtrahiere (= XOR) das Ergebnis von $D$ — die ersten 8
+  Koeffizienten ändern sich, davon der erste wird $0$.
+\end{itemize}
+
+Der zweite Schritt geht genauso, mit dem neuen Leitkoeffizienten an
+zweiter Stelle. Insgesamt brauchst du \textbf{fünf Schritte}, dann
+sind alle Daten-Stellen abgearbeitet, und in den letzten sieben
+Stellen steht der Rest — die Prüfbytes.
+
+(Die ganze Polynomdivision von Hand wäre mühsam — fünf Schritte
+mit je acht GF($2^8$)-Multiplikationen. Greta soll die ersten zwei
+Schritte machen, um das Konzept zu spüren; den Rest übernimmt Python
+gleich.)
+\end{bleistiftuebung}
+
+\begin{pythoneinheit}{4}{Reed-Solomon-Encoder für Datamatrix}
+\pythoncodeteil{tag12/rs_dm.py}{encoder}
+
+Identisch zur Tag-7-Implementierung. Der Algorithmus ist universell;
+nur die GF-Klasse ist eine andere.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{5}{Demo: HONIG ECC berechnen}
+\pythoncodeteil{tag12/rs_dm.py}{demo}
+
+Ausgabe (kannst du in Thonny direkt ausprobieren):
+
+\begin{minted}{text}
+Daten: [73, 80, 79, 74, 72]
+ECC : [70, 186, 97, 167, 44, 40, 243]
+Komplettes Codewort: [73, 80, 79, 74, 72, 70, 186, 97, 167, 44, 40, 243]
+\end{minted}
+
+Zwölf Codewort-Bytes — fünf Daten, sieben Prüfbytes. Genau das, was
+in das 12$\times$12-Datamatrix-Symbol hineingehört.
+\end{pythoneinheit}
+
+\begin{bleistiftuebung}{2}{GRETA-ECC ausrechnen lassen}
+Wenn du gestern die Codewort-Bytes für \texttt{GRETA}
+(\texttt{[72, 83, 70, 85, 66]}) ausgerechnet hast, lass deinen
+Code jetzt die sieben Prüfbytes dafür ausspucken — du brauchst sie
+in Etappe 14, wenn du dein eigenes Symbol zeichnest.
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Reflexion und Brücke zu Tag 13 \normalfont(\textit{≈ 10 min})}
+% =============================================================
+
+Du hast jetzt:
+
+\begin{itemize}
+\item eine neue GF($2^8$)-Variante, die Datamatrix versteht
+\item das Generator-Polynom mit sieben Wurzeln
+\item zwölf Codewort-Bytes für HONIG (5 Daten + 7 Prüf)
+\end{itemize}
+
+Was noch fehlt:
+
+\begin{itemize}
+\item Der \textbf{Datenplatzierungs-Algorithmus} — wie kommen die
+  $12 \cdot 8 = 96$ Bits in die 96 Datenmodule des
+  12$\times$12-Symbols. Datamatrix nutzt ein „Treppenmuster" mit
+  L-förmigen Codewort-Blöcken, die durch das Symbol diagonal wandern.
+  Das ist \textbf{Tag 13}.
+\item L-Pattern und Zeitsignal als Frame, der Werkstattbogen, das
+  Hand-Zeichnen und der finale Scan-Test — das ist \textbf{Tag 14}.
+\end{itemize}
+
+\paragraph{Was du heute eigentlich erlebt hast}
+Die Reed-Solomon-Mathematik aus Etappe 6 bis 8 wirkte abstrakt. Heute
+hat sie sich \emph{konkret an Datenbytes für ein echtes Symbol}
+bewährt. Der Polynom-Wechsel ist ein winziges Detail — der
+Algorithmus dahinter bleibt derselbe, von Tag 6 bis hierher. Genau
+das macht die Stärke endlicher Körper aus: einmal verstanden, immer
+wieder anwendbar, mit minimaler Anpassung pro Standard.
