@@ -1,0 +1,72 @@
+\section*{Tag 11 — Datamatrix-Anatomie und ASCII-Encoding}
+
+\subsection*{Bleistift-Übung 1: Bauteile am HONIG-Symbol}
+
+Beim 12$\times$12-Datamatrix mit Inhalt \texttt{HONIG} (siehe Buch
+oben):
+
+\begin{itemize}
+\item Das \textbf{L-Pattern} besteht aus der \emph{kompletten unteren
+  Kante} (12 schwarze Module nebeneinander) und der \emph{kompletten
+  linken Kante} (12 schwarze Module übereinander). Zusammen ergeben
+  sie das „L".
+\item Das \textbf{Zeitsignal} liegt gegenüber: die obere Kante und
+  die rechte Kante haben \emph{abwechselnd} schwarze und weiße
+  Module — schwarz, weiß, schwarz, weiß, \dots
+\item Der \textbf{Datenbereich} ist alles dazwischen: ein 10$\times$10-
+  Innenrechteck, in dem die 12 Codewörter (5 Daten + 7 Prüfbytes)
+  als 96 Module verteilt sind. Welches Modul wo landet, regelt
+  der Datenplatzierungs-Algorithmus aus Etappe 13.
+\end{itemize}
+
+Eine kleine Faustregel: das L-Pattern wirkt wie ein „Sitzplatz" —
+der Boden und die Lehne sind voll schwarz. Davor sitzt das Datenfeld,
+und das Zeitsignal ist die abwechselnde Polster-Naht oben und rechts.
+
+\subsection*{Bleistift-Übung 2: HONIG zu Codewort-Bytes}
+
+Der ASCII-Wert plus 1 ergibt das Datamatrix-Codewort:
+
+\begin{center}
+\small
+\begin{tabular}{c c c}
+\toprule
+Buchstabe & ASCII-Wert & Codewort (ASCII + 1) \\
+\midrule
+H & 72 & 73 \\
+O & 79 & 80 \\
+N & 78 & 79 \\
+I & 73 & 74 \\
+G & 71 & 72 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Codewort-Folge für \texttt{HONIG}: \texttt{[73, 80, 79, 74, 72]}.
+
+Das ist genau die Eingabe für den Reed-Solomon-Encoder, den wir in
+Etappe 12 anwenden.
+
+\subsection*{Bleistift-Übung 3: Greta vorbereiten}
+
+Beispiel: das Wort \texttt{GRETA}.
+
+\begin{center}
+\small
+\begin{tabular}{c c c}
+\toprule
+Buchstabe & ASCII-Wert & Codewort (ASCII + 1) \\
+\midrule
+G & 71 & 72 \\
+R & 82 & 83 \\
+E & 69 & 70 \\
+T & 84 & 85 \\
+A & 65 & 66 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Codewort-Folge für \texttt{GRETA}: \texttt{[72, 83, 70, 85, 66]}.
+
+Das ist deine Datenfolge für Etappe 12, wenn du das eigene Symbol
+zeichnen willst.
