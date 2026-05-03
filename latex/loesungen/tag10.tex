@@ -1,0 +1,45 @@
+\section*{Tag 10 — Strichcode mit Python}
+
+\subsection*{Bleistift-Übung 1: Schachbrett-Regel}
+
+Auf dem Schachbrett ist das Feld an Position $(x, y)$ \textbf{schwarz},
+wenn $x + y$ \textbf{gerade} ist, und weiß, wenn $x + y$ ungerade ist.
+Mathematisch: $(x + y) \bmod 2 = 0$.
+
+Beweis durch Anschauung: oben links ist $(0, 0)$, $0 + 0 = 0$ — gerade,
+also schwarz. Direkt rechts daneben $(1, 0)$, $1 + 0 = 1$ — ungerade,
+also weiß. Und direkt darunter $(0, 1)$, $0 + 1 = 1$ — auch weiß. So
+wechselt die Farbe diagonal, und das ist die Schachbrett-Regel.
+
+In Python wird daraus die Zeile
+
+\begin{minted}{python}
+if (x + y) % 2 == 0:
+    brett.putpixel((x, y), 0)
+\end{minted}
+
+\subsection*{Bleistift-Übung 2: Hand vs. Python}
+
+Beide Methoden brauchen dasselbe Wissen über das EAN-13-Encoding —
+das ist der Punkt: Python nimmt dir das Verstehen nicht ab, nur das
+\emph{Tun}. Was sich konkret unterscheidet:
+
+\begin{itemize}
+\item \textbf{Zeit pro Code}: Hand etwa 30--60 min für den ersten,
+  10--15 min für den zweiten. Python: $< 1$ Sekunde, immer.
+\item \textbf{Genauigkeit}: Hand ist auf $\pm 0{,}3$\,mm pro Modul
+  begrenzt — die Modulbreite. Python ist pixelgenau.
+\item \textbf{Wiederholbarkeit}: Bei Hand sind keine zwei Codes
+  exakt gleich. Bei Python ist jedes Bild bis aufs Pixel identisch.
+\item \textbf{Lerneffekt}: Hand zeigt dir, was im Strichcode
+  \emph{wirklich passiert}. Python zeigt dir, wie du die Idee
+  in eine Maschine packst — und wie elegant Code wird, wenn du
+  das Problem verstanden hast.
+\item \textbf{Skalierung}: Bei einem Code lohnt Python kaum (das
+  Skript schreiben dauert länger als das Hand-Zeichnen). Ab dem
+  fünften, zehnten, hundertsten Code spart Python alles.
+\end{itemize}
+
+Das ist eine Faustregel über Programmieren generell: Code zu schreiben
+lohnt sich, sobald du dieselbe Aufgabe mehr als ein paar Mal machst.
+Und manchmal lohnt es sich auch nicht — dann ist die Hand schneller.
