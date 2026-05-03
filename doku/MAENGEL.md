@@ -58,17 +58,13 @@
 - **Lösungsidee**: bei Bedarf `\,` (kleines Leerzeichen) einsetzen
   oder umformulieren. Generelle Sweep über alle Quote-Vorkommen.
 
-### LY-05 — Tabelle ragt aus Aufgabenblock heraus 🟥
-- **Schwere**: hoch (sichtbar im PDF, Strich-Block wird verletzt)
+### LY-05 — Tabelle ragt aus Aufgabenblock heraus 🟩
+- **Schwere**: hoch (war sichtbar im PDF)
 - **Stelle**: `tag2.tex`, Bleistiftübung 7 („Anwenden"), Tabelle
   „Code | Mindestdistanz | Fehler erkennbar | Fehler korrigierbar"
-- **Befund**: aus dem Build-Log: `Overfull \hbox (72.71155pt too
-  wide) in paragraph at lines 456--466`. Die Tabellen-Überschriften
-  sind zu lang für die schmalere Aufgabenblock-Spalte; eine ganze
-  Tabelle ragt 7\,cm rechts in den Marginalbereich.
-- **Lösungsidee**: Spaltenüberschriften abkürzen („Mindestdist.",
-  „Erkennbar", „Korrigierbar") oder Tabelle drehen (Codes als
-  Spalten, Eigenschaften als Zeilen).
+- **Lösung**: Spalten-Header abgekürzt („Mind.-Dist.", „Erkennbar",
+  „Korrigierbar"), Tabelle in `\small`, `\setlength{\tabcolsep}{4pt}`.
+  Overfull weg.
 
 ### LY-06 — hyperref kann Mathe in Section-Titeln nicht ⌬ 🟧
 - **Schwere**: kosmetisch beim Build (verbleibend ~21 Warnungen)

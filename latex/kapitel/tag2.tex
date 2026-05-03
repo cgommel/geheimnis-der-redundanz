@@ -67,12 +67,12 @@ Konsequenz.
 Hoppla — die Prüfziffer ist \textbf{10}. Aber 10 ist keine einzelne
 Ziffer! Was tun?
 
-\textbf{Lösung:} man schreibt ein \textbf{X} (römisch zehn). Vollständige
-ISBN-10: \texttt{3-446-43500-X}.
+\textbf{Lösung:} statt der unmöglichen Doppelziffer schreibt man ein
+\textbf{X} (römisch zehn). Die vollständige ISBN-10 lautet damit
+\texttt{3-446-43500-X}.
 
-Damit hat die ISBN-10 plötzlich \textbf{elf mögliche Symbole} für die
-Prüfziffer (0–9 und X), obwohl die Daten selbst nur aus zehn Ziffern
-bestehen. Das fühlt sich seltsam an — ist aber nötig, damit die
+Die ISBN-10 hat also \textbf{elf Symbole} für die Prüfziffer (0–9
+und X), obwohl die Daten selbst nur aus zehn Ziffern bestehen. Das fühlt sich seltsam an — ist aber nötig, damit die
 Mathematik aufgeht. Merk dir das! In ein paar Tagen, wenn wir bei
 Reed-Solomon ankommen, sehen wir genau dasselbe Phänomen in groß: Codes
 brauchen oft mehr Symbole als die Daten.
@@ -453,14 +453,16 @@ gleichzeitig).
 Fülle die Tabelle aus:
 
 \begin{center}
-\begin{tabular}{lccc}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l c c c}
   \toprule
-  Code & Mindestdistanz & Fehler erkennbar & Fehler korrigierbar \\
+  \textbf{Code} & \textbf{Mind.-Dist.} & \textbf{Erkennbar} & \textbf{Korrigierbar} \\
   \midrule
-  Paritätscode (3+1 Bit) & & & \\
-  Wiederholungscode $(3,1)$ & & & \\
-  Wiederholungscode $(5,1)$ & & & \\
-  Wiederholungscode $(7,1)$ & & & \\
+  Paritätscode (3+1 Bit)     & & & \\
+  Wiederholungscode $(3,1)$  & & & \\
+  Wiederholungscode $(5,1)$  & & & \\
+  Wiederholungscode $(7,1)$  & & & \\
   \bottomrule
 \end{tabular}
 \end{center}
