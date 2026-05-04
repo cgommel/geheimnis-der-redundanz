@@ -234,35 +234,99 @@ einzelne Module mit dem dicken Filzstift nachziehen.
 \end{bleistiftuebung}
 
 % =============================================================
+\section{Aufräumen mit Funktionen \normalfont(\textit{≈ 20 min})}
+% =============================================================
+
+Stufe roh war prima zum Verstehen — aber unhandlich, sobald du
+mehr willst als ein einziges fest verdrahtetes Wort. Probleme:
+
+\begin{itemize}
+\item Mit anderem Text encoden? Konstante \texttt{TEXT} oben
+  ändern und das Skript neu starten.
+\item Mehrere Wörter in einer Schleife encoden? Geht nicht ohne
+  copy-pasten.
+\item Modulgröße fürs Drucken anpassen? Im Render-Block
+  manuell die \texttt{300} und \texttt{30} und \texttt{360}
+  ändern und hoffen, dass alles zueinander passt.
+\end{itemize}
+
+Die naheliegende Antwort: jeder logische Schritt wird eine eigene
+Funktion. Datei \texttt{encoder\_funktionen.py}.
+
+\begin{pythoneinheit}{7}{Schritt 1 + 2 als Funktionen}
+\pythoncodeteil{tag14/encoder_funktionen.py}{ascii}
+\pythoncodeteil{tag14/encoder_funktionen.py}{rs}
+
+Die GF(2$^8$)-Multiplikation und der Generator-Polynom-Aufbau
+liegen jetzt in eigenen Helper-Funktionen — wir müssen sie nicht
+wieder hineinschreiben, wenn wir eine zweite Encoder-Variante
+basteln.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{8}{Matrix bauen + PNG schreiben als Funktionen}
+\pythoncodeteil{tag14/encoder_funktionen.py}{matrix}
+\pythoncodeteil{tag14/encoder_funktionen.py}{render}
+
+\texttt{matrix\_zu\_png} bekommt jetzt zwei Stellschrauben:
+\texttt{modulgroesse} (wie viele Pixel ein Modul groß ist) und
+\texttt{quietzone\_module} (wie viele Module weißer Rand). Damit
+kannst du das gleiche Symbol für Bildschirm-Vorschau klein und
+für Druck groß rendern, ohne den Code anfassen zu müssen.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{9}{Pipeline + Demo: drei Wörter in einer Schleife}
+\pythoncodeteil{tag14/encoder_funktionen.py}{pipeline}
+\pythoncodeteil{tag14/encoder_funktionen.py}{demo}
+
+Der Demo-Block bringt drei Wörter — \texttt{GRETA}, \texttt{HONIG},
+\texttt{BIENE} — in einem Rutsch zu drei PNG-Dateien. In Stufe roh
+hättest du dafür dreimal das ganze Skript laufen lassen müssen,
+jedes Mal die Konstante \texttt{TEXT} angepasst.
+\end{pythoneinheit}
+
+\begin{bleistiftuebung}{4}{Eigenes Test-Set}
+Lass das Skript laufen und prüfe alle drei PNGs am Handy. Ergänze
+dann die Wortliste um dein eigenes 5-Buchstaben-Wort und um eines
+deiner Familienmitglieder (jeweils \emph{exakt} fünf Großbuchstaben,
+ohne Umlaute). Du solltest danach fünf scanbare Symbole im
+Verzeichnis liegen haben.
+\end{bleistiftuebung}
+
+% =============================================================
 \section{Reflexion und Brücke zu Tag 15 \normalfont(\textit{≈ 10 min})}
 % =============================================================
 
-Du hast jetzt einen kompletten Datamatrix-Encoder von ASCII bis PNG —
-in einem einzigen Skript, etwa 100 Zeilen lang, ohne irgendeine
-Encoding-Bibliothek (nur Pillow für die Pixel und die
-Tag-13-Platzierungslogik). Das ist mehr, als die meisten Software-
-Entwickler je über Datamatrix gesehen haben.
+Du hast jetzt zwei Versionen desselben Encoders gebaut:
+\texttt{encoder\_roh.py} (ein Skript, alles top-level) und
+\texttt{encoder\_funktionen.py} (sauber in Funktionen aufgeteilt).
+Die zweite Version kann mehr — Schleifen, einstellbare Modulgröße,
+Wiederverwendung der GF-Helper.
 
-\subsection*{Was am Skript noch unschön ist}
+\subsection*{Was an der Funktions-Version trotzdem noch fehlt}
 
 \begin{itemize}
-\item Alles steht auf Top-Level. Es gibt keine Funktionen, also
-  auch keinen Weg, mit anderem Text als \texttt{GRETA} zu encoden,
-  ohne die Konstante \texttt{TEXT} oben zu ändern und das Skript
-  neu zu starten.
-\item Die GF(2$^8$)-Multiplikation und der RS-Encoder sind inline
-  — das war heute willkommen (Wiederholung), aber für jeden
-  weiteren Encoder müsste man sie wieder copy-pasten.
-\item Wir können nur 12$\times$12. Andere Symbol-Größen (14$\times$14,
-  16$\times$16, \dots) brauchen andere Codeword-Anzahlen, mehr
-  ECC-Blöcke, andere Padding-Regeln.
+\item Wir können nur 12$\times$12. Andere Symbol-Größen
+  (14$\times$14, 16$\times$16, 18$\times$18, \dots) brauchen
+  andere Codeword-Anzahlen, mehr ECC-Blöcke, andere
+  Padding-Regeln. Der jetzige Code hat \texttt{anzahl\_pruefbytes=7}
+  und \texttt{n=12} fest verdrahtet.
+\item Wenn jemand zwei Encoder-Varianten parallel benutzen
+  möchte (z. B. einen für 12$\times$12 und einen für
+  14$\times$14), wird er pro Aufruf alle Parameter neu durchreichen
+  müssen — eine Klasse mit Konfiguration im \texttt{\_\_init\_\_}
+  wäre handlicher.
+\item Encode\,$\to$\,RS\,$\to$\,Matrix\,$\to$\,PNG ist immer der
+  gleiche Ablauf, aber jeder Aufrufer muss ihn wieder
+  hinschreiben (oder \texttt{datamatrix\_encoden} aufrufen, das
+  diese Reihenfolge versteckt — ein erster Schritt Richtung
+  Klasse).
 \end{itemize}
 
 \subsection*{Vorschau Tag 15}
 
-Wir machen aus dem Skript eine \texttt{DatamatrixEncoder}-Klasse —
-sauber gekapselt mit Methoden für jeden Schritt. Damit lässt sich
-der Encoder wie ein Werkzeug benutzen:
+Wir machen aus den Funktionen eine \texttt{DatamatrixEncoder}-Klasse
+— sauber gekapselt mit Methoden für jeden Schritt. Damit wird der
+Encoder zum Werkzeug:
 \texttt{DatamatrixEncoder("BLAUBEERE").save("blaubeere.png")}.
 Und dann erweitern wir auf größere Symbole, sodass auch längere
 Texte hineinpassen.
