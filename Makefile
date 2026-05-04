@@ -37,9 +37,11 @@ alles: buch standalones vorlagen
 # hyperref-Warnings beim ersten Durchlauf). Wir tolerieren das mit dem
 # vorangestellten "-" und prüfen am Ende explizit auf das PDF.
 #
-# Etappe 9 bindet pdf/zeichenvorlage-ean13.pdf via pdfpages ein —
-# die Vorlage muss also vor dem Buch-Build da sein.
-buch: test-code $(PDF_DIR)/zeichenvorlage-ean13.pdf
+# Etappe 9 bindet pdf/zeichenvorlage-ean13.pdf via pdfpages ein,
+# Etappe 13 zusätzlich pdf/zeichenvorlage-datamatrix.pdf — beide
+# Vorlagen müssen also vor dem Buch-Build da sein.
+buch: test-code $(PDF_DIR)/zeichenvorlage-ean13.pdf \
+                $(PDF_DIR)/zeichenvorlage-datamatrix.pdf
 	mkdir -p $(BUILD_DIR)/kapitel $(PDF_DIR) $(LATEX_DIR)/.snippets
 	-cd $(LATEX_DIR) && latexmk -f $(HAUPTBUCH).tex
 	@cp $(BUILD_DIR)/$(HAUPTBUCH).pdf $(PDF_DIR)/
@@ -55,8 +57,10 @@ $(STANDALONES): test-code
 	@cp $(BUILD_DIR)/$@.pdf $(PDF_DIR)/
 	@test -f $(PDF_DIR)/$@.pdf && echo "✓ $(PDF_DIR)/$@.pdf"
 
-# Etappe 9 hängt zusätzlich vom EAN-13-Werkstattbogen ab.
-redundanz-tag9: $(PDF_DIR)/zeichenvorlage-ean13.pdf
+# Etappe 9 hängt zusätzlich vom EAN-13-Werkstattbogen ab,
+# Etappe 13 vom Datamatrix-Werkstattbogen.
+redundanz-tag9:  $(PDF_DIR)/zeichenvorlage-ean13.pdf
+redundanz-tag13: $(PDF_DIR)/zeichenvorlage-datamatrix.pdf
 
 standalones: $(STANDALONES)
 
