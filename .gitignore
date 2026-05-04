@@ -42,3 +42,6 @@ Thumbs.db
 
 # Claude-Code-spezifische Workspace-Settings
 .claude/
+
+# Test-PNG-Outputs aus latex/code/tagN/-Skripten
+latex/code/*/*.png
