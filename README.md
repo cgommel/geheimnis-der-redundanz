@@ -43,13 +43,22 @@ Zielperson).
 - Etappe 6 — Polynome über $\mathrm{GF}(2^n)$, Reed-Solomon-Idee
 - Etappe 7 — Reed-Solomon-Encoder + Wechsel auf $\mathrm{GF}(2^8)$
 - Etappe 8 — Reed-Solomon-Decoder (Auslöschungen + `reedsolo`)
+- Etappe 9 — EAN-13 von Hand zeichnen (mit Werkstattbogen)
+- Etappe 10 — EAN-13 mit Python zeichnen (Pillow, drei Stufen)
+- Etappe 11 — Datamatrix-Anatomie und ASCII-Encoding
+- Etappe 12 — Reed-Solomon-Prüfbytes für Datamatrix
+- Etappe 13 — Datenplatzierung im Datamatrix (mit Werkstattbogen)
 
 **Geplant:**
 
-- Etappe 9 — EAN-13 von Hand zeichnen
-- Etappe 10 — EAN-13 mit Python zeichnen
-- Etappe 11 — Datamatrix: Layout, Module, ECC-200
-- Etappe 12 — Datamatrix selbst zeichnen und decodieren
+- Etappe 14 — Encoder zusammenstecken (Roh- → Funktions-Stufe,
+  Pillow-Renderer, Scan-Test): erster Datamatrix komplett aus Code.
+- Etappe 15 — Aufräumen mit Klassen, dann auf größere Symbolgrößen
+  (14×14, 16×16, 18×18) skalieren.
+- Etappe 16 — Bonus-Sandkasten: Decoder + sichtbare RS-Fehler­korrektur
+  („Modul übermalen, trotzdem lesbar").
+- Etappe 17 (optional) — Mini-App: Texteingabe → PNG → eigener
+  Sticker-Bogen.
 
 Lösungen zu allen Aufgaben stehen gesammelt im Anhang.
 
