@@ -18,18 +18,18 @@ CODE_DIR   := $(LATEX_DIR)/code
 BUILD_DIR  := build/latex
 PDF_DIR    := pdf
 HAUPTBUCH  := geheimnis-der-redundanz
-ETAPPEN    := 1 2 3 4 5 6 7 8 9 10 11 12
+ETAPPEN    := 1 2 3 4 5 6 7 8 9 10 11 12 13
 STANDALONES := $(addprefix redundanz-tag,$(ETAPPEN))
-VORLAGEN    := zeichenvorlage
+VORLAGEN    := zeichenvorlage-ean13 zeichenvorlage-datamatrix
 
-.PHONY: all alles buch standalones $(STANDALONES) vorlagen $(VORLAGEN) zeichenvorlage clean shell test-code container container-clean
+.PHONY: all alles buch standalones $(STANDALONES) vorlagen $(VORLAGEN) clean shell test-code container container-clean
 
 all: buch
 
 # `make alles` baut Hauptbuch + alle Auszüge + alle Werkstatt-Vorlagen.
 # Wird vom CI-Release verwendet, damit jedes PDF einzeln als Asset
 # hochgeladen werden kann.
-alles: buch standalones $(PDF_DIR)/zeichenvorlage.pdf
+alles: buch standalones vorlagen
 
 # --- Hauptbuch -------------------------------------------------------
 # latexmk gibt beim Cold-Start einen non-zero Exit-Code zurück, obwohl
@@ -37,9 +37,9 @@ alles: buch standalones $(PDF_DIR)/zeichenvorlage.pdf
 # hyperref-Warnings beim ersten Durchlauf). Wir tolerieren das mit dem
 # vorangestellten "-" und prüfen am Ende explizit auf das PDF.
 #
-# Etappe 9 (im Hauptbuch und im Auszug) bindet pdf/zeichenvorlage.pdf
-# via pdfpages ein — die Vorlage muss also vor dem Buch-Build da sein.
-buch: test-code $(PDF_DIR)/zeichenvorlage.pdf
+# Etappe 9 bindet pdf/zeichenvorlage-ean13.pdf via pdfpages ein —
+# die Vorlage muss also vor dem Buch-Build da sein.
+buch: test-code $(PDF_DIR)/zeichenvorlage-ean13.pdf
 	mkdir -p $(BUILD_DIR)/kapitel $(PDF_DIR) $(LATEX_DIR)/.snippets
 	-cd $(LATEX_DIR) && latexmk -f $(HAUPTBUCH).tex
 	@cp $(BUILD_DIR)/$(HAUPTBUCH).pdf $(PDF_DIR)/
@@ -55,23 +55,33 @@ $(STANDALONES): test-code
 	@cp $(BUILD_DIR)/$@.pdf $(PDF_DIR)/
 	@test -f $(PDF_DIR)/$@.pdf && echo "✓ $(PDF_DIR)/$@.pdf"
 
-# Etappe 9 hängt zusätzlich von der Werkstattbogen-Datei ab.
-redundanz-tag9: $(PDF_DIR)/zeichenvorlage.pdf
+# Etappe 9 hängt zusätzlich vom EAN-13-Werkstattbogen ab.
+redundanz-tag9: $(PDF_DIR)/zeichenvorlage-ean13.pdf
 
 standalones: $(STANDALONES)
 
 # --- Werkstatt-Vorlagen (Etappe 9 ff.) -------------------------------
-# zeichenvorlage.pdf — Werkstatt-Bögen zum Selber-Zeichnen, plus ein
-# vorausgefülltes Vorbild auf Seite 1.
-$(PDF_DIR)/zeichenvorlage.pdf: $(LATEX_DIR)/zeichenvorlage.tex \
-                               $(LATEX_DIR)/zeichenfeld.tex \
-                               $(LATEX_DIR)/ean13-encoding.tex
+# zeichenvorlage-ean13.pdf — EAN-13-Werkstattbogen für Etappe 9.
+$(PDF_DIR)/zeichenvorlage-ean13.pdf: $(LATEX_DIR)/zeichenvorlage-ean13.tex \
+                                     $(LATEX_DIR)/zeichenfeld.tex \
+                                     $(LATEX_DIR)/ean13-encoding.tex
 	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
-	-cd $(LATEX_DIR) && latexmk -f zeichenvorlage.tex
-	@cp $(BUILD_DIR)/zeichenvorlage.pdf $(PDF_DIR)/
-	@test -f $(PDF_DIR)/zeichenvorlage.pdf && echo "✓ $(PDF_DIR)/zeichenvorlage.pdf"
+	-cd $(LATEX_DIR) && latexmk -f zeichenvorlage-ean13.tex
+	@cp $(BUILD_DIR)/zeichenvorlage-ean13.pdf $(PDF_DIR)/
+	@test -f $(PDF_DIR)/zeichenvorlage-ean13.pdf && echo "✓ $(PDF_DIR)/zeichenvorlage-ean13.pdf"
 
-zeichenvorlage: $(PDF_DIR)/zeichenvorlage.pdf
+zeichenvorlage-ean13: $(PDF_DIR)/zeichenvorlage-ean13.pdf
+
+# zeichenvorlage-datamatrix.pdf — Datamatrix-Werkstattbogen für Etappe 13.
+$(PDF_DIR)/zeichenvorlage-datamatrix.pdf: \
+        $(LATEX_DIR)/zeichenvorlage-datamatrix.tex \
+        $(LATEX_DIR)/zeichenfeld-datamatrix.tex
+	mkdir -p $(BUILD_DIR) $(PDF_DIR) $(LATEX_DIR)/.snippets
+	-cd $(LATEX_DIR) && latexmk -f zeichenvorlage-datamatrix.tex
+	@cp $(BUILD_DIR)/zeichenvorlage-datamatrix.pdf $(PDF_DIR)/
+	@test -f $(PDF_DIR)/zeichenvorlage-datamatrix.pdf && echo "✓ $(PDF_DIR)/zeichenvorlage-datamatrix.pdf"
+
+zeichenvorlage-datamatrix: $(PDF_DIR)/zeichenvorlage-datamatrix.pdf
 
 vorlagen: $(VORLAGEN)
 

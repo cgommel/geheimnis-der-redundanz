@@ -58,4 +58,4 @@ jobs:
           files: |
             pdf/geheimnis-der-redundanz.pdf
             pdf/redundanz-tag*.pdf
-            pdf/zeichenvorlage.pdf
+            pdf/zeichenvorlage-*.pdf

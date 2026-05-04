@@ -1,0 +1,92 @@
+\section*{Tag 13 — Datenplatzierung im Datamatrix}
+
+\subsection*{Bleistift-Übung 1: Utah-Form für Codeword 1 (HONIG)}
+
+Codeword 1 von HONIG ist \texttt{73}. In Binär: $73 = 64 + 8 + 1 =
+\texttt{01001001}$.
+
+\begin{center}
+\small
+\begin{tabular}{c | c c c}
+\toprule
+& Spalte $-2$ & Spalte $-1$ & Spalte $0$ \\
+\midrule
+Zeile $-2$ & Bit 1 = \textbf{0} & Bit 2 = \textbf{1} & --- \\
+Zeile $-1$ & Bit 3 = \textbf{0} & Bit 4 = \textbf{0} & Bit 5 = \textbf{1} \\
+Zeile $0$  & Bit 6 = \textbf{0} & Bit 7 = \textbf{0} & Bit 8 = \textbf{1} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Der Cursor steht beim Algorithmus zu Beginn bei \texttt{(row, col) =
+(4, 0)}. Die acht Modul-Positionen sind also:
+$(2, -2), (2, -1), (3, -2), (3, -1), (3, 0), (4, -2), (4, -1), (4, 0)$.
+
+Die negativen Spalten wickeln sich am Symbol-Rand auf die rechte
+Seite — Position $(2, -2)$ wird beispielsweise zu $(2 + 0, -2 + 10) =
+(2, 8)$ in der 10$\times$10-Innenfläche, also in Symbol-Koordinaten
+(also +1 für L-Pattern-Offset) zu Modul $(3, 9)$.
+
+(Wer das genauer nachrechnen will: die Wrap-Formel ist
+\texttt{col $\to$ col + n}, \texttt{row $\to$ row + 4 - ((n+4) mod 8)},
+was für $n=10$ ergibt: $4 - 6 = -2$ als Zeilen-Verschiebung. Die
+genauen Koordinaten kannst du mit \texttt{\_place\_one} in Thonny
+einzeln durchspielen.)
+
+\subsection*{Bleistift-Übung 2: HONIG zeichnen}
+
+Vorgehen:
+
+\begin{enumerate}
+\item Trage in der Hilfstabelle der Vorlage die zwölf Codewort-Bytes
+  ein:
+  \texttt{[73, 80, 79, 74, 72, 70, 186, 97, 167, 44, 40, 243]}
+\item Pro Codeword die acht Bits (MSB links) ausrechnen.
+\item Im Vorbild-Feld sind die Module bereits eingezeichnet —
+  vergleiche jeden Modul mit deiner Tabelle.
+\end{enumerate}
+
+Wenn du Lust hast, das gleiche im leeren Feld nochmal selbst zu
+zeichnen, ist das die beste Methode, den Algorithmus wirklich zu
+internalisieren. Der erste Modul ist bereits durch das L-Pattern
+gesetzt — du beginnst mit dem Datenbereich.
+
+\subsection*{Bleistift-Übung 3: Eigenes Symbol zeichnen}
+
+Aus Etappe 12 hast du die ECC für GRETA berechnet:
+\texttt{[72, 83, 70, 85, 66, 64, 90, 71, 128, 186, 106, 125]}.
+
+Hier die komplette Bit-Tabelle dazu:
+
+\begin{center}
+\small
+\begin{tabular}{c c | c c c c c c c c}
+\toprule
+\textbf{Nr.} & \textbf{Wert} & \textbf{Bit 1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{Bit 8} \\
+                &           & (128) & (64) & (32) & (16) & (8) & (4) & (2) & (1) \\
+\midrule
+\phantom{0}1  &  72 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 \\
+\phantom{0}2  &  83 & 0 & 1 & 0 & 1 & 0 & 0 & 1 & 1 \\
+\phantom{0}3  &  70 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 0 \\
+\phantom{0}4  &  85 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\
+\phantom{0}5  &  66 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 \\
+\phantom{0}6  &  64 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\phantom{0}7  &  90 & 0 & 1 & 0 & 1 & 1 & 0 & 1 & 0 \\
+\phantom{0}8  &  71 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 \\
+\phantom{0}9  & 128 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+10            & 186 & 1 & 0 & 1 & 1 & 1 & 0 & 1 & 0 \\
+11            & 106 & 0 & 1 & 1 & 0 & 1 & 0 & 1 & 0 \\
+12            & 125 & 0 & 1 & 1 & 1 & 1 & 1 & 0 & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Trage diese zwölf Bytes ins zweite Werkstatt-Feld ein und zeichne
+das Datenraster Modul für Modul. Wenn du fertig bist, vergleiche
+mit der Python-Ausgabe — \texttt{place\_codewords([72, 83, 70, 85,
+66, 64, 90, 71, 128, 186, 106, 125], 12)} sollte exakt deinem
+gezeichneten Symbol entsprechen.
+
+Tipp zur Selbstkontrolle: nimm das gerenderte PNG aus Etappe 14
+(wenn der finale Encoder steht) und überlege es transparent mit
+deiner Hand-Zeichnung — jeder Unterschied ist ein Hand-Fehler.

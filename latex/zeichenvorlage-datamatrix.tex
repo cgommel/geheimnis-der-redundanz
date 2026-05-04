@@ -1,0 +1,94 @@
+% =============================================================
+% Datamatrix-Werkstattbogen für Etappe 13.
+%
+% Output: pdf/zeichenvorlage-datamatrix.pdf
+%
+% Zwei Seiten A4 hochkant:
+%   Seite 1: HONIG vollständig vorausgefüllt als Vorbild
+%   Seite 2: leeres Feld zum Selber-Zeichnen (z. B. GRETA)
+%
+% Eigene Mini-Präambel — die volle Buch-Präambel wäre Overkill und
+% kollidiert mit scrartcl.
+% =============================================================
+
+\documentclass[11pt, a4paper]{scrartcl}
+
+\usepackage[a4paper, top=12mm, bottom=12mm, left=12mm, right=12mm]{geometry}
+
+\usepackage{fontspec}
+\setmainfont{SourceSerif4}[
+  Path=fonts/source-serif/, Extension=.otf,
+  UprightFont=*-Regular, ItalicFont=*-It,
+  BoldFont=*-Bold, BoldItalicFont=*-BoldIt,
+]
+\setsansfont{SourceSans3}[
+  Path=fonts/source-sans/, Extension=.otf,
+  UprightFont=*-Regular, ItalicFont=*-It,
+  BoldFont=*-Bold, BoldItalicFont=*-BoldIt,
+  Scale=0.95,
+]
+\setmonofont{SourceCodePro}[
+  Path=fonts/source-code-pro/, Extension=.otf,
+  UprightFont=*-Regular, ItalicFont=*-It,
+  BoldFont=*-Bold, BoldItalicFont=*-BoldIt,
+  Scale=0.88,
+]
+
+\usepackage[ngerman]{babel}
+\shorthandoff{"}
+\addto\extrasngerman{\languageshorthands{none}\shorthandoff{"}}
+
+\usepackage{xstring}
+\usepackage[dvipsnames, table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning, calc}
+\usepackage{booktabs}
+
+\input{zeichenfeld-datamatrix}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+% --- Vorausgefüllte Bit-Strings (per Python erzeugt aus
+%     place_codewords + Frame; siehe latex/code/tag13/placement.py) ---
+\def\honigmatrix{101010101010101111001011101001010000100000100001110100010110110001010011101101000000111011111011110100110000101001110101100101011010111111111111}
+
+% Bit-Tabelle für HONIG mit Farb-Markern (passend zu honig_colored.tex).
+\def\honigtabellefarbig{%
+  \cwrow{red!15}     {\phantom{0}1}{ 73}{01001001}
+  \cwrow{orange!20}  {\phantom{0}2}{ 80}{01010000}
+  \cwrow{yellow!30}  {\phantom{0}3}{ 79}{01001111}
+  \cwrow{lime!20}    {\phantom{0}4}{ 74}{01001010}
+  \cwrow{green!20}   {\phantom{0}5}{ 72}{01001000}
+  \cwrow{teal!20}    {\phantom{0}6}{ 70}{01000110}
+  \cwrow{cyan!20}    {\phantom{0}7}{186}{10111010}
+  \cwrow{blue!15}    {\phantom{0}8}{ 97}{01100001}
+  \cwrow{violet!15}  {\phantom{0}9}{167}{10100111}
+  \cwrow{magenta!15} {10}          { 44}{00101100}
+  \cwrow{pink!25}    {11}          { 40}{00101000}
+  \cwrow{brown!20}   {12}          {243}{11110011}
+}
+
+\begin{document}
+
+\textbf{\Large Datamatrix von Hand zeichnen — Werkstatt-Bogen}\par
+\smallskip
+\textit{Tag 13, „Das Geheimnis der Redundanz"}\par
+\bigskip
+
+\datamatrixfeldfarbig{1}{HONIG}{abbildungen/tag13/honig_colored.tex}{\honigtabellefarbig}
+
+\vfill
+\datamatrixcheatsheet
+
+\newpage
+
+\textbf{\Large Werkstatt-Bogen — eigenes Datamatrix zeichnen}\par
+\bigskip
+
+\datamatrixfeldleer{2}
+
+\vfill
+\datamatrixcheatsheet
+
+\end{document}
