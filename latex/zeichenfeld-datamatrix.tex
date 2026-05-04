@@ -218,6 +218,71 @@
   \vspace{1.2em}
 }
 
+% --- Leere Tabelle mit Codeword-Farbmarkern ---
+% 12 Zeilen mit Pastellmarker links + leeren Boxen rechts (Wert-Box + 8 Bit-Boxen).
+% Farben müssen mit den COLORS in code/tag13/gen_colored.py übereinstimmen.
+\NewDocumentCommand{\@dmEmptyRowFarbig}{m m}{%
+  % #1 = Farbe, #2 = Nr.
+  \tikz[baseline=-0.5ex]\fill[#1] (0,0) rectangle (0.5, 0.3); &
+  #2 & \fbox{\rule{0pt}{1.6ex}\hspace{1.6em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}} &
+    \fbox{\rule{0pt}{1.6ex}\hspace{0.4em}}%
+}
+
+\NewDocumentCommand{\@dmTabelleLeerFarbig}{}{%
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{c | c | c | c c c c c c c c}
+    \toprule
+    & \textbf{Nr.} & \textbf{Wert} &
+      \textbf{\tiny 1} & \textbf{\tiny 2} & \textbf{\tiny 3} & \textbf{\tiny 4} &
+      \textbf{\tiny 5} & \textbf{\tiny 6} & \textbf{\tiny 7} & \textbf{\tiny 8} \\
+    & & &
+      \tiny 128 & \tiny 64 & \tiny 32 & \tiny 16 &
+      \tiny 8 & \tiny 4 & \tiny 2 & \tiny 1 \\
+    \midrule
+    \@dmEmptyRowFarbig{red!15}    {\phantom{0}1}\\
+    \@dmEmptyRowFarbig{orange!20} {\phantom{0}2}\\
+    \@dmEmptyRowFarbig{yellow!30} {\phantom{0}3}\\
+    \@dmEmptyRowFarbig{lime!20}   {\phantom{0}4}\\
+    \@dmEmptyRowFarbig{green!20}  {\phantom{0}5}\\
+    \@dmEmptyRowFarbig{teal!20}   {\phantom{0}6}\\
+    \@dmEmptyRowFarbig{cyan!20}   {\phantom{0}7}\\
+    \@dmEmptyRowFarbig{blue!15}   {\phantom{0}8}\\
+    \@dmEmptyRowFarbig{violet!15} {\phantom{0}9}\\
+    \@dmEmptyRowFarbig{magenta!15}{10}\\
+    \@dmEmptyRowFarbig{pink!25}   {11}\\
+    \@dmEmptyRowFarbig{brown!20}  {12}\\
+    \bottomrule
+  \end{tabular}%
+}
+
+% --- Werkstatt-Feld in farbig + leer ---
+% Pastell-Symbol mit "c/b"-Labels (kein schwarzes Bit gesetzt) plus
+% leere farbige Hilfstabelle. Greta trägt selbst Wert + Bits ein und
+% schwärzt die Module passend zu ihrem Codeword.
+\NewDocumentCommand{\datamatrixfeldfarbigleer}{m m}{%
+  % #1 = Feldnummer
+  % #2 = Pfad zu colored-tex-Datei (typisch blank_colored.tex)
+  \par\noindent
+  \begin{minipage}{\linewidth}
+    \rule{\linewidth}{0.4pt}\par\smallskip
+    \textbf{\large Feld #1}\hfill
+    \textbf{Inhalt:}~\framebox[10em]{\strut}\par
+    \medskip
+    \begin{minipage}[t]{0.55\linewidth}\centering\@dmSymbolColored{#2}\end{minipage}\hfill
+    \begin{minipage}[t]{0.42\linewidth}\@dmTabelleLeerFarbig\end{minipage}
+  \end{minipage}\par
+  \vspace{1.2em}
+}
+
 % --- Cheat-Sheet für Datamatrix: Anatomie + Utah-Form ---
 \NewDocumentCommand{\datamatrixcheatsheet}{}{%
   \par\smallskip
