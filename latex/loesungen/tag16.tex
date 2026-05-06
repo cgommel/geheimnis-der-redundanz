@@ -1,0 +1,61 @@
+\section*{Tag 16 — Wenn ECC die Welt rettet}
+
+\subsection*{Bleistift-Übung 1: Inverse Place verstehen}
+
+In Thonny:
+
+\begin{minted}{python}
+from placement import _build_layout
+layout = _build_layout(10)         # 10×10 Innenfläche
+
+# Die Matrix-Koordinaten im Buch-Beispiel ((zeile, spalte) = (3, 7))
+# beziehen sich aufs ganze 12×12-Symbol mit L-Pattern. Innenfläche
+# beginnt bei (1, 1), also Innen-Index = (3-1, 7-1) = (2, 6).
+print(layout[2][6])    # → (codeword_nr, bit_nr)
+\end{minted}
+
+Konkret: \texttt{layout[2][6] = (3, 6)} bedeutet, an dieser Stelle
+liegt das \emph{Bit 6} (Stellenwert 4) des \emph{Codeworts 3}.
+Bei HONIG ist Codeword 3 der Wert \texttt{79} (binär \texttt{01001111}),
+Bit 6 ist also \texttt{1} — das Modul muss schwarz sein. Vergleiche
+mit deinem vorbefüllten Werkstattbogen: das Modul (3, 7) ist
+tatsächlich schwarz.
+
+\subsection*{Bleistift-Übung 2: Vorhersage und Test}
+
+Ohne Layout-Lookup ist die Vorhersage „raten": man sieht im
+12$\times$12-Symbol nicht direkt, welche Module zu welchen Codewords
+gehören. Eine plausible Schätzung ist „drei Flips an drei
+verschiedenen Stellen $\to$ wahrscheinlich drei Codeword-Fehler".
+Tatsächlich kann es auch weniger sein, wenn zwei Flips zufällig im
+gleichen Utah-Block landen.
+
+Im konkreten Beispiel-Skript (Module \texttt{(2, 5)}, \texttt{(4, 3)},
+\texttt{(7, 8)}) zeigt der Decoder \texttt{Codewords [5, 6, 11]} —
+also drei verschiedene Codewords. Der RS-Decoder ist mit seinen
+sieben ECC-Bytes locker dabei (Grenze ist 3, die Schwelle wird also
+\emph{gerade noch} unterschritten).
+
+\subsection*{Bleistift-Übung 3: Hand-Symbol mit Tipp-Ex}
+
+Praktische Beobachtung — keine eindeutige Lösung, sondern Erfahrungswerte:
+
+\begin{itemize}
+\item \textbf{Erstes Modul ändern}: scannt fast immer noch.
+  Reed-Solomon mit 7 ECC-Bytes übersteht ein einzelnes Codeword
+  problemlos.
+\item \textbf{Zweites Modul, im selben Codeword wie das erste}:
+  ändert nichts an der Codeword-Anzahl der Fehler, scannt also
+  weiter. Tatsächlich aber ist die Wahrscheinlichkeit, das gleiche
+  Codeword zu erwischen, ohne Layout-Wissen klein.
+\item \textbf{Zweites Modul, in einem anderen Codeword}: zwei
+  Codeword-Fehler. Scannt noch.
+\item \textbf{Vier oder mehr Module in vier verschiedenen
+  Codewords}: jenseits der RS-Grenze. Kein Scan mehr.
+\end{itemize}
+
+Spannender Lerneffekt: das L-Pattern und das Zeitsignal sind
+\emph{nicht} durch ECC abgesichert — sie helfen nur dem Scanner, das
+Symbol zu finden. Wenn du eines davon übermalst, scannt das Handy
+gar nicht erst und du bekommst kein Decode-Ergebnis. Die ECC
+schützt nur die Daten- und Prüfmodule, nicht die Strukturmarker.
