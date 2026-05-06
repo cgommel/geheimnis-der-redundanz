@@ -1,0 +1,153 @@
+\section*{Tag 15 — Klassen, Vererbung, Encoder als Bibliothek}
+
+\subsection*{Bleistift-Übung 1: Klassendiagramm}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  node distance=8mm and 14mm,
+  klasse/.style={draw, rounded corners=2pt, fill=gray!10,
+    inner sep=4pt, align=left, minimum width=28mm},
+  pfeil/.style={->, >=open triangle 60, thick},
+]
+  \node[klasse] (form) {\textbf{Form} \\[1pt]
+    \footnotesize \texttt{name} \\
+    \footnotesize \texttt{flaeche()} (abstrakt) \\
+    \footnotesize \texttt{beschreibe()}};
+
+  \node[klasse, below left=of form, xshift=-12mm]  (kreis)    {\textbf{Kreis} \\[1pt] \footnotesize \texttt{radius} \\ \footnotesize \texttt{flaeche()}};
+  \node[klasse, below=of form]                     (rechteck) {\textbf{Rechteck} \\[1pt] \footnotesize \texttt{breite, hoehe} \\ \footnotesize \texttt{flaeche()}};
+  \node[klasse, below right=of form, xshift=12mm]  (dreieck)  {\textbf{Dreieck} \\[1pt] \footnotesize \texttt{basis, hoehe} \\ \footnotesize \texttt{flaeche()}};
+  \node[klasse, below=of rechteck]                 (quadrat)  {\textbf{Quadrat} \\[1pt] \footnotesize \texttt{seite} \\ \footnotesize (erbt \texttt{flaeche})};
+
+  \draw[pfeil] (kreis.north)    -- (form.south);
+  \draw[pfeil] (rechteck.north) -- (form.south);
+  \draw[pfeil] (dreieck.north)  -- (form.south);
+  \draw[pfeil] (quadrat.north)  -- (rechteck.south);
+\end{tikzpicture}
+\end{center}
+
+Pfeil-Konvention (UML-artig): zeigt von Subklasse zur Eltern­klasse,
+Pfeilkopf weiß = „erbt von".
+
+\subsection*{Bleistift-Übung 2: Ellipse}
+
+\begin{minted}{python}
+class Ellipse(Form):
+    def __init__(self, a, b):
+        super().__init__("Ellipse")
+        self.a = a
+        self.b = b
+
+    def flaeche(self):
+        return 3.14159 * self.a * self.b
+\end{minted}
+
+In die Demo-Liste z.\,B. \texttt{Ellipse(a=2, b=5)} ergänzen —
+Fläche $\approx 31{,}42$.
+
+\subsection*{Bleistift-Übung 3: Symboltabelle nachvollziehen}
+
+\begin{center}
+\begin{tabular}{c | c | c | c | c}
+\toprule
+$n$ & Inneres $((n{-}2)^2)$ & Daten + ECC & Bits & passt? \\
+\midrule
+12 & 100  & 5+7 = 12   & 96  & ja, 4 Padding-Module \\
+14 & 144  & 8+10 = 18  & 144 & exakt \\
+16 & 196  & 12+12 = 24 & 192 & ja, 4 Padding-Module \\
+18 & 256  & 18+14 = 32 & 256 & exakt \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Die Innenfläche reicht knapp aus, um alle Codeword-Bits unter­zubringen;
+gelegentliche Lücken werden mit dem ECC-200-Schachbrettmuster gefüllt.
+Gerade bei 12$\times$12 sieht man: vier Module bleiben übrig, die
+nicht zu einem Codeword gehören — sie tragen das fest verdrahtete
+Schachbrett-Muster aus Etappe 13.
+
+\subsection*{Schluss-Aufgabe — EAN-13 als Klasse}
+
+Eine Beispiel-Lösung. Sie übernimmt die Codepfade aus
+Etappe 10 (\texttt{ean13\_encoder.py}) und packt sie in eine Klasse,
+die von \texttt{Barcode} erbt:
+
+\begin{minted}{python}
+from encoder_klasse import Barcode
+
+L_PATTERN = {  # aus Etappe 10
+    "0": "0001101", "1": "0011001", "2": "0010011", "3": "0111101",
+    "4": "0100011", "5": "0110001", "6": "0101111", "7": "0111011",
+    "8": "0110111", "9": "0001011",
+}
+G_PATTERN = {ziffer: muster[::-1].translate(str.maketrans("01", "10"))
+             for ziffer, muster in L_PATTERN.items()}
+R_PATTERN = {ziffer: muster.translate(str.maketrans("01", "10"))
+             for ziffer, muster in L_PATTERN.items()}
+
+GRUPPIERUNG = {  # erste Ziffer → Pattern-Auswahl für die nächsten sechs
+    "0": "LLLLLL", "1": "LLGLGG", "2": "LLGGLG", "3": "LLGGGL",
+    "4": "LGLLGG", "5": "LGGLLG", "6": "LGGGLL", "7": "LGLGLG",
+    "8": "LGLGGL", "9": "LGGLGL",
+}
+
+
+class EAN13Encoder(Barcode):
+    """EAN-13 als Subklasse von Barcode."""
+
+    def __init__(self, ziffern, hoehe=50):
+        if len(ziffern) == 12:
+            ziffern = ziffern + self._pruefziffer(ziffern)
+        if len(ziffern) != 13 or not ziffern.isdigit():
+            raise ValueError("EAN-13 braucht 12 oder 13 Ziffern")
+        super().__init__(ziffern)
+        self.ziffern = ziffern
+        self.hoehe = hoehe
+
+    @staticmethod
+    def _pruefziffer(zwoelf):
+        s = sum(int(d) * (3 if i % 2 else 1)
+                for i, d in enumerate(zwoelf))
+        return str((10 - s % 10) % 10)
+
+    def bitmap(self):
+        muster = "101"  # Start-Guard
+        gruppe = GRUPPIERUNG[self.ziffern[0]]
+        for i, ziffer in enumerate(self.ziffern[1:7]):
+            muster += (L_PATTERN if gruppe[i] == "L" else G_PATTERN)[ziffer]
+        muster += "01010"  # Center-Guard
+        for ziffer in self.ziffern[7:]:
+            muster += R_PATTERN[ziffer]
+        muster += "101"   # End-Guard
+
+        zeile = [int(b) for b in muster]
+        return [list(zeile) for _ in range(self.hoehe)]
+\end{minted}
+
+Test (in derselben Konsole wie der Datamatrix-Encoder):
+
+\begin{minted}{python}
+from encoder_klasse import DatamatrixEncoder
+
+codes = [
+    DatamatrixEncoder("GRETA"),
+    EAN13Encoder("400123456789"),
+]
+for c in codes:
+    dateiname = f"{c.name.lower()}_{c.text[:6].lower()}.png"
+    c.save(dateiname)
+    print(f"{c.name}  →  {dateiname}")
+\end{minted}
+
+Beide Encoder nutzen dieselbe \texttt{save}-Methode aus
+\texttt{Barcode} — du musstest sie in \texttt{EAN13Encoder} nirgends
+neu schreiben. Genau das ist der Mehrwert der Vererbung: die
+gemeinsame Logik (Pixel zeichnen, PNG schreiben) liegt einmal in der
+Basisklasse, jede Subklasse kümmert sich nur um den eigenen Inhalt.
+
+\paragraph{Variante mit Polymorphismus} Wenn du dem Buch-Beispiel
+\texttt{c.save(\dots)} mit einer Schleife folgst, hast du gleich
+zwei sehr unterschiedliche Codes mit ein- und derselben Schnittstelle
+gespeichert. Das war vor der Klassen-Hierarchie nicht so leicht möglich
+— die Funktions-Encoder hatten ja inkompatible Aufruf-Signaturen.

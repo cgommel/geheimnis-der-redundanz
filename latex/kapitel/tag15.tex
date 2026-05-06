@@ -1,0 +1,333 @@
+\chapter{Tag 15 — Klassen, Vererbung, Encoder als Bibliothek}
+
+\begin{quote}
+Funktionen waren das eine Werkzeug — sie kapseln einen Arbeitsschritt.
+Klassen sind das andere: sie kapseln Daten und die Funktionen, die
+auf diesen Daten arbeiten, in einem einzigen Begriff. Heute lernst
+du, was eine Klasse ist und warum sie sich lohnt; danach machen wir
+aus deinem Datamatrix-Encoder eine richtige kleine Bibliothek.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 15 kannst du \dots
+
+\begin{itemize}
+\item den Unterschied zwischen einer Klasse (Bauplan) und einer
+  Instanz (konkretes Objekt) erklären
+\item einen Konstruktor (\texttt{\_\_init\_\_}) lesen und schreiben,
+  und sagen was \texttt{self} bedeutet
+\item Methoden hinzufügen, die mit den Daten der Instanz arbeiten
+\item eine Klasse von einer anderen ableiten (\emph{Vererbung}) und
+  Methoden gezielt überschreiben
+\item den Datamatrix-Encoder als Subklasse einer abstrakten
+  \texttt{Barcode}-Klasse aufbauen, und damit Symbolgrößen von
+  10$\times$10 bis 26$\times$26 abdecken
+\item die offene Schluss-Aufgabe angehen: EAN-13 ins gleiche
+  Klassen-Schema integrieren
+\end{itemize}
+
+\paragraph{Material} Laptop mit Thonny, dein Code aus den Etappen
+10--14, Bleistift und Karopapier für ein paar UML-artige Skizzen
+(keine echten UML-Diagramme, nur Kästchen mit Pfeilen).
+
+% =============================================================
+\section{Warum reichen Funktionen nicht? \normalfont(\textit{≈ 10 min})}
+% =============================================================
+
+In Etappe 14 hast du den Datamatrix-Encoder mit Funktionen aufgebaut.
+Das funktionierte — aber spätestens, wenn man zwei Encoder-Varianten
+parallel nutzen will, wird es unhandlich:
+
+\begin{itemize}
+\item Jede Funktion bekommt \texttt{n=12}, \texttt{anzahl\_pruefbytes=7},
+  \texttt{modulgroesse=25} explizit übergeben. Bei drei Aufrufern in
+  einem Skript wird das schnell repetitiv.
+\item Wer die Codewords bereits berechnet hat, muss sie für die nächste
+  Operation in einer eigenen Variable festhalten und wieder weiterreichen.
+\item Wenn jemand einen \emph{anderen} Barcode-Typ einbauen will (zum
+  Beispiel EAN-13 aus Etappe 10), gibt es keine gemeinsame Schnittstelle
+  — jeder Aufrufer muss wissen, welcher Encoder welche Argumente erwartet.
+\end{itemize}
+
+Klassen lösen das Problem mit zwei Ideen:
+
+\begin{enumerate}
+\item Daten und Funktionen, die zusammengehören, werden in einem
+  Begriff zusammengefasst — der Klasse.
+\item Verschiedene Klassen, die das Gleiche erfüllen, können von
+  einer gemeinsamen Basis erben — und sind dann unter einer
+  Schnittstelle austauschbar.
+\end{enumerate}
+
+% =============================================================
+\section{Klassen-Werkstatt: geometrische Formen \normalfont(\textit{≈ 30 min})}
+% =============================================================
+
+Bevor wir Datamatrix anfassen, üben wir Klassen an etwas
+Einfacherem. Geometrische Formen eignen sich gut: jede Form hat
+einen Namen und eine Fläche, aber die Flächenformel ist je nach
+Form anders. Genau die Konstellation, in der Klassen glänzen.
+
+\begin{pythoneinheit}{1}{Eine Basisklasse \texttt{Form}}
+\pythoncodeteil{tag15/formen.py}{basisklasse}
+
+\textbf{Was passiert hier?}
+
+\begin{itemize}
+\item \texttt{class Form:} eröffnet einen neuen \emph{Bauplan}. Er
+  beschreibt, was alle Formen gemeinsam haben.
+\item \texttt{\_\_init\_\_(self, name)} ist der \emph{Konstruktor} —
+  er wird automatisch aufgerufen, wenn jemand eine Instanz erzeugt:
+  \texttt{f = Form("Quadrat")}.
+\item \texttt{self} ist die gerade entstehende Instanz. Wenn du in
+  einer Methode \texttt{self.name = "Kreis"} schreibst, hängst du
+  ein Datenfeld an genau diese Instanz.
+\item \texttt{flaeche()} ist eine \emph{abstrakte} Methode: die
+  Basisklasse weiß keine Formel, also wirft sie einen Fehler. Jede
+  Unterklasse muss \texttt{flaeche()} selbst beisteuern.
+\end{itemize}
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{2}{Drei Unterklassen}
+\pythoncodeteil{tag15/formen.py}{unterklassen}
+
+Drei konkrete Formen — Kreis, Rechteck, Dreieck. Jede schreibt in den
+Klammern hinter dem Klassennamen, von wem sie erbt: \texttt{class
+Kreis(Form)} bedeutet \emph{Kreis ist eine spezielle Form}.
+
+\texttt{super().\_\_init\_\_("Kreis")} ruft den Konstruktor der
+Elternklasse auf — sonst wäre der \texttt{name}-Wert nie gesetzt.
+Nach diesem Aufruf hängen wir noch unsere eigene Eigenschaft
+\texttt{self.radius} an.
+
+\texttt{flaeche()} überschreibt die Stub-Version aus der Basisklasse
+mit der echten Formel. Der Begriff dafür ist \emph{Polymorphismus}
+(Vielgestaltigkeit): derselbe Methodenname, aber jede Klasse hat
+ihre eigene Implementierung.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{3}{Vererbung in zweiter Stufe — Quadrat}
+\pythoncodeteil{tag15/formen.py}{weitervererbung}
+
+Ein Quadrat IST ein spezielles Rechteck. Also erben wir nicht von
+\texttt{Form}, sondern von \texttt{Rechteck} — und sparen uns die
+\texttt{flaeche()}-Methode komplett, weil sie schon in der
+Eltern­klasse stimmt.
+
+Das ist der zentrale Vorteil von Vererbung: gemeinsamer Code wird
+nur \emph{einmal} geschrieben. Spezialisierungen passen nur das an,
+was sich wirklich unterscheidet.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{4}{Demo: Polymorphismus in einer Liste}
+\pythoncodeteil{tag15/formen.py}{demo}
+
+Wir packen vier verschiedene Formen in eine Liste und behandeln sie
+alle gleich — die for-Schleife weiß nicht, ob sie gerade einen Kreis
+oder ein Dreieck vor sich hat. Jede Instanz weiß selbst, wie sie ihre
+Fläche berechnet. Genau das ist Polymorphismus in Aktion.
+\end{pythoneinheit}
+
+\begin{bleistiftuebung}{1}{Klassendiagramm zeichnen}
+Skizziere auf Karopapier die vier Klassen als Kästchen, mit Pfeilen
+nach oben für „erbt von":
+
+\begin{center}
+\texttt{Form $\leftarrow$ Kreis} \\
+\texttt{Form $\leftarrow$ Rechteck $\leftarrow$ Quadrat} \\
+\texttt{Form $\leftarrow$ Dreieck}
+\end{center}
+
+In jedes Kästchen kommen die Methoden, die diese Klasse selbst
+beisteuert — \texttt{flaeche()} bei den konkreten Klassen,
+\texttt{beschreibe()} oben bei \texttt{Form}. So siehst du auf einen
+Blick, wer was ererbt und wer was überschreibt.
+\end{bleistiftuebung}
+
+\begin{bleistiftuebung}{2}{Eine fünfte Form ergänzen}
+Schreibe eine Klasse \texttt{Ellipse(Form)} mit zwei Halbachsen
+\texttt{a} und \texttt{b}. Die Flächenformel ist $\pi \cdot a \cdot b$.
+Füge eine Instanz davon zur Demo-Liste in \texttt{formen.py} hinzu
+und prüfe, dass die Gesamtfläche stimmt.
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Auf Barcodes übertragen — die abstrakte \texttt{Barcode}-Klasse \normalfont(\textit{≈ 25 min})}
+% =============================================================
+
+Jetzt der Sprung zurück zu Datamatrix — mit allem, was du soeben
+über Klassen gelernt hast. Die Idee: \emph{ein Barcode ist im
+Wesentlichen eine 2D-Matrix aus schwarzen und weißen Modulen}.
+Datamatrix, EAN-13, QR-Code — sie alle erfüllen diese
+Beschreibung. Also bauen wir eine abstrakte Basisklasse, die genau
+das fordert.
+
+\begin{pythoneinheit}{5}{Die abstrakte Basisklasse \texttt{Barcode}}
+\pythoncodeteil{tag15/encoder_klasse.py}{barcode}
+
+\texttt{bitmap()} ist die einzige Methode, die jede Subklasse selbst
+liefern muss. Den PNG-Export (\texttt{save}) erbt sie geschenkt von
+der Basisklasse. Das heißt: wer einen neuen Barcode-Typ einbaut,
+muss sich nur um die \emph{Inhalts-Logik} kümmern — der Pixel-Kram
+ist schon erledigt.
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{6}{\texttt{DatamatrixEncoder} als Subklasse}
+\pythoncodeteil{tag15/encoder_klasse.py}{datamatrix}
+
+Wir nehmen die Funktionen aus Etappe 14 und ziehen sie als Methoden
+in die Klasse. Die wichtigsten Neuerungen gegenüber Etappe 14:
+
+\begin{itemize}
+\item \texttt{SYMBOL\_TABLE}: ein Dictionary mit allen unterstützten
+  Symbol-Größen und ihren Daten/ECC-Verhältnissen. Aus ISO 16022.
+\item \texttt{\_waehle\_groesse()}: wenn der Aufrufer keine Größe
+  angibt, sucht die Klasse die kleinste passende Symbolgröße automatisch.
+\item \texttt{\_padden()}: für längere Texte werden Pad-Bytes
+  ergänzt. Erstes Pad ist 129; ab dem zweiten kommt ein Pseudo-Zufall
+  ins Spiel (sonst würden lange monotone Padding-Felder Scanner
+  irritieren).
+\item \texttt{bitmap()} ist die einzige Methode, die wir der
+  Basisklasse schulden — sie ruft intern \texttt{\_matrix\_bauen()}
+  auf, das die Logik aus Etappe 14 in einer Methode bündelt.
+\end{itemize}
+\end{pythoneinheit}
+
+\begin{pythoneinheit}{7}{Demo: Texte unterschiedlicher Länge}
+\pythoncodeteil{tag15/encoder_klasse.py}{demo}
+
+Erwartete Ausgabe:
+
+\begin{minted}{text}
+DatamatrixEncoder(text='GRETA', 12×12, 5+7 Codewords)  →  greta.png
+DatamatrixEncoder(text='BLAUB', 12×12, 5+7 Codewords)  →  blaub.png
+DatamatrixEncoder(text='BLAUBE', 14×14, 8+10 Codewords)  →  blaube.png
+DatamatrixEncoder(text='BLAUBEERE', 16×16, 12+12 Codewords)  →  blaubeere.png
+DatamatrixEncoder(text='PRAKTIKUMSWOCHE', 18×18, 18+14 Codewords)  →  praktikumswoche.png
+\end{minted}
+
+Die Klasse wählt für jeden Text automatisch die kleinste Symbolgröße.
+Mit \texttt{pylibdmtx} kannst du alle fünf PNGs prüfen — sie sollten
+exakt den Text zurückliefern.
+\end{pythoneinheit}
+
+\begin{bleistiftuebung}{3}{Symboltabelle nachvollziehen}
+In der Klasse steht \texttt{SYMBOL\_TABLE = \{12: (5, 7), 14: (8, 10),
+\dots\}}. Was bedeutet jeder Eintrag? Rechne für mindestens drei
+Größen aus, wieviele Module die Innenfläche hat $((n-2)^2)$ und ob
+das mit der angegebenen Anzahl Codewords ($\cdot 8$ Bits) hinkommt.
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Schluss-Aufgabe — EAN-13 ins Schema integrieren \normalfont(\textit{≈ 30 min})}
+% =============================================================
+
+Du hast jetzt eine abstrakte \texttt{Barcode}-Klasse und mit
+\texttt{DatamatrixEncoder} eine konkrete Implementierung davon.
+Die letzte Aufgabe der Etappe ist offen formuliert — und damit
+mehr als ein Schreibübung: sie ist der Test, ob du das
+Klassen-Konzept wirklich verstanden hast.
+
+\begin{aufgabe}{✏}{Schluss-}{Aufgabe}{cBleistift}{\bfseries
+EAN-13 als zweite Subklasse von \texttt{Barcode}.\par}
+
+In Etappe 10 hast du einen vollständigen EAN-13-Encoder mit Funktionen
+gebaut: er nimmt 12 Ziffern, berechnet die Prüfziffer, ermittelt für
+jede Ziffer das L/G/R-Pattern und setzt am Ende ein 95-Modul breites
+Strichmuster zusammen. Die Logik liegt in
+\texttt{latex/code/tag10/ean13\_encoder.py}.
+
+Deine Aufgabe: baue daraus eine Klasse \texttt{EAN13Encoder}, die
+\emph{genauso} von \texttt{Barcode} erbt wie \texttt{DatamatrixEncoder}.
+
+\paragraph{Was du dafür brauchst}
+\begin{itemize}
+\item Konstruktor \texttt{\_\_init\_\_(self, ziffern)}, der den Klartext
+  (12 oder 13 Ziffern) speichert und ggf. die Prüfziffer ergänzt.
+\item Methode \texttt{bitmap()}, die eine 2D-Matrix mit dem 95-Modul-
+  Strichmuster liefert. Die Höhe darfst du frei wählen
+  (z.\,B. 50 Module hoch — alle Reihen sind identisch, weil
+  EAN-13 ein 1D-Code ist und nur in einer Richtung Information trägt).
+\item Keine \texttt{save}-Methode — die erbst du von
+  \texttt{Barcode}.
+\end{itemize}
+
+\paragraph{Was die Aufgabe so spannend macht}
+
+EAN-13 und Datamatrix sehen aus wie unterschiedliche Welten. Trotzdem
+sind beide \emph{Barcodes} im Sinne unserer Basisklasse — beide
+liefern eine Modul-Matrix. Wenn deine \texttt{EAN13Encoder}-Klasse
+fertig ist, kannst du beide Encoder austauschbar verwenden:
+
+\begin{minted}{python}
+codes = [
+    DatamatrixEncoder("GRETA"),
+    EAN13Encoder("400123456789"),
+]
+for c in codes:
+    c.save(f"{c.name}.png")
+\end{minted}
+
+Die Schleife weiß nicht, welcher Code-Typ sie gerade verarbeitet.
+Sie spricht jeden über die Basisklasse an. Genau das ist die Macht
+der Vererbung.
+
+\paragraph{Tipps}
+\begin{itemize}
+\item Achte auf Kommentare in deiner Klasse — was ist
+  \emph{ererbt}, was musst du selbst implementieren?
+\item Teste, ob deine PNG-Datei mit einer Smartphone-EAN-Scan-App
+  lesbar ist. Tipp aus Etappe 9: Quiet-Zone und Modul-Höhe
+  beachten.
+\item Wenn du steckenbleibst, schau in die Lösung am Ende des
+  Buches — aber versuche es vorher zumindest 30 Minuten allein.
+\end{itemize}
+
+\end{aufgabe}
+
+% =============================================================
+\section{Reflexion und Brücke zu Tag 16 \normalfont(\textit{≈ 10 min})}
+% =============================================================
+
+Du hast jetzt:
+
+\begin{itemize}
+\item Klassen, Konstruktoren, \texttt{self}, Methoden verstanden
+\item den Unterschied zwischen Klasse (Bauplan) und Instanz
+  (konkretes Objekt) verinnerlicht
+\item Vererbung in zwei Stufen gesehen
+  (\texttt{Form} $\leftarrow$ \texttt{Rechteck} $\leftarrow$
+  \texttt{Quadrat})
+\item Polymorphismus angewandt: Liste mit verschiedenen Formen,
+  alle einheitlich behandelt
+\item Datamatrix-Encoding zu einer aufgeräumten Klasse umgebaut,
+  die Symbolgrößen 10$\times$10 bis 26$\times$26 abdeckt
+\item den Bogen zurück zu Etappe 10 geschlagen — EAN-13 wird zum
+  Geschwister von Datamatrix, beide unter dem gemeinsamen Dach
+  \texttt{Barcode}
+\end{itemize}
+
+\subsection*{Was Klassen jetzt können, was Funktionen nicht
+konnten}
+
+\begin{itemize}
+\item \textbf{Daten und Verhalten zusammenhalten}: ein
+  \texttt{DatamatrixEncoder} weiß seinen Text, seine Größe, seine
+  Codewords, seine Matrix. Funktionen mussten das alles als
+  Argumente reichen.
+\item \textbf{Schnittstellen abstrahieren}: jeder Code, der
+  \texttt{Barcode} erwartet, akzeptiert sowohl Datamatrix als auch
+  EAN-13. Funktionen hätten dafür eine Wrapper-Funktion gebraucht.
+\item \textbf{Spezialisieren ohne Kopieren}: eine Subklasse erbt
+  alles aus der Eltern­klasse und passt nur an, was sich
+  unterscheidet.
+\end{itemize}
+
+\subsection*{Vorschau Tag 16}
+
+Bonus-Sandkasten: Decoder + sichtbare Reed-Solomon-Fehlerkorrektur.
+Wir nehmen ein Datamatrix-PNG, übermalen einzelne Module mit Tipp-Ex
+oder schwarzem Stift — und gucken zu, wie der Decoder die Fehler
+trotzdem repariert. So spürst du den ECC-Anteil zum ersten Mal als
+echte Sicherheitsreserve, nicht nur als „diese Bytes sind die ECC".
