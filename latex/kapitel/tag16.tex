@@ -166,9 +166,12 @@ reproduzierbar ist — gleiche Zahlen kommen jedes Mal raus.
 \begin{pythoneinheit}{4}{Diagramm zeichnen}
 \pythoncodeteil{tag16/fehler_demo.py}{diagramm}
 
-Bewusst kein \texttt{matplotlib} — wir bleiben bei Pillow. Achsen,
-Gitter und ein Linienzug sind in 30 Zeilen handgemalt. Auf eine rote
-senkrechte Linie kommt die theoretische RS-Grenze.
+Bewusst kein \texttt{matplotlib} — das Skript schreibt direkt einen
+\texttt{tikzpicture}-Block in eine \texttt{.tex}-Datei. Damit wird
+das Diagramm im Buch als Vektorgrafik gesetzt (jede Zoomstufe scharf,
+kein Pixelmatsch beim Druck) — und gleichzeitig konsistent zu
+allen anderen TikZ-Diagrammen, die du auf dem Weg gesehen hast.
+Eine senkrechte rote Linie markiert die theoretische RS-Grenze.
 \end{pythoneinheit}
 
 \begin{pythoneinheit}{5}{Demo: Erfolgsquote für GRETA in 12$\times$12}
@@ -191,7 +194,7 @@ Und das Diagramm:
 \end{pythoneinheit}
 
 \begin{center}
-\includegraphics[width=0.92\linewidth]{abbildungen/tag16/fehler_demo_diagramm.png}
+\input{abbildungen/tag16/fehler_demo_diagramm.tex}
 \end{center}
 
 Lies die Kurve so:

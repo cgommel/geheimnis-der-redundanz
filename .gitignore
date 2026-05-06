@@ -45,3 +45,5 @@ Thumbs.db
 
 # Test-PNG-Outputs aus latex/code/tagN/-Skripten
 latex/code/*/*.png
+# Auto-generierte TikZ-Snippets (kanonische Kopie liegt in latex/abbildungen/)
+latex/code/*/fehler_demo_diagramm.tex
