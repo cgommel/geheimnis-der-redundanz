@@ -1,0 +1,54 @@
+\section*{Tag 17 — Große Codes und Interleaving}
+
+\subsection*{Bleistift-Übung 1: Interleaving von Hand}
+
+Datenbytes: \texttt{[65, 66, 67, 68, 69, 70]} (A\,B\,C\,D\,E\,F),
+\texttt{k=2}.
+
+\textbf{Schritt 1 — Aufteilung:}
+\begin{itemize}
+\item Block~1: \texttt{[65, 66, 67]}  (A, B, C)
+\item Block~2: \texttt{[68, 69, 70]}  (D, E, F)
+\end{itemize}
+
+\textbf{Schritt 2 — Verschachtlung}
+(angenommene ECC: Block~1 \texttt{[p,q,r]}, Block~2 \texttt{[s,t,u]}):
+
+\begin{center}
+\texttt{[65, 68, 66, 69, 67, 70,\quad p, s, q, t, r, u]}
+\end{center}
+
+Indices 0–5: Daten round-robin, Indices 6–11: ECC round-robin.
+
+\textbf{Schritt 3 — Kratzer an Positionen 3, 4, 5:}
+\begin{itemize}
+\item Position 3: \texttt{69} → Block~2, Daten-CW Index~1
+\item Position 4: \texttt{67} → Block~1, Daten-CW Index~2
+\item Position 5: \texttt{70} → Block~2, Daten-CW Index~2
+\end{itemize}
+
+Der Kratzer trifft \emph{beide} Blöcke je ein bis zwei Mal. Block~1
+verliert 1 Codeword, Block~2 verliert 2 Codewords. Beide Blöcke haben
+genug ECC, um das zu reparieren — wenn man 3 ECC-Bytes hat, können
+1–2 Fehler korrigiert werden.
+
+\textbf{Zum Vergleich ohne Interleaving:} ein Kratzer an den Positionen
+3, 4, 5 würde drei aufeinander­folgende Codewords aus demselben Block
+treffen — für einen einzelnen Block mit nur 3~ECC-Bytes an der Grenze.
+
+\subsection*{Bleistift-Übung 2: Eigener Text in 36×36}
+
+Kein eindeutiges Ergebnis, sondern Beispiel mit Gretas vollem Namen
+„GRETA MUSTERMANN" (16~Zeichen):
+
+\begin{minted}{python}
+e = DatamatrixEncoderGross("GRETA MUSTERMANN", n=36)
+# → 86 Daten-CW, davon 16 echte Daten, Rest Padding
+# teile_in_bloecke(86 CW, k=2) → Block1: 43 CW, Block2: 43 CW
+print(e)
+e.save_png("greta_36x36.png")
+\end{minted}
+
+Block~1 und Block~2 sind gleich groß (43~CW je), weil 86/2=43 ganzzahlig.
+Das Symbol scannt, weil \texttt{save\_png} an \texttt{pylibdmtx} delegiert,
+das den ISO-Standard korrekt implementiert.
