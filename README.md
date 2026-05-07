@@ -33,32 +33,25 @@ Das Buch ist als Praktikumstagebuch organisiert; je eine Etappe
 entspricht ungefähr einem Praktikumstag (≈ 2 Stunden Arbeit für die
 Zielperson).
 
-**Im aktuellen Release enthalten:**
+**Im aktuellen Release enthalten (Etappen 1–17):**
 
 - Etappe 1 — Prüfziffern: Parität, EAN-13
 - Etappe 2 — ISBN-10, Luhn, Hamming-Distanz
 - Etappe 3 — Hamming-Code (7,4): erstes echtes Korrigieren
 - Etappe 4 — SECDED, Bündelfehler, Interleaving, CRC
-- Etappe 5 — Endliche Körper $\mathrm{GF}(2^n)$, die neue Mathematik
-- Etappe 6 — Polynome über $\mathrm{GF}(2^n)$, Reed-Solomon-Idee
-- Etappe 7 — Reed-Solomon-Encoder + Wechsel auf $\mathrm{GF}(2^8)$
+- Etappe 5 — Endliche Körper GF(2ⁿ), die neue Mathematik
+- Etappe 6 — Polynome über GF(2ⁿ), Reed-Solomon-Idee
+- Etappe 7 — Reed-Solomon-Encoder + Wechsel auf GF(2⁸)
 - Etappe 8 — Reed-Solomon-Decoder (Auslöschungen + `reedsolo`)
 - Etappe 9 — EAN-13 von Hand zeichnen (mit Werkstattbogen)
 - Etappe 10 — EAN-13 mit Python zeichnen (Pillow, drei Stufen)
 - Etappe 11 — Datamatrix-Anatomie und ASCII-Encoding
 - Etappe 12 — Reed-Solomon-Prüfbytes für Datamatrix
 - Etappe 13 — Datenplatzierung im Datamatrix (mit Werkstattbogen)
-
-**Geplant:**
-
-- Etappe 14 — Encoder zusammenstecken (Roh- → Funktions-Stufe,
-  Pillow-Renderer, Scan-Test): erster Datamatrix komplett aus Code.
-- Etappe 15 — Aufräumen mit Klassen, dann auf größere Symbolgrößen
-  (14×14, 16×16, 18×18) skalieren.
-- Etappe 16 — Bonus-Sandkasten: Decoder + sichtbare RS-Fehler­korrektur
-  („Modul übermalen, trotzdem lesbar").
-- Etappe 17 (optional) — Mini-App: Texteingabe → PNG → eigener
-  Sticker-Bogen.
+- Etappe 14 — Encoder zusammenstecken: Roh- → Funktions-Stufe, erster eigener Datamatrix der scannt
+- Etappe 15 — Klassen und Vererbung: `Barcode` → `DatamatrixEncoder`, Klassenhi­erarchie mit offenem EAN-13-Slot
+- Etappe 16 — Decoder bauen: inverse Datenplatzierung, RS-Fehlerlokalisation, Stress-Test mit matplotlib-Diagramm
+- Etappe 17 — Große Codes und Interleaving: `DatamatrixEncoderGross` für 36×36–64×64, Kratzer-Robustheit
 
 Lösungen zu allen Aufgaben stehen gesammelt im Anhang.
 
