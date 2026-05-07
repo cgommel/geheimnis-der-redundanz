@@ -166,12 +166,10 @@ reproduzierbar ist — gleiche Zahlen kommen jedes Mal raus.
 \begin{pythoneinheit}{4}{Diagramm zeichnen}
 \pythoncodeteil{tag16/fehler_demo.py}{diagramm}
 
-Bewusst kein \texttt{matplotlib} — das Skript schreibt direkt einen
-\texttt{tikzpicture}-Block in eine \texttt{.tex}-Datei. Damit wird
-das Diagramm im Buch als Vektorgrafik gesetzt (jede Zoomstufe scharf,
-kein Pixelmatsch beim Druck) — und gleichzeitig konsistent zu
-allen anderen TikZ-Diagrammen, die du auf dem Weg gesehen hast.
-Eine senkrechte rote Linie markiert die theoretische RS-Grenze.
+Das Skript verwendet \texttt{matplotlib} und speichert das Ergebnis
+als \texttt{.pdf} — damit bleibt das Diagramm bei jeder Zoomstufe
+scharf (Vektorgrafik, kein Pixelmatsch beim Druck). Eine senkrechte
+rote Linie markiert die theoretische RS-Grenze.
 \end{pythoneinheit}
 
 \begin{pythoneinheit}{5}{Demo: Erfolgsquote für GRETA in 12$\times$12}
@@ -194,7 +192,7 @@ Und das Diagramm:
 \end{pythoneinheit}
 
 \begin{center}
-\input{abbildungen/tag16/fehler_demo_diagramm.tex}
+\includegraphics[width=0.85\linewidth]{abbildungen/tag16/fehler_demo_diagramm.pdf}
 \end{center}
 
 Lies die Kurve so:
