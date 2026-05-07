@@ -95,6 +95,17 @@ kann sich selbst reparieren.
 \end{tikzpicture}
 \end{center}
 
+Das 36×36-Symbol links ist sauber; beim rechten hat ein horizontaler
+Kratzer einige Datenmodule zerstört. Weil die Codewords verschachtelt
+sind, trifft der Kratzer beide RS-Blöcke je einmal — jeder Block
+repariert sich selbst.
+
+\begin{center}
+\includegraphics[width=0.32\linewidth]{abbildungen/tag17/interleaving_36x36_sauber.png}
+\hspace{1cm}
+\includegraphics[width=0.32\linewidth]{abbildungen/tag17/interleaving_36x36_kratzer_klein.png}
+\end{center}
+
 % =============================================================
 \section{Wie Interleaving funktioniert \normalfont(\textit{≈ 15 min})}
 % =============================================================
@@ -220,6 +231,17 @@ DatamatrixEncoderGross(text='INTERLEAVING VERTEILT ...', 36×36,
 Das 36×36-Symbol scannt korrekt — das beweist, dass unsere
 Codeword-Berechnung mit der von \texttt{pylibdmtx} übereinstimmt
 (gleicher Standard, gleiche Parameter).
+
+Zur Erinnerung: aus Etappe~16 haben wir den \texttt{DatamatrixDecoder}
+mit Fehlermarkierung. Links das 12×12-Symbol mit drei zufällig
+geflippten Modulen; rechts alle Module der betroffenen Codewords
+rot markiert — trotzdem \textbf{erfolgreich dekodiert}.
+
+\begin{center}
+\includegraphics[width=0.28\linewidth]{abbildungen/tag17/greta_12x12_kaputt.png}
+\hspace{1.5cm}
+\includegraphics[width=0.28\linewidth]{abbildungen/tag17/greta_12x12_markiert.png}
+\end{center}
 \end{pythoneinheit}
 
 \begin{bleistiftuebung}{2}{Eigenen Text in 36×36}
