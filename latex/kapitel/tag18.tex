@@ -420,47 +420,42 @@ und passen damit in ein~16×16-Symbol statt~18×18.}
 \end{figure}
 
 % =============================================================
-\section{Reflexion — das Ende einer Reise \normalfont(\textit{≈ 15 min})}
+\section{Reflexion und Brücke zu Tag 19 \normalfont(\textit{≈ 10 min})}
 % =============================================================
 
-Greta hält inne. Zwei Wochen sind vergangen.
-
-Am ersten Tag war ein EAN-13-Strichcode — zehn schwarze Balken, eine
-einzige Prüfziffer, kaum mehr als eine Quersumme. Jetzt sitzt sie vor
-einem Datamatrix-Symbol, das ihren eigenen Namen trägt, auch wenn man
-ihn mit dem Filzstift halb überschmiert hat; das falsche Bits repariert,
-bevor sie überhaupt bemerkt werden; das C40-Segmente und Digit-Paare
-selbst erkennt und einpackt.
-
-\textbf{Was sie gelernt hat:}
+Du hast heute gelernt:
 
 \begin{itemize}
-\item \textbf{Etappen 1–2}: Prüfziffern — EAN-13, ISBN-10, Luhn,
-  Hamming-Distanz. Fehler erkennen, ohne zu korrigieren.
-\item \textbf{Etappen 3–4}: Hamming-Code, SECDED, CRC — echtes
-  Korrigieren, Bündelfehler, Interleaving auf Bitebene.
-\item \textbf{Etappen 5–6}: Endliche Körper $\mathrm{GF}(2^n)$ und
-  Polynome darüber — die Mathematik, auf der Reed-Solomon aufbaut.
-\item \textbf{Etappen 7–8}: Reed-Solomon-Encoder und -Decoder — zuerst
-  von Hand über $\mathrm{GF}(2^3)$, dann in Python mit \texttt{reedsolo}.
-\item \textbf{Etappen 9–10}: EAN-13 von Hand und mit Pillow —
-  Strichbreiten, Wachzone, Prüfziffer.
-\item \textbf{Etappen 11–14}: Datamatrix von Grund auf — ASCII-Encoding,
-  RS-Prüfbytes, Datenplatzierung, erster scannbarer Code.
-\item \textbf{Etappen 15}: Klassen und Vererbung — \texttt{Barcode} als
-  Basis, \texttt{DatamatrixEncoder} als Spezialisierung.
-\item \textbf{Etappen 16}: Decoder — inverse Datenplatzierung,
-  Fehlerlokalisation, Stress-Test.
-\item \textbf{Etappe 17}: Große Codes und Interleaving — Symbole bis
-  64×64, RS-Blöcke verschachteln.
-\item \textbf{Etappe 18}: Modi — Digit-Paar, C40, automatischer
-  Moduswechsler. Gleicher Inhalt, kleines Symbol.
+\item Der \textbf{Digit-Paar-Modus} kodiert zwei Ziffern als ein
+  Codeword (Werte 130–229). Das haliert den Platzbedarf reiner
+  Ziffernfolgen.
+\item Der \textbf{C40-Modus} kodiert drei Zeichen aus
+  \{A–Z, 0–9, Leerzeichen\} als zwei Codewords. Er lohnt sich erst
+  ab ca.\ sechs Zeichen im Segment, weil Latch und Unlatch je ein
+  Codeword kosten.
+\item \texttt{kodiere\_smart()} entscheidet pro Segment automatisch —
+  Digit-Paar für Ziffernpaare, C40 für lange Buchstabenläufe,
+  ASCII als sicherer Fallback.
+\item Die \texttt{DatamatrixEncoderModi}-Klasse überschreibt nur
+  eine einzige Zeile gegenüber dem Basis-Encoder. Den Rest — Padding,
+  Reed-Solomon, Bitmap, PNG-Export — erbt sie unverändert.
 \end{itemize}
 
-\begin{minted}{python}
-e = DatamatrixEncoderModi("GRETA")
-e.save("greta_final.png")
-\end{minted}
+\subsection*{Vorschau Tag 19}
 
-Das Symbol scannt. Es ist 12×12 — das kleinste, das den Namen fasst.
-Praktikum vorbei.
+Datamatrix ist nicht der einzige 2-D-Code der Welt. Der \textbf{QR-Code}
+ist heute noch weiter verbreitet — auf Fahrkarten, Webseiten,
+Restaurantmenüs. Beide nutzen Reed-Solomon, aber mit anderen Parametern
+und einer ganz anderen Struktur:
+
+\begin{itemize}
+\item \textbf{Finder-Muster}: drei große Quadrate in den Ecken
+  statt einer umlaufenden Rahmen-Linie
+\item \textbf{Fehlerkorrektur-Level}: QR bietet vier Stufen (L, M, Q, H)
+  statt eines festen ECC-Anteils
+\item \textbf{Masking}: das Bitmuster wird nach festen Regeln
+  invertiert, damit keine großen einfarbigen Flächen entstehen
+\end{itemize}
+
+Wir schauen, was beides gemeinsam hat und wo sie sich unterscheiden —
+und warum Reed-Solomon in beiden steckt.
