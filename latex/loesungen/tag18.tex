@@ -1,0 +1,77 @@
+\section*{Tag 18 — Kodierungs-Modi: Digit-Paar und C40}
+
+\subsection*{Bleistift-Übung 1: Datum komprimieren}
+
+\textbf{a) Codewords für \texttt{20251231}:}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+\textbf{Zifferntripel} & \textbf{Formel} & \textbf{CW} \\
+\hline
+\texttt{20} & $130 + 2 \times 10 + 0$ & 150 \\
+\texttt{25} & $130 + 2 \times 10 + 5$ & 155 \\
+\texttt{12} & $130 + 1 \times 10 + 2$ & 142 \\
+\texttt{31} & $130 + 3 \times 10 + 1$ & 161 \\
+\hline
+\end{tabular}
+\end{center}
+
+Vollständige Codeword-Liste: \texttt{[150, 155, 142, 161]}.
+
+\textbf{b) Codeword-Vergleich:}
+\begin{itemize}
+\item Digit-Paar: \textbf{4~Codewords}
+\item ASCII: \textbf{8~Codewords} (je ein Codeword pro Ziffer)
+\end{itemize}
+Einsparung: 4~CW — die Hälfte!
+
+\textbf{c) Symbolgröße:}
+4~Codewords passen in ein \textbf{12×12}-Symbol (Kapazität: 5~Daten-CW).
+ASCII würde 14×14 erfordern (Kapazität: 8~Daten-CW).
+
+\textbf{d) Ungerade Ziffernanzahl (\texttt{2025122}):}
+Sieben Ziffern → drei Paare (\texttt{20}, \texttt{25}, \texttt{12})
++ eine Rest-Ziffer (\texttt{2} → ASCII-CW: $\text{ord}(\texttt{"2"})+1 = 51$).
+Ergebnis: 4~Codewords: \texttt{[150, 155, 142, 51]}.
+
+\subsection*{Bleistift-Übung 2: C40 lohnt sich — oder nicht?}
+
+\textbf{a) Triplets und Rest:}
+\texttt{GRETA} hat 5~Buchstaben → 1~vollständiges Triplet (\texttt{GRE}),
+Rest: \texttt{TA} (2~Zeichen).
+
+\textbf{b) Codewords für \texttt{GRE}:}
+$G=21,\; R=31,\; E=18$
+\[
+  \mathit{tmp} = 21 \times 1600 + 31 \times 40 + 18 + 1
+              = 33600 + 1240 + 18 + 1 = 34859
+\]
+\[
+  \text{CW}_1 = 34859 \gg 8 = 136 \qquad
+  \text{CW}_2 = 34859 \bmod 256 = 43
+\]
+
+\textbf{c) Vollständige Codeword-Sequenz:}
+\begin{center}
+\texttt{[230,\; 136,\; 43,\; 254,\; 85,\; 66]}\\
+{\small Latch\quad GRE\quad\quad Unlatch\quad T\quad A}
+\end{center}
+
+\textbf{d) Codeword-Zählung:}
+\begin{itemize}
+\item C40 für \texttt{GRETA}: \textbf{6~Codewords}
+  (Latch + 2 Daten + Unlatch + T + A)
+\item ASCII für \texttt{GRETA}: \textbf{5~Codewords}
+\end{itemize}
+
+\textbf{e) Fazit:}
+C40 lohnt sich hier \emph{nicht} — es erzeugt \emph{mehr} Codewords als ASCII!
+Latch und Unlatch kosten 2~CW Overhead. Drei Buchstaben im C40-Modus
+sparen~1~CW gegenüber ASCII. Erst ab \textbf{6~Buchstaben} im Segment
+sind Einsparung (2~CW) und Overhead (2~CW) gleich; ab 7~Buchstaben
+lohnt sich C40.
+
+Für \texttt{GRETA} (5~Zeichen) ist ASCII die bessere Wahl.
+\texttt{kodiere\_smart()} aktiviert C40 deshalb erst ab einem Lauf
+von mindestens 6~C40-kompatiblen Zeichen.

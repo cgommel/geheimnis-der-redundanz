@@ -18,7 +18,7 @@ CODE_DIR   := $(LATEX_DIR)/code
 BUILD_DIR  := build/latex
 PDF_DIR    := pdf
 HAUPTBUCH  := geheimnis-der-redundanz
-ETAPPEN    := 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+ETAPPEN    := 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 STANDALONES := $(addprefix redundanz-tag,$(ETAPPEN))
 VORLAGEN    := zeichenvorlage-ean13 zeichenvorlage-datamatrix
 
