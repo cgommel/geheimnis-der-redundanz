@@ -166,10 +166,31 @@ reproduzierbar ist — gleiche Zahlen kommen jedes Mal raus.
 \begin{pythoneinheit}{4}{Diagramm zeichnen}
 \pythoncodeteil{tag16/fehler_demo.py}{diagramm}
 
-Das Skript verwendet \texttt{matplotlib} und speichert das Ergebnis
-als \texttt{.pdf} — damit bleibt das Diagramm bei jeder Zoomstufe
-scharf (Vektorgrafik, kein Pixelmatsch beim Druck). Eine senkrechte
-rote Linie markiert die theoretische RS-Grenze.
+\textbf{Neue Bibliothek: \texttt{matplotlib}.}
+\texttt{matplotlib} ist \emph{die} Standard-Bibliothek für
+Diagramme in Python — Linien, Balken, Kurven, alles. Installation
+einmalig in Thonny über \textit{Tools → Manage packages}
+oder im Terminal:
+
+\begin{minted}{text}
+pip install matplotlib
+\end{minted}
+
+Im Skript passieren drei Dinge:
+
+\begin{itemize}
+\item \texttt{fig, ax = plt.subplots(...)} legt eine neue
+  „Leinwand" (\texttt{fig}) mit einem Koordinatensystem
+  (\texttt{ax}) an. \texttt{figsize} steuert Breite und Höhe
+  in Zoll.
+\item \texttt{ax.plot(xs, ys, "b-o")} zeichnet die blaue
+  Kurve: blaue Farbe (\texttt{b}), Linie (\texttt{-}),
+  Kreispunkte (\texttt{o}).
+\item \texttt{fig.savefig("...\,.pdf")} speichert als
+  druckfähige Vektorgrafik — kein Pixelmatsch beim Zoomen.
+  Eine senkrechte rote Linie markiert die theoretische
+  RS-Grenze.
+\end{itemize}
 \end{pythoneinheit}
 
 \begin{pythoneinheit}{5}{Demo: Erfolgsquote für GRETA in 12$\times$12}
