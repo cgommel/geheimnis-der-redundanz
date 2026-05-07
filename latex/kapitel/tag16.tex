@@ -166,12 +166,31 @@ reproduzierbar ist — gleiche Zahlen kommen jedes Mal raus.
 \begin{pythoneinheit}{4}{Diagramm zeichnen}
 \pythoncodeteil{tag16/fehler_demo.py}{diagramm}
 
-Bewusst kein \texttt{matplotlib} — das Skript schreibt direkt einen
-\texttt{tikzpicture}-Block in eine \texttt{.tex}-Datei. Damit wird
-das Diagramm im Buch als Vektorgrafik gesetzt (jede Zoomstufe scharf,
-kein Pixelmatsch beim Druck) — und gleichzeitig konsistent zu
-allen anderen TikZ-Diagrammen, die du auf dem Weg gesehen hast.
-Eine senkrechte rote Linie markiert die theoretische RS-Grenze.
+\textbf{Neue Bibliothek: \texttt{matplotlib}.}
+\texttt{matplotlib} ist \emph{die} Standard-Bibliothek für
+Diagramme in Python — Linien, Balken, Kurven, alles. Installation
+einmalig in Thonny über \textit{Tools → Manage packages}
+oder im Terminal:
+
+\begin{minted}{text}
+pip install matplotlib
+\end{minted}
+
+Im Skript passieren drei Dinge:
+
+\begin{itemize}
+\item \texttt{fig, ax = plt.subplots(...)} legt eine neue
+  „Leinwand" (\texttt{fig}) mit einem Koordinatensystem
+  (\texttt{ax}) an. \texttt{figsize} steuert Breite und Höhe
+  in Zoll.
+\item \texttt{ax.plot(xs, ys, "b-o")} zeichnet die blaue
+  Kurve: blaue Farbe (\texttt{b}), Linie (\texttt{-}),
+  Kreispunkte (\texttt{o}).
+\item \texttt{fig.savefig("...\,.pdf")} speichert als
+  druckfähige Vektorgrafik — kein Pixelmatsch beim Zoomen.
+  Eine senkrechte rote Linie markiert die theoretische
+  RS-Grenze.
+\end{itemize}
 \end{pythoneinheit}
 
 \begin{pythoneinheit}{5}{Demo: Erfolgsquote für GRETA in 12$\times$12}
@@ -194,7 +213,7 @@ Und das Diagramm:
 \end{pythoneinheit}
 
 \begin{center}
-\input{abbildungen/tag16/fehler_demo_diagramm.tex}
+\includegraphics[width=0.85\linewidth]{abbildungen/tag16/fehler_demo_diagramm.pdf}
 \end{center}
 
 Lies die Kurve so:
