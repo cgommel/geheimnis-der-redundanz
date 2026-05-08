@@ -1,0 +1,200 @@
+\paragraph{Iteration 1 — Faktor $f = 230$}
+\textit{Rest vorher:} \texttt{[230, 127, 241, 103, 87, 121, 218, 254, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 230 & 0 & 68 & 68 & 68 & 0 & 230 $\oplus$ 230 & 0 \\
+1 & 61 & 230 & 199 & 68 & 267 & 12 & 1 & 127 $\oplus$ 138 & 245 \\
+2 & 110 & 230 & 50 & 68 & 118 & 118 & 2 & 241 $\oplus$ 29 & 236 \\
+3 & 255 & 230 & 150 & 68 & 218 & 218 & 3 & 103 $\oplus$ 134 & 225 \\
+4 & 116 & 230 & 120 & 68 & 188 & 188 & 4 & 87 $\oplus$ 196 & 147 \\
+5 & 248 & 230 & 237 & 68 & 305 & 50 & 5 & 121 $\oplus$ 110 & 23 \\
+6 & 223 & 230 & 131 & 68 & 199 & 199 & 6 & 218 $\oplus$ 61 & 231 \\
+7 & 166 & 230 & 172 & 68 & 240 & 240 & 7 & 254 $\oplus$ 3 & 253 \\
+8 & 185 & 230 & 83 & 68 & 151 & 151 & 8 & 0 $\oplus$ 211 & 211 \\
+9 & 24 & 230 & 243 & 68 & 311 & 56 & 9 & 0 $\oplus$ 56 & 56 \\
+10 & 28 & 230 & 55 & 68 & 123 & 123 & 10 & 0 $\oplus$ 215 & 215 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 245, 236, 225, 147, 23, 231, 253, 211, 56, 215, 0, 0, 0, 0, 0, 0, 0]}\par\medskip
+\paragraph{Iteration 2 — Faktor $f = 245$}
+\textit{Rest vorher:} \texttt{[0, 245, 236, 225, 147, 23, 231, 253, 211, 56, 215, 0, 0, 0, 0, 0, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 245 & 0 & 156 & 156 & 156 & 1 & 245 $\oplus$ 245 & 0 \\
+1 & 61 & 245 & 199 & 156 & 355 & 100 & 2 & 236 $\oplus$ 106 & 134 \\
+2 & 110 & 245 & 50 & 156 & 206 & 206 & 3 & 225 $\oplus$ 161 & 64 \\
+3 & 255 & 245 & 150 & 156 & 306 & 51 & 4 & 147 $\oplus$ 220 & 79 \\
+4 & 116 & 245 & 120 & 156 & 276 & 21 & 5 & 23 $\oplus$ 219 & 204 \\
+5 & 248 & 245 & 237 & 156 & 393 & 138 & 6 & 231 $\oplus$ 77 & 170 \\
+6 & 223 & 245 & 131 & 156 & 287 & 32 & 7 & 253 $\oplus$ 93 & 160 \\
+7 & 166 & 245 & 172 & 156 & 328 & 73 & 8 & 211 $\oplus$ 187 & 104 \\
+8 & 185 & 245 & 83 & 156 & 239 & 239 & 9 & 56 $\oplus$ 151 & 175 \\
+9 & 24 & 245 & 243 & 156 & 399 & 144 & 10 & 215 $\oplus$ 189 & 106 \\
+10 & 28 & 245 & 55 & 156 & 211 & 211 & 11 & 0 $\oplus$ 30 & 30 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 134, 64, 79, 204, 170, 160, 104, 175, 106, 30, 0, 0, 0, 0, 0, 0]}\par\medskip
+\paragraph{Iteration 3 — Faktor $f = 134$}
+\textit{Rest vorher:} \texttt{[0, 0, 134, 64, 79, 204, 170, 160, 104, 175, 106, 30, 0, 0, 0, 0, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 134 & 0 & 218 & 218 & 218 & 2 & 134 $\oplus$ 134 & 0 \\
+1 & 61 & 134 & 199 & 218 & 417 & 162 & 3 & 64 $\oplus$ 47 & 111 \\
+2 & 110 & 134 & 50 & 218 & 268 & 13 & 4 & 79 $\oplus$ 57 & 118 \\
+3 & 255 & 134 & 150 & 218 & 368 & 113 & 5 & 204 $\oplus$ 159 & 83 \\
+4 & 116 & 134 & 120 & 218 & 338 & 83 & 6 & 170 $\oplus$ 185 & 19 \\
+5 & 248 & 134 & 237 & 218 & 455 & 200 & 7 & 160 $\oplus$ 122 & 218 \\
+6 & 223 & 134 & 131 & 218 & 349 & 94 & 8 & 104 $\oplus$ 213 & 189 \\
+7 & 166 & 134 & 172 & 218 & 390 & 135 & 9 & 175 $\oplus$ 44 & 131 \\
+8 & 185 & 134 & 83 & 218 & 301 & 46 & 10 & 106 $\oplus$ 104 & 2 \\
+9 & 24 & 134 & 243 & 218 & 461 & 206 & 11 & 30 $\oplus$ 161 & 191 \\
+10 & 28 & 134 & 55 & 218 & 273 & 18 & 12 & 0 $\oplus$ 227 & 227 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 0, 111, 118, 83, 19, 218, 189, 131, 2, 191, 227, 0, 0, 0, 0, 0]}\par\medskip
+\paragraph{Iteration 4 — Faktor $f = 111$}
+\textit{Rest vorher:} \texttt{[0, 0, 0, 111, 118, 83, 19, 218, 189, 131, 2, 191, 227, 0, 0, 0, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 111 & 0 & 207 & 207 & 207 & 3 & 111 $\oplus$ 111 & 0 \\
+1 & 61 & 111 & 199 & 207 & 406 & 151 & 4 & 118 $\oplus$ 211 & 165 \\
+2 & 110 & 111 & 50 & 207 & 257 & 2 & 5 & 83 $\oplus$ 4 & 87 \\
+3 & 255 & 111 & 150 & 207 & 357 & 102 & 6 & 19 $\oplus$ 133 & 150 \\
+4 & 116 & 111 & 120 & 207 & 327 & 72 & 7 & 218 $\oplus$ 203 & 17 \\
+5 & 248 & 111 & 237 & 207 & 444 & 189 & 8 & 189 $\oplus$ 165 & 24 \\
+6 & 223 & 111 & 131 & 207 & 338 & 83 & 9 & 131 $\oplus$ 185 & 58 \\
+7 & 166 & 111 & 172 & 207 & 379 & 124 & 10 & 2 $\oplus$ 131 & 129 \\
+8 & 185 & 111 & 83 & 207 & 290 & 35 & 11 & 191 $\oplus$ 178 & 13 \\
+9 & 24 & 111 & 243 & 207 & 450 & 195 & 12 & 227 $\oplus$ 17 & 242 \\
+10 & 28 & 111 & 55 & 207 & 262 & 7 & 13 & 0 $\oplus$ 128 & 128 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 0, 0, 165, 87, 150, 17, 24, 58, 129, 13, 242, 128, 0, 0, 0, 0]}\par\medskip
+\paragraph{Iteration 5 — Faktor $f = 165$}
+\textit{Rest vorher:} \texttt{[0, 0, 0, 0, 165, 87, 150, 17, 24, 58, 129, 13, 242, 128, 0, 0, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 165 & 0 & 189 & 189 & 189 & 4 & 165 $\oplus$ 165 & 0 \\
+1 & 61 & 165 & 199 & 189 & 388 & 133 & 5 & 87 $\oplus$ 11 & 92 \\
+2 & 110 & 165 & 50 & 189 & 239 & 239 & 6 & 150 $\oplus$ 151 & 1 \\
+3 & 255 & 165 & 150 & 189 & 339 & 84 & 7 & 17 $\oplus$ 95 & 78 \\
+4 & 116 & 165 & 120 & 189 & 309 & 54 & 8 & 24 $\oplus$ 14 & 22 \\
+5 & 248 & 165 & 237 & 189 & 426 & 171 & 9 & 58 $\oplus$ 83 & 105 \\
+6 & 223 & 165 & 131 & 189 & 320 & 65 & 10 & 129 $\oplus$ 193 & 64 \\
+7 & 166 & 165 & 172 & 189 & 361 & 106 & 11 & 13 $\oplus$ 21 & 24 \\
+8 & 185 & 165 & 83 & 189 & 272 & 17 & 12 & 242 $\oplus$ 231 & 21 \\
+9 & 24 & 165 & 243 & 189 & 432 & 177 & 13 & 128 $\oplus$ 254 & 126 \\
+10 & 28 & 165 & 55 & 189 & 244 & 244 & 14 & 0 $\oplus$ 48 & 48 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 0, 0, 0, 92, 1, 78, 22, 105, 64, 24, 21, 126, 48, 0, 0, 0]}\par\medskip
+\paragraph{Iteration 6 — Faktor $f = 92$}
+\textit{Rest vorher:} \texttt{[0, 0, 0, 0, 0, 92, 1, 78, 22, 105, 64, 24, 21, 126, 48, 0, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 92 & 0 & 30 & 30 & 30 & 5 & 92 $\oplus$ 92 & 0 \\
+1 & 61 & 92 & 199 & 30 & 229 & 229 & 6 & 1 $\oplus$ 80 & 81 \\
+2 & 110 & 92 & 50 & 30 & 80 & 80 & 7 & 78 $\oplus$ 164 & 234 \\
+3 & 255 & 92 & 150 & 30 & 180 & 180 & 8 & 22 $\oplus$ 51 & 37 \\
+4 & 116 & 92 & 120 & 30 & 150 & 150 & 9 & 105 $\oplus$ 255 & 150 \\
+5 & 248 & 92 & 237 & 30 & 267 & 12 & 10 & 64 $\oplus$ 138 & 202 \\
+6 & 223 & 92 & 131 & 30 & 161 & 161 & 11 & 24 $\oplus$ 129 & 153 \\
+7 & 166 & 92 & 172 & 30 & 202 & 202 & 12 & 21 $\oplus$ 197 & 208 \\
+8 & 185 & 92 & 83 & 30 & 113 & 113 & 13 & 126 $\oplus$ 159 & 225 \\
+9 & 24 & 92 & 243 & 30 & 273 & 18 & 14 & 48 $\oplus$ 227 & 211 \\
+10 & 28 & 92 & 55 & 30 & 85 & 85 & 15 & 0 $\oplus$ 190 & 190 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 0, 0, 0, 0, 81, 234, 37, 150, 202, 153, 208, 225, 211, 190, 0, 0]}\par\medskip
+\paragraph{Iteration 7 — Faktor $f = 81$}
+\textit{Rest vorher:} \texttt{[0, 0, 0, 0, 0, 0, 81, 234, 37, 150, 202, 153, 208, 225, 211, 190, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 81 & 0 & 86 & 86 & 86 & 6 & 81 $\oplus$ 81 & 0 \\
+1 & 61 & 81 & 199 & 86 & 285 & 30 & 7 & 234 $\oplus$ 92 & 182 \\
+2 & 110 & 81 & 50 & 86 & 136 & 136 & 8 & 37 $\oplus$ 88 & 125 \\
+3 & 255 & 81 & 150 & 86 & 236 & 236 & 9 & 150 $\oplus$ 124 & 234 \\
+4 & 116 & 81 & 120 & 86 & 206 & 206 & 10 & 202 $\oplus$ 161 & 107 \\
+5 & 248 & 81 & 237 & 86 & 323 & 68 & 11 & 153 $\oplus$ 230 & 127 \\
+6 & 223 & 81 & 131 & 86 & 217 & 217 & 12 & 208 $\oplus$ 67 & 147 \\
+7 & 166 & 81 & 172 & 86 & 258 & 3 & 13 & 225 $\oplus$ 8 & 233 \\
+8 & 185 & 81 & 83 & 86 & 169 & 169 & 14 & 211 $\oplus$ 201 & 26 \\
+9 & 24 & 81 & 243 & 86 & 329 & 74 & 15 & 190 $\oplus$ 91 & 229 \\
+10 & 28 & 81 & 55 & 86 & 141 & 141 & 16 & 0 $\oplus$ 50 & 50 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 0, 0, 0, 0, 0, 182, 125, 234, 107, 127, 147, 233, 26, 229, 50, 0]}\par\medskip
+\paragraph{Iteration 8 — Faktor $f = 182$}
+\textit{Rest vorher:} \texttt{[0, 0, 0, 0, 0, 0, 0, 182, 125, 234, 107, 127, 147, 233, 26, 229, 50, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 182 & 0 & 75 & 75 & 75 & 7 & 182 $\oplus$ 182 & 0 \\
+1 & 61 & 182 & 199 & 75 & 274 & 19 & 8 & 125 $\oplus$ 235 & 150 \\
+2 & 110 & 182 & 50 & 75 & 125 & 125 & 9 & 234 $\oplus$ 43 & 193 \\
+3 & 255 & 182 & 150 & 75 & 225 & 225 & 10 & 107 $\oplus$ 5 & 110 \\
+4 & 116 & 182 & 120 & 75 & 195 & 195 & 11 & 127 $\oplus$ 17 & 110 \\
+5 & 248 & 182 & 237 & 75 & 312 & 57 & 12 & 147 $\oplus$ 112 & 227 \\
+6 & 223 & 182 & 131 & 75 & 206 & 206 & 13 & 233 $\oplus$ 161 & 72 \\
+7 & 166 & 182 & 172 & 75 & 247 & 247 & 14 & 26 $\oplus$ 173 & 183 \\
+8 & 185 & 182 & 83 & 75 & 158 & 158 & 15 & 229 $\oplus$ 163 & 70 \\
+9 & 24 & 182 & 243 & 75 & 318 & 63 & 16 & 50 $\oplus$ 123 & 73 \\
+10 & 28 & 182 & 55 & 75 & 130 & 130 & 17 & 0 $\oplus$ 249 & 249 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 0, 0, 0, 0, 0, 0, 150, 193, 110, 110, 227, 72, 183, 70, 73, 249]}\par\medskip

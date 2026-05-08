@@ -1,0 +1,60 @@
+\paragraph{Iteration 1 — Faktor $f = 78$}
+\textit{Rest vorher:} \texttt{[78, 86, 85, 0, 0, 0, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 78 & 0 & 104 & 104 & 104 & 0 & 78 $\oplus$ 78 & 0 \\
+1 & 62 & 78 & 235 & 104 & 339 & 84 & 1 & 86 $\oplus$ 95 & 9 \\
+2 & 111 & 78 & 207 & 104 & 311 & 56 & 2 & 85 $\oplus$ 56 & 109 \\
+3 & 15 & 78 & 210 & 104 & 314 & 59 & 3 & 0 $\oplus$ 237 & 237 \\
+4 & 48 & 78 & 244 & 104 & 348 & 93 & 4 & 0 $\oplus$ 252 & 252 \\
+5 & 228 & 78 & 15 & 104 & 119 & 119 & 5 & 0 $\oplus$ 58 & 58 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 9, 109, 237, 252, 58, 0, 0]}\par\medskip
+\paragraph{Iteration 2 — Faktor $f = 9$}
+\textit{Rest vorher:} \texttt{[0, 9, 109, 237, 252, 58, 0, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 9 & 0 & 38 & 38 & 38 & 1 & 9 $\oplus$ 9 & 0 \\
+1 & 62 & 9 & 235 & 38 & 273 & 18 & 2 & 109 $\oplus$ 227 & 142 \\
+2 & 111 & 9 & 207 & 38 & 245 & 245 & 3 & 237 $\oplus$ 96 & 141 \\
+3 & 15 & 9 & 210 & 38 & 248 & 248 & 4 & 252 $\oplus$ 119 & 139 \\
+4 & 48 & 9 & 244 & 38 & 282 & 27 & 5 & 58 $\oplus$ 157 & 167 \\
+5 & 228 & 9 & 15 & 38 & 53 & 53 & 6 & 0 $\oplus$ 7 & 7 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 142, 141, 139, 167, 7, 0]}\par\medskip
+\paragraph{Iteration 3 — Faktor $f = 142$}
+\textit{Rest vorher:} \texttt{[0, 0, 142, 141, 139, 167, 7, 0]}\par
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{r|rr|rrrr|rrr}
+\toprule
+$j$ & $g$ & $f$ & $\log g$ & $\log f$ & $\Sigma$ & $\Sigma\bmod 255$ & Pos & vor $\oplus$ Prod & nach \\
+\midrule
+0 & 1 & 142 & 0 & 185 & 185 & 185 & 2 & 142 $\oplus$ 142 & 0 \\
+1 & 62 & 142 & 235 & 185 & 420 & 165 & 3 & 141 $\oplus$ 85 & 216 \\
+2 & 111 & 142 & 207 & 185 & 392 & 137 & 4 & 139 $\oplus$ 176 & 59 \\
+3 & 15 & 142 & 210 & 185 & 395 & 140 & 5 & 167 $\oplus$ 25 & 190 \\
+4 & 48 & 142 & 244 & 185 & 429 & 174 & 6 & 7 $\oplus$ 194 & 197 \\
+5 & 228 & 142 & 15 & 185 & 200 & 200 & 7 & 0 $\oplus$ 122 & 122 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Rest nachher:} \texttt{[0, 0, 0, 216, 59, 190, 197, 122]}\par\medskip
