@@ -33,7 +33,7 @@ Das Buch ist als Praktikumstagebuch organisiert; je eine Etappe
 entspricht ungefähr einem Praktikumstag (≈ 2 Stunden Arbeit für die
 Zielperson).
 
-**Im aktuellen Release enthalten (Etappen 1–17):**
+**Im aktuellen Release enthalten (Etappen 1–19):**
 
 - Etappe 1 — Prüfziffern: Parität, EAN-13
 - Etappe 2 — ISBN-10, Luhn, Hamming-Distanz
@@ -52,6 +52,8 @@ Zielperson).
 - Etappe 15 — Klassen und Vererbung: `Barcode` → `DatamatrixEncoder`, Klassenhi­erarchie mit offenem EAN-13-Slot
 - Etappe 16 — Decoder bauen: inverse Datenplatzierung, RS-Fehlerlokalisation, Stress-Test mit matplotlib-Diagramm
 - Etappe 17 — Große Codes und Interleaving: `DatamatrixEncoderGross` für 36×36–64×64, Kratzer-Robustheit
+- Etappe 18 — Kodierungs-Modi: Digit-Paar und C40 jenseits von ASCII
+- Etappe 19 — Datamatrix komplett von Hand: GF(256)-Tafel, RS-Iterationen, Annex-F-Platzierung mit Bleistift
 
 Lösungen zu allen Aufgaben stehen gesammelt im Anhang.
 
