@@ -1,0 +1,136 @@
+% =============================================================
+% Anhang zu Tag 19 — Werkstatt-Material:
+%   1. Log- und Antilog-Tafel für GF(256)
+%   2. Farbig markiertes 10×10-Raster für „MUT"
+%   3. Farbig markiertes 14×14-Raster für „GESCHAFFT"
+%
+% Greta nutzt das, weil Drucker fehlen: Tabellen direkt zum
+% Nachschlagen im Buch, Raster als Vorbild zum Abmalen auf
+% Karopapier.
+% =============================================================
+
+\chapter*{Anhang zu Tag 19 — Werkstatt-Material}
+\addcontentsline{toc}{chapter}{Anhang zu Tag 19 — Werkstatt-Material}
+
+\begin{quote}
+Drucker zur Hand? Dann liegen die einzelnen Werkstattbögen separat im
+Release-Asset (siehe Kapitel-Footnotes). \emph{Kein} Drucker? Dann
+arbeitest du direkt mit diesem Anhang: die Tabellen schlägst du im
+Buch nach, die zwei Raster malst du auf Karopapier ab — die UTAH-L-Form
+in Buntstift, dann die schwarzen Bits hinein.
+\end{quote}
+
+% --- Log/antilog-Tafel ---------------------------------------------
+\section*{Log- und Antilog-Tafel für GF(256)}
+
+Beide Tafeln gehören zum Standard-Setup für Datamatrix ECC-200:
+primitives Polynom $0x12D$, Generator-Element $\alpha = 2$.
+
+\paragraph{Multiplikations-Spickzettel}
+\[
+  a \times b \;=\; \text{antilog}\!\big[(\log[a] + \log[b]) \bmod 255\big]
+\]
+\textbf{Sonderfälle:} $a \times 0 = 0$, $a \times 1 = a$ (weil $\log[1]=0$).
+
+\paragraph{Lese-Anleitung}
+Zeilen-Beschriftung = $16 \cdot r$, Spalten-Beschriftung = $c$.
+Der Eintrag im Schnittpunkt ist der Wert $\log[16r + c]$ bzw.\
+$\text{antilog}[16r + c]$. Beispiel für die log-Tafel: $\log[73]$
+findest du in Zeile~$64$ ($73 = 64 + 9$), Spalte~$9$.
+
+\subsection*{log-Tafel: $\log[v]$ für $v = 1 \dots 255$}
+
+\input{abbildungen/tag19/log_tafel}
+
+\subsection*{antilog-Tafel: $\text{antilog}[i] = \alpha^i$ für $i = 0 \dots 254$}
+
+\input{abbildungen/tag19/antilog_tafel}
+
+\bigskip
+\paragraph{Beispiel.}
+$73 \times 31$:
+$\log[73] = 198$, $\log[31] = 234$, Summe $= 432$, mod $255$ $= 177$,
+$\text{antilog}[177] = 254$. Also $73 \times 31 = 254$ in GF(256).
+
+\clearpage
+
+% --- Farbig markierte Raster ---------------------------------------
+\section*{Datamatrix-Raster mit UTAH-Markierung}
+
+Jedes 8-Bit-Codeword wird als L-förmige UTAH-Form ins Symbol gesetzt
+(ISO/IEC~16022, Annex~F). In den folgenden Rastern hat \emph{jedes
+Codeword seine eigene Pastell-Farbe}; jedes Modul ist mit
+„CW-Nr.\,/\,Bit-Nr." beschriftet.
+
+\paragraph{Empfehlung} Male das Raster auf Karopapier nach
+(1~Modul = 1~Karo). Färbe die UTAHs mit Buntstiften — dabei lernst du
+den Cursor-Pfad spielerisch. Die schwarzen Datenbits trägst du
+\emph{danach} per Bleistift-Schraffur ein, anhand deiner berechneten
+Codewords.
+
+\subsection*{10×10-Raster für „MUT" — 8 Codewords}
+
+Innenfläche: 8×8 Module = 64 Bits = 8~Codewords~à~8~Bits (3~Daten +
+5~ECC, kein Padding).
+
+\begin{center}
+\begin{tikzpicture}[x=8mm, y=-8mm, every node/.style={font=\tiny}]
+  % Symbol-Aussenrahmen 10×10
+  \draw[black] (0, 0) rectangle (10, 10);
+  % L-Pattern: untere Kante (Zeile 9) + linke Kante (Spalte 0)
+  \foreach \c in {0,...,9}{ \fill[black] (\c, 9) rectangle (\c+1, 10); }
+  \foreach \r in {0,...,8}{ \fill[black] (0, \r) rectangle (1, \r+1); }
+  % Zeitsignal: obere Kante (gerade Spalten), rechte Kante (ungerade Zeilen)
+  \foreach \c in {0, 2, 4, 6, 8}{ \fill[black] (\c, 0) rectangle (\c+1, 1); }
+  \foreach \r in {1, 3, 5, 7}{ \fill[black] (9, \r) rectangle (10, \r+1); }
+  % Hilfsraster für Datenbereich
+  \foreach \i in {1,...,9}{
+    \draw[gray!40, very thin] (\i, 1) -- (\i, 9);
+    \draw[gray!40, very thin] (1, \i) -- (9, \i);
+  }
+  % Inhalt aus Generator
+  \input{abbildungen/tag19/mut_blank_colored}
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Lesehilfe} Die Codewords sind durchnummeriert 1--8, in der
+Reihenfolge: erst die drei Daten-CW (78, 86, 85), dann die fünf
+ECC-CW. Der Cursor startet bei der UTAH von CW~1 oben rechts und
+wandert zickzack durch das Symbol.
+
+\clearpage
+
+\subsection*{14×14-Raster für „GESCHAFFT" — 18 Codewords}
+
+Innenfläche: 12×12 Module = 144 Bits = 18~Codewords~à~8~Bits
+(8~Daten~CW im C40-Modus + 10~ECC, kein Padding). Größer, aber
+rechnerisch derselbe Vorgang.
+
+\begin{center}
+\begin{tikzpicture}[x=6.5mm, y=-6.5mm, every node/.style={font=\tiny}]
+  % Symbol-Aussenrahmen 14×14
+  \draw[black] (0, 0) rectangle (14, 14);
+  % L-Pattern
+  \foreach \c in {0,...,13}{ \fill[black] (\c, 13) rectangle (\c+1, 14); }
+  \foreach \r in {0,...,12}{ \fill[black] (0, \r) rectangle (1, \r+1); }
+  % Zeitsignal
+  \foreach \c in {0, 2, 4, 6, 8, 10, 12}{
+    \fill[black] (\c, 0) rectangle (\c+1, 1);
+  }
+  \foreach \r in {1, 3, 5, 7, 9, 11}{
+    \fill[black] (13, \r) rectangle (14, \r+1);
+  }
+  % Hilfsraster für Datenbereich
+  \foreach \i in {1,...,13}{
+    \draw[gray!40, very thin] (\i, 1) -- (\i, 13);
+    \draw[gray!40, very thin] (1, \i) -- (13, \i);
+  }
+  % Inhalt aus Generator
+  \input{abbildungen/tag19/geschafft_blank_colored}
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Lesehilfe} CW~1 = $230$ (Latch nach C40), CW~2--7 = drei
+C40-Triplet-Paare, CW~8 = $254$ (Unlatch zurück), CW~9--18 = 10~ECC.
+Bei dieser Größe sind die Pastellfarben recht eng beieinander —
+zwei Buntstift-Sets nebeneinander legen hilft.

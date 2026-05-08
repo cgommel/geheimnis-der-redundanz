@@ -39,8 +39,17 @@
   \include{kapitel/tag\etappennr}%
 }
 
-% Lösungen zu allen bisher behandelten Etappen, gesammelt im Anhang.
 \appendix
+
+% Kapitel-spezifische Anhänge (z. B. Tabellen, Werkstatt-Material).
+% Pro Etappe wird anhang/tagN.tex eingebunden, wenn die Datei existiert.
+\foreach \etappennr in {1,...,\maxetappe}{%
+  \IfFileExists{anhang/tag\etappennr.tex}{%
+    \input{anhang/tag\etappennr}%
+  }{}%
+}
+
+% Lösungen zu allen bisher behandelten Etappen, gesammelt im Anhang.
 \chapter{Lösungen}
 
 \begin{quote}

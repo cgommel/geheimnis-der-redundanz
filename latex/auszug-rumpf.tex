@@ -25,8 +25,16 @@
 
 \input{kapitel/tag\auszugetappe}
 
-% Lösung als unnummerierter Anhang.
 \appendix
+
+% Optionaler kapitel-spezifischer Anhang (z. B. Tabellen, Werkstatt-
+% Material). Wird nur eingebunden, wenn anhang/tagN.tex existiert —
+% andere Etappen bleiben dadurch unverändert.
+\IfFileExists{anhang/tag\auszugetappe.tex}{%
+  \input{anhang/tag\auszugetappe}%
+}{}
+
+% Lösung als unnummerierter Anhang.
 \chapter*{Lösung zu Etappe \auszugetappe}
 \input{loesungen/tag\auszugetappe}
 
