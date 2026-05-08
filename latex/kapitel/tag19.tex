@@ -1,0 +1,539 @@
+\chapter{Tag 19 — Datamatrix komplett von Hand}
+
+\begin{quote}
+Greta blickt auf ihren fertigen Encoder. Klassen, Vererbung,
+Reed-Solomon, Modi-Wechsler — alles steht. Aber eine Frage lässt sie
+nicht los: Wenn jeder Schritt verstanden ist, müsste sie das Symbol
+auch \emph{ohne} Computer rechnen können. Drei Codewords, fünf
+Prüfbytes, ein 10×10-Raster. Mit Bleistift. Mit Mut.
+\end{quote}
+
+\section*{Lernziele für heute}
+
+Am Ende von Tag 19 kannst du \dots
+
+\begin{itemize}
+\item GF(256)-Multiplikation mit log/antilog-Tabelle ausführen
+\item das Generator-Polynom $g_5(x)$ für Datamatrix konstruieren
+\item ein vollständiges 10×10-Datamatrix-Symbol von Hand kodieren —
+  Daten, ECC, Platzierung, Frame
+\item das eigene Bleistift-Symbol mit dem Smartphone scannen und
+  reklamieren: „Da steckt nichts mehr drin, was ich nicht selbst
+  gerechnet habe"
+\end{itemize}
+
+\paragraph{Material} Bleistift, Radierer, Lineal, kariertes Papier,
+Buntstifte (für die UTAH-Markierung). \emph{Kein} Computer für die
+Hauptaufgabe. Smartphone für den Scan-Test am Ende. Tabellen und
+Vorlagen findest du im Anhang dieses Kapitels — und falls ein Drucker
+zur Hand ist, gibt es alle Werkstattbögen einzeln zum Download.
+
+\paragraph{Heute dauert es länger} Die Bleistift-Arbeit braucht
+locker drei bis vier Stunden konzentrierte Arbeit, die Bonus-Aufgabe
+nochmal so viel. Plane das ein. Es ist der letzte Praktikumstag —
+und der ehrlichste.
+
+% =============================================================
+\section{Inventur: was steckt noch im Encoder?
+         \normalfont(\textit{≈ 10 min})}
+% =============================================================
+
+Greta listet auf, was ihr Encoder tut, und prüft jede Komponente
+darauf, ob sie sie ohne Computer ausführen könnte:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Schritt} & \textbf{Werkzeug} & \textbf{Hand-Tauglich?} \\
+\midrule
+Text → ASCII-Codewords         & ASCII-Tabelle    & ja, trivial \\
+Daten-Padding                  & PAD-Byte 129     & ja \\
+\textbf{GF(256)-Multiplikation} & ?                & \textbf{Hürde} \\
+Generator-Polynom $g_5(x)$     & GF(256)-Mul      & wenn Mul geht: ja \\
+Reed-Solomon-Polynomdivision   & GF(256)-Mul + XOR & wenn Mul geht: ja \\
+Codeword-Platzierung           & Tabelle (Etappe~13) & ja \\
+Frame zeichnen                 & Lineal           & ja \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Die einzige echte Hürde ist die GF(256)-Multiplikation. Die hatten
+wir bisher als \texttt{\_gf\_mul()} in Python — sechs Zeilen Bit-Arithmetik
+modulo $0x12D$. Per Hand wäre das pro Multiplikation ein 8-Bit-Polynom
+mal 8-Bit-Polynom, danach Reduktion. Bei \emph{einer} Multiplikation
+machbar, bei \emph{Hunderten} nicht.
+
+\paragraph{Wie viele Multiplikationen?}
+Für „MUT" in 10×10: $\sim$15 Multiplikationen für $g_5(x)$ + $3 \times 6 = 18$
+Multiplikationen für die RS-Division = ca.\ \textbf{33 GF-Multiplikationen}.
+Mit der Logarithmen-Tafel à 30 Sekunden pro Stück sind das knapp
+20~Minuten reine Rechenarbeit. Ohne Tafel: pro Multiplikation
+mehrere Minuten Bit-Schubsen — nicht vertretbar.
+
+% =============================================================
+\section{GF(256) per Logarithmen-Tafel
+         \normalfont(\textit{≈ 20 min})}
+% =============================================================
+
+Greta erinnert sich an den Mathe-Unterricht der 9.~Klasse: Sinus,
+Kosinus und Logarithmus standen damals als Tafelwerk auf dem Pult.
+Niemand hat $\sin(37{,}5^\circ)$ aus der Reihenentwicklung gerechnet —
+man hat nachgeschlagen. Die Tafel war ein Werkzeug, kein Schummelblatt.
+
+\textbf{In GF(256) funktioniert das genauso.} Statt einer
+Sinus-Tafel gibt es eine Logarithmus-Tafel:
+
+\[
+  \log[v] = i \quad\text{so dass}\quad \alpha^i = v
+\]
+
+mit $\alpha = 2$ und Modulo-Polynom $0x12D$ — die Standard-Wahl
+für Datamatrix ECC-200. Die Tafel hat $255$ Einträge (für
+$v \in \{1, 2, \dots, 255\}$, der Wert~0 hat keinen Logarithmus).
+
+Dazu eine \textbf{antilog-Tafel}, die rückwärts geht:
+
+\[
+  \text{antilog}[i] = \alpha^i \pmod{0x12D}
+\]
+
+Mit beiden Tafeln wird Multiplikation zu drei Lookups + einer
+Modulo-255-Addition:
+
+\[
+  a \times b \;=\; \alpha^{\log[a]} \times \alpha^{\log[b]}
+                \;=\; \alpha^{\log[a] + \log[b]}
+                \;=\; \text{antilog}\!\big[(\log[a] + \log[b]) \bmod 255\big]
+\]
+
+\textbf{Beispiel.} $73 \times 31$ in GF(256):
+
+\begin{enumerate}
+\item Nachschlagen: $\log[73] = 198$, $\log[31] = 234$.
+\item Addieren: $198 + 234 = 432$.
+\item Modulo 255: $432 \bmod 255 = 432 - 255 = 177$.
+\item Nachschlagen: $\text{antilog}[177] = 254$.
+\item Ergebnis: $73 \times 31 = 254$ in GF(256).
+\end{enumerate}
+
+Vier Lookups, eine Addition, eine Modulo-Operation. Das ist der ganze Trick.
+
+\paragraph{Sonderfälle}
+\begin{itemize}
+\item $a \times 0 = 0$ und $0 \times b = 0$ — kein Tafel-Eintrag nötig.
+\item $a \times 1 = a$ — weil $\log[1] = 0$.
+\item Die mod-255-Reduktion ist nur nötig, wenn die Summe ≥ 255 wird.
+\end{itemize}
+
+% =============================================================
+\section{Python-Einheit — die Tafel selbst generieren
+         \normalfont(\textit{≈ 15 min})}
+% =============================================================
+
+Greta lässt die Tafel einmalig durch Python erzeugen — danach geht es
+ohne Computer weiter.
+
+\paragraph{Datei} \texttt{log\_tabelle.py}
+
+\begin{minted}{python}
+PRIM = 0x12D     # primitives Polynom für GF(256), Datamatrix ECC-200
+ALPHA = 2        # Generator-Element
+
+def baue_tabellen():
+    antilog = [0] * 512
+    log     = [0] * 256
+    x = 1
+    for i in range(255):
+        antilog[i] = x
+        log[x]     = i
+        x <<= 1
+        if x & 0x100:
+            x ^= PRIM
+    for i in range(255, 510):
+        antilog[i] = antilog[i - 255]   # Bequemlichkeits-Verdoppelung
+    return log, antilog
+
+def gf_mul(a, b, log, antilog):
+    if a == 0 or b == 0:
+        return 0
+    return antilog[log[a] + log[b]]
+\end{minted}
+
+Die Funktion \texttt{baue\_tabellen()} erzeugt einmalig die zwei
+Tabellen. Die antilog-Tabelle ist auf 510~Einträge verdoppelt — so
+kann \texttt{gf\_mul} ohne explizite Modulo-Operation arbeiten
+(nach dem Lookup landen wir nie über Index~509).
+
+Wer das Skript einmal laufen lässt, kann die Ausgabe abtippen oder
+das Buch aufschlagen — die fertigen Tabellen stehen im
+\textbf{Anhang zu Tag 19}, gleich auf den nächsten Seiten.%
+\footnote{Wer einen Drucker hat, kann den Werkstattbogen
+\texttt{zeichenvorlage-gf256.pdf} einzeln herunterladen unter
+\url{https://github.com/cgommel/geheimnis-der-redundanz/releases/latest}.}
+
+\begin{bleistiftuebung}{1}{Mit der Tafel multiplizieren}
+Schlage die folgenden Multiplikationen mit der log/antilog-Tafel nach:
+
+\begin{enumerate}[label=\alph*)]
+\item $78 \times 62$
+\item $86 \times 9$
+\item $142 \times 30$
+\item $228 \times 78$
+\item Probe: $5 \times 1 = ?$ Welcher Sonderfall greift?
+\end{enumerate}
+
+Die Lösung im Anhang zeigt nicht nur das Ergebnis, sondern jeden Lookup
+einzeln. Wenn du dich vertippst, kannst du an jedem Schritt einsteigen.
+\end{bleistiftuebung}
+
+% =============================================================
+\section{Generator-Polynom $g_5(x)$ für Datamatrix
+         \normalfont(\textit{≈ 30 min})}
+% =============================================================
+
+Erinnerung aus Etappe 7: das Generator-Polynom für $n_{\text{ecc}}$
+Prüfbytes ist
+\[
+  g_n(x) \;=\; \prod_{i=1}^{n} (x - \alpha^i)
+\]
+In GF(2) ist Subtraktion gleich Addition gleich XOR — also
+$(x - \alpha^i) = (x + \alpha^i)$. Wir bauen $g$ schrittweise auf:
+
+\textbf{Schritt 1:} $g_1(x) = (x + \alpha) = x + 2$.
+Koeffizienten (aufsteigend nach Grad): $[2, 1]$.
+
+\textbf{Schritt 2:} $g_2(x) = g_1(x) \cdot (x + \alpha^2)
+                            = (x + 2)(x + 4)$.
+
+Multiplikation per Distributivgesetz:
+\[
+  (x + 2)(x + 4) = x^2 + 4x + 2x + 8 = x^2 + (4 \oplus 2) x + 8
+                 = x^2 + 6x + 8
+\]
+
+In GF(2)-Addition ist $4 \oplus 2 = 6$ (binär: $100 \oplus 010 = 110$),
+nicht~$6$ als Dezimal-Addition — \emph{aber} hier sind beide Wege
+gleich. Das ist Zufall: bei höheren Koeffizienten weichen sie ab.
+Wer das Symbol $\oplus$ schreibt, vergisst nicht, was eigentlich
+gemeint ist.
+
+Koeffizienten: $[8, 6, 1]$.
+
+\textbf{Schritt 3:} $g_3(x) = g_2(x) \cdot (x + \alpha^3) = (x^2 + 6x + 8)(x + 8)$.
+
+\[
+  (x^2 + 6x + 8)(x + 8)
+  = x^3 + 8x^2 + 6x^2 + 48x + 8x + 64
+\]
+\[
+  = x^3 + (8 \oplus 6) x^2 + (48 \oplus 8) x + 64
+  = x^3 + 14 x^2 + 56 x + 64
+\]
+
+Hier ist $48 \oplus 8 = 56$ noch dezimal-gleich, aber $8 \oplus 6$:
+binär $1000 \oplus 0110 = 1110 = 14$. \emph{Nicht}~$8+6=14$ — die
+zwei Wege liefern hier zufällig dasselbe; das ist eine Falle. Greta
+notiert \textbf{immer} das XOR-Symbol $\oplus$ und überprüft
+binär.
+
+Außerdem: $48 = 6 \cdot 8$ und $64 = 8 \cdot 8$ wurden hier in GF(256)
+gerechnet:
+\begin{itemize}
+\item $6 \times 8$: $\log[6] = 26$, $\log[8] = 3$, $\alpha^{29} = 48$ ✓
+\item $8 \times 8$: $\log[8] = 3$, $\alpha^{6} = 64$ ✓
+\end{itemize}
+
+Koeffizienten: $[64, 56, 14, 1]$.
+
+\textbf{Schritte 4 und 5} laufen analog mit $\alpha^4 = 16$ bzw.\
+$\alpha^5 = 32$. Greta rechnet sie selbst und vergleicht mit dem
+Lösungsanhang (Checkpoint~B), der jeden Zwischenstand zeigt.
+
+\textbf{Endergebnis} (siehe Anhang):
+\[
+  g_5(x) = x^5 + 62 x^4 + 111 x^3 + 15 x^2 + 48 x + 228
+\]
+Koeffizienten aufsteigend: $[228, 48, 15, 111, 62, 1]$.
+
+% =============================================================
+\section{Bleistift-Übung 2: Reed-Solomon für „MUT"
+         \normalfont(\textit{≈ 60 min})}
+% =============================================================
+
+Jetzt der Hauptakt. Greta nimmt drei Daten-Codewords und rechnet die
+fünf ECC-Bytes von Hand.
+
+\paragraph{Schritt 1 — Daten-Codewords}
+
+\[
+  \texttt{M} \to 77 + 1 = 78,\quad
+  \texttt{U} \to 85 + 1 = 86,\quad
+  \texttt{T} \to 84 + 1 = 85
+\]
+
+Daten-CW: $[78, 86, 85]$. Eine 10×10-Datamatrix fasst exakt
+3~Daten + 5~ECC = 8~Codewords. Kein Padding nötig.
+
+\paragraph{Schritt 2 — RS-Polynomdivision}
+
+Das Schema (aus Etappe 7, jetzt in GF(256)):
+
+\begin{enumerate}
+\item Lege ein Rest-Polynom an: $\texttt{rest} = \text{daten} + n_{\text{ecc}}$
+  Nullen, also Länge~$3 + 5 = 8$:
+  \[
+    \texttt{rest} = [78, 86, 85, 0, 0, 0, 0, 0]
+  \]
+\item Für jedes Daten-Byte $i \in \{0, 1, 2\}$:
+  \begin{itemize}
+  \item Setze $f = \texttt{rest}[i]$ (der \textbf{Multiplikator}).
+  \item Wenn $f \ne 0$: für jedes Glied $j$ von $g_5$ ($j = 0, \dots, 5$):
+    \[
+      \texttt{rest}[i + j] \;\mathrel{\oplus}\!=\; f \times g_5\text{-Koeffizient}_{[5 - j]}
+    \]
+    (also: höchster Grad zuerst).
+  \end{itemize}
+\item Nach drei Iterationen stehen die fünf ECC-Bytes in
+  $\texttt{rest}[3 \dots 7]$.
+\end{enumerate}
+
+\paragraph{Erste Iteration ($i=0$, $f = 78$)}
+
+Der Multiplikator $f = 78$ wird mit jedem $g_5$-Koeffizienten
+multipliziert (höchster Grad zuerst):
+
+\begin{center}
+\begin{tabular}{rllr}
+\toprule
+$j$ & $g$-Koeffizient & GF-Multiplikation & Produkt \\
+\midrule
+0 & $g[5] = 1$   & $1 \times 78 = $        & $78$ \\
+1 & $g[4] = 62$  & $62 \times 78 =$ \textit{(rechnen)} & ? \\
+2 & $g[3] = 111$ & $111 \times 78 = $      & ? \\
+3 & $g[2] = 15$  & $15 \times 78 = $       & ? \\
+4 & $g[1] = 48$  & $48 \times 78 = $       & ? \\
+5 & $g[0] = 228$ & $228 \times 78 = $      & ? \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Das jeweilige Produkt wird per XOR auf
+$\texttt{rest}[i + j] = \texttt{rest}[0 + j]$ addiert. Nach Iteration 1:
+\[
+  \texttt{rest} = [0, ?, ?, ?, ?, ?, 0, 0]
+\]
+Die führende Null bestätigt: $\texttt{rest}[0]$ wurde durch
+$f \times 1 = f$ ausgelöscht. Genau das macht Polynomdivision.
+
+\textbf{Volle Werte} stehen im Lösungsanhang als Checkpoint~C, jede
+einzelne GF-Multiplikation ausgeschrieben.
+
+\paragraph{Zweite und dritte Iteration}
+
+Greta wiederholt den Vorgang mit $i = 1$ (neuer Multiplikator
+$f = \texttt{rest}[1]$) und $i = 2$. Nach drei Iterationen sind die
+ersten drei Plätze von \texttt{rest} ausgenullt, die letzten fünf
+enthalten die ECC-Bytes:
+\[
+  \texttt{rest} = [0, 0, 0, e_0, e_1, e_2, e_3, e_4]
+\]
+
+Die finalen Codewords:
+\[
+  [\,78,\, 86,\, 85,\,\ |\ \,e_0,\, e_1,\, e_2,\, e_3,\, e_4\,]
+\]
+Spoiler-frei: die ersten drei sind die Daten, die fünf danach kommen
+aus der Polynomdivision.
+
+% =============================================================
+\section{Platzierung und Frame zeichnen
+         \normalfont(\textit{≈ 30 min})}
+% =============================================================
+
+Greta hat acht Codewords. Jedes wird in 8 Bits zerlegt (Bit~1 = MSB,
+Bit~8 = LSB) und dann nach dem Algorithmus aus Etappe~13 in das
+10×10-Symbol einsortiert.
+
+\paragraph{Bit-Zerlegung} Pro Codeword acht Spalten in der
+Werkstatt-Tabelle ausfüllen:
+\[
+  78 = 64 + 8 + 4 + 2 = 0\,1\,0\,0\,1\,1\,1\,0
+\]
+Hochwertigstes Bit (128er-Stelle) zuerst.
+
+\paragraph{Platzierung} Im Anhang siehst du die innere 8×8-Fläche
+mit der vollständigen Slot-Beschriftung
+\(\bigl[(\text{CW-Nummer},\,\text{Bit-Nummer})\bigr]\) und einer
+Pastellfarbe pro UTAH. Greta malt das Raster auf Karopapier ab
+(1~Modul = 1~Karo) und trägt das jeweilige Bit ein — schwarz für~1,
+leer für~0.
+
+\paragraph{Frame} Der Frame folgt einem festen Schema:
+
+\begin{itemize}
+\item Untere Zeile, linke Spalte: durchgehend schwarz (L-Pattern)
+\item Obere Zeile: alternierend, beginnend schwarz
+\item Rechte Spalte: alternierend, beginnend weiß
+\end{itemize}
+
+Im Anhang ist der Frame bereits eingezeichnet — du musst ihn nur
+abmalen.
+
+\begin{bleistiftuebung}{3}{„MUT" auf Karopapier zeichnen}
+\begin{enumerate}[label=\alph*)]
+\item Übertrage das 10×10-Raster aus dem Anhang auf Karopapier
+  (1~Modul = 1~Karo). Frame schon einzeichnen, UTAHs bunt
+  einfärben — das hilft beim Zickzack durch das Symbol.
+\item Zerlege deine acht Codewords in je 8 Bits. Bei Selbstzweifeln:
+  Checkpoint~E im Lösungsanhang zeigt alle 64 Bits.
+\item Übertrage die Bits auf dein gezeichnetes Raster anhand der
+  Slot-Beschriftung „CW-Nr.\,/\,Bit-Nr.".
+\item Scanne dein fertiges Symbol mit dem Smartphone. Es muss „MUT"
+  liefern.
+\item Falls nicht: vergleiche dein Bitmap mit Checkpoint~G — Modul
+  für Modul. Reparaturen mit Bleistift und Radiergummi.
+\end{enumerate}
+\end{bleistiftuebung}
+
+\paragraph{Wenn der Scan klappt} Du hast einen Datamatrix-Code
+\textit{vollständig von Hand} erzeugt. Es gibt nichts mehr im
+Encoder, was du nicht selbst gerechnet hast — kein Schritt war Magie.
+Wenn dein Smartphone das Symbol liest, gibt dir die kommerzielle
+Welt zurück, was du in Bleistift verfasst hast: dein Wort, „MUT",
+durch GF(256), Reed-Solomon und ISO/IEC~16022 hindurch, fehlertolerant.
+
+% =============================================================
+\section{Bonus: „GESCHAFFT" in 14×14
+         \normalfont(\textit{≈ 2--3 h, Hausaufgabe})}
+% =============================================================
+
+Wer den 10×10-Code geschafft hat und Lust auf eine Königsdisziplin
+hat: derselbe Vorgang in größer.
+
+\paragraph{Aufgabe} „GESCHAFFT" (9 Zeichen) in einem 14×14-Symbol —
+mit C40-Modus statt ASCII, weil 9 Zeichen sonst nicht in 8~Daten-CW
+passen würden.
+
+\begin{itemize}
+\item C40-Triplets: \textbf{GES}, \textbf{CHA}, \textbf{FFT} — drei
+  vollständige Triplets, kein Restzeichen.
+\item Daten-CW: $[230, b_1, b_2, b_3, b_4, b_5, b_6, 254]$ —
+  Latch + 3 Triplets~à 2~CW + Unlatch = 8~CW exakt.
+\item ECC: 10 Prüfbytes mit $g_{10}(x)$.
+\item RS-Iterationen: 8 statt 3 — etwa $135$ GF-Multiplikationen
+  insgesamt. Realistisch: 2--3 Stunden konzentriert.
+\end{itemize}
+
+Das 14×14-Raster mit Frame und farbiger UTAH-Markierung steht
+ebenfalls im Anhang — direkt nach dem 10×10. Wieder gilt: auf
+Karopapier abmalen, UTAHs bunt einfärben, Bits eintragen.\footnote{%
+Wer doch einen Drucker hat: \texttt{zeichenvorlage-datamatrix-rs.pdf}
+(Seite~2) liegt einzeln im Release-Asset unter
+\url{https://github.com/cgommel/geheimnis-der-redundanz/releases/latest}
+— bei 135 Multiplikationen ist „eine zweite Vorlage zum nochmal
+sauber abschreiben" oft die letzte Rettung.}
+
+Der Lösungsanhang führt durch:
+
+\begin{itemize}
+\item Checkpoint~A': die drei C40-Triplet-Rechnungen einzeln
+\item Checkpoint~B': $g_{10}(x)$, alle 10 Aufbauschritte tabelliert
+\item Checkpoint~C': alle 8 RS-Iterationen mit kompletten Multiplikations-Tabellen
+\item Checkpoint~D' bis G': Codewords, Bits, Platzierung, Bitmap
+\end{itemize}
+
+Wenn dein 14×14-Symbol „GESCHAFFT" scannt, hast du genau das.
+
+% =============================================================
+\section{Reflexion und Würdigung \normalfont(\textit{≈ 20 min})}
+% =============================================================
+
+Greta legt Bleistift und Werkstattbogen zur Seite. Auf dem Tisch
+liegen zwei Datamatrix-Symbole — eines klein, eines etwas größer.
+Beide gezeichnet, gescannt, lesbar.
+
+\subsection*{Was am Anfang stand}
+
+In Etappe~1 war die EAN-13-Prüfziffer eine seltsame Quersumme. Greta
+hat sie nachgerechnet, ohne zu wissen warum es ausgerechnet die
+gewichtete Summe modulo~10 sein musste. Es funktionierte — das war
+genug.
+
+\subsection*{Was sie jetzt versteht}
+
+Die Reise hatte eine innere Logik:
+
+\begin{itemize}
+\item \textbf{Etappen 1--2 — Fehler erkennen:} Prüfziffern, Hamming-Distanz.
+  Eine einzelne falsche Stelle wird sichtbar, mehr nicht.
+\item \textbf{Etappen 3--4 — Fehler korrigieren:} Hamming, SECDED, CRC,
+  Interleaving. Ein verkippter Bit lässt sich \emph{lokalisieren} und
+  reparieren.
+\item \textbf{Etappen 5--6 — Die richtige Mathematik:} Endliche Körper
+  $\mathrm{GF}(2^n)$ und Polynome darüber. XOR ist Addition; jede
+  Polynom-Operation, die du kennst, läuft hier mit anderen
+  Definitionen, aber denselben Strukturen.
+\item \textbf{Etappen 7--8 — Reed-Solomon:} Die mächtigste Idee des Buches.
+  Polynom-Werte als Codewords, Lagrange-Interpolation als
+  Korrekturalgorithmus. Plötzlich kann man $t$~beliebige Fehler in
+  $2t$~ECC-Symbolen reparieren — und es gibt eine geschlossene Theorie
+  dafür, kein Trick.
+\item \textbf{Etappen 9--10 — EAN-13 von Hand und in Pillow:} Strichbreiten,
+  Sub-Codierung, Wachzonen. Hardware trifft Theorie.
+\item \textbf{Etappen 11--14 — Datamatrix Stück für Stück:} ASCII-Encoding,
+  Reed-Solomon-Prüfbytes, ISO-Annex-F-Platzierung, dein erster eigener
+  scannbarer Code.
+\item \textbf{Etappe 15 — Klassen und Vererbung:} der Code wurde reif. Aus
+  einem Skript wurde eine Hierarchie: \texttt{Barcode} oben, mehrere
+  Spezialisierungen darunter.
+\item \textbf{Etappe 16 — Decoder:} der inverse Pfad. Inverse Platzierung,
+  Reed-Solomon-Fehlerlokalisation, ein matplotlib-Stress-Test, der
+  zeigt, wo die theoretische Grenze beginnt — und endet.
+\item \textbf{Etappe 17 — Große Codes und Interleaving:} ab 36×36 wird das
+  Symbol auf mehrere RS-Blöcke aufgeteilt. Ein lokaler Schaden trifft
+  jeden Block nur ein bisschen — alle reparieren sich selbst.
+\item \textbf{Etappe 18 — Modi:} Digit-Paar, C40, automatischer
+  Moduswechsler. Gleicher Inhalt, kleineres Symbol.
+\item \textbf{Etappe 19 — Alles von Hand:} GF(256) als Logarithmen-Tafel,
+  Generator-Polynom als Produkt, Reed-Solomon als Polynomdivision,
+  Platzierung als Tabelle. Der Encoder ist keine Black Box mehr.
+\end{itemize}
+
+\subsection*{Was Codierungstheorie eigentlich ist}
+
+Sie ist die mathematische Antwort auf eine sehr alte Frage: Wenn ein
+Kommunikationskanal Fehler einführt, wie viel Redundanz brauchen wir,
+und wie schlau müssen wir sie verteilen, damit am anderen Ende noch
+ankommt, was abgeschickt wurde?
+
+\textbf{Die Antwort hat zwei Lager:} Auf der einen Seite Shannon
+(„wie viel Information passt theoretisch durch?"), auf der anderen
+Seite die konstruktiven Codes wie Hamming und Reed-Solomon (\,„wie
+baut man konkret einen Code, der dieser Grenze nahekommt?"). Das Buch
+hat dich auf die zweite Seite geführt — die Bauseite. Und du hast
+nicht nur Bibliotheken benutzt, sondern jeden Schritt selbst
+nachvollzogen, in mehreren Repräsentationen: Bleistift auf
+Karopapier, Python, Klassenhierarchie, Logarithmen-Tafel.
+
+\subsection*{Was bleibt}
+
+Wenn du in zehn Jahren auf einem Pharmakarton ein Datamatrix-Symbol
+siehst — auf einem ICE-Sitzplatz, auf einer DHL-Sendung, im
+Maschinenbau-Lager, auf einer Pille — wirst du wissen, was darin
+steckt. Nicht nur „eine Nummer", sondern: ASCII-Modus oder C40 oder
+Digit-Paar; Reed-Solomon mit so-und-soviel Prüfbytes; Multi-Region
+oder Single-Region; Interleaving ja oder nein; und, wenn man sehr
+genau hinsieht, ein hausgemachtes Bauteil, das du im Praktikum von
+Hand gerechnet hast — auch wenn es da gerade als Maschinen-Druck steht.
+
+Ich hoffe, das war den Aufwand wert. Du hast jetzt ein Werkzeug,
+das du nie mehr verlierst.
+
+\subsection*{Praktikum vorbei}
+
+Werkstattbogen zusammenrollen. Bleistift in den Becher. Datamatrix-Symbol
+mit „MUT" über den Schreibtisch hängen — kleines Trophäen-Stück.
+Wenn jemand fragt, wofür das ist, sag: \glqq Das ist ein Datamatrix.
+Steht „MUT" drin. Hab ich von Hand gerechnet. Reed-Solomon und alles.\grqq{}
+Und wenn sie fragen, was Reed-Solomon ist, hast du jetzt sehr viel zu
+erzählen.

@@ -1,0 +1,184 @@
+\section*{Tag 19 — Datamatrix komplett von Hand}
+
+Diese Lösung ist als \emph{Quervergleich} angelegt: an jeder Stelle
+darfst du einsteigen, ohne den Anschluss zu verlieren. Die
+Checkpoints~A--G für „MUT" und A'--G' für „GESCHAFFT" sind nummeriert,
+sodass du sagen kannst: „Bis B passt alles, ab C habe ich mich
+verrechnet" — und dann gezielt ab C nachschaust.
+
+% =============================================================
+\subsection*{Bleistift-Übung 1: GF(256)-Multiplikation per Tafel}
+% =============================================================
+
+\begin{enumerate}[label=\alph*)]
+\item $78 \times 62$:
+  $\log[78] = 104$, $\log[62] = 235$, Summe $= 339$, mod $255 = 84$,
+  $\text{antilog}[84] = 95$. \;\textbf{Ergebnis: 95}.
+\item $86 \times 9$:
+  $\log[86] = 81$, $\log[9] = 38$, Summe $= 119$ (kein Modulo nötig),
+  $\text{antilog}[119] = 58$. \;\textbf{Ergebnis: 58}.
+\item $142 \times 30$:
+  $\log[142] = 185$, $\log[30] = 92$, Summe $= 277$, mod $255 = 22$,
+  $\text{antilog}[22] = 9$. \;\textbf{Ergebnis: 9}.
+\item $228 \times 78$:
+  $\log[228] = 15$, $\log[78] = 104$, Summe $= 119$,
+  $\text{antilog}[119] = 58$. \;\textbf{Ergebnis: 58}.
+\item Probe $5 \times 1$: weil $\log[1] = 0$, gilt
+  $\log[5] + 0 = \log[5]$, also $5 \times 1 = 5$. Sonderfall:
+  Multiplikation mit Eins ist Identität.
+\end{enumerate}
+
+% =============================================================
+\subsection*{Bleistift-Übung 2: Reed-Solomon für „MUT"}
+% =============================================================
+
+\paragraph{Checkpoint A — ASCII-Codewords}
+$\texttt{M}{\to}77{+}1{=}78$, $\texttt{U}{\to}85{+}1{=}86$,
+$\texttt{T}{\to}84{+}1{=}85$. \;\textbf{Daten-CW: $[78, 86, 85]$}.
+
+\paragraph{Checkpoint B — Generator-Polynom $g_5(x)$}
+Schrittweise aufgebaut, Koeffizienten aufsteigend nach Grad:
+
+\input{abbildungen/tag19/mut_g_polynom}
+
+\textbf{Endergebnis:}
+$g_5(x) = x^5 + 62 x^4 + 111 x^3 + 15 x^2 + 48 x + 228$.
+
+\paragraph{Checkpoint C — RS-Iterationen}
+Drei Iterationen, jede mit voller Multiplikations-Spur. Lesehilfe der
+Spalten: $j$~=~Polynomgrad, $g$~=~Generator-Koeffizient
+$g[5{-}j]$, $f$~=~aktueller Faktor. Die GF-Multiplikation wird per
+log/antilog ausgeführt: $\Sigma~=~\log g + \log f$, dann mod~$255$,
+dann antilog. Das Produkt wird per XOR auf $\texttt{rest}[i+j]$
+addiert.
+
+\input{abbildungen/tag19/mut_rs_iterationen}
+
+\paragraph{Checkpoint D — Finale Codewords}
+\textbf{ECC: $[216, 59, 190, 197, 122]$}. Zusammen mit den Daten:
+\[
+  [\,78,\, 86,\, 85,\,|\,216,\, 59,\, 190,\, 197,\, 122\,]
+\]
+
+\paragraph{Checkpoint E — Bit-Zerlegung}
+
+\input{abbildungen/tag19/mut_bitzerlegung}
+
+\paragraph{Checkpoint F — Platzierung im 8×8-Datenbereich}
+Lesart: Zelle in Zeile $r$, Spalte $c$ enthält
+„CW-Nr.\,/\,Bit-Nr." gemäß ISO/IEC~16022 Annex~F. Identisch zum
+farbigen Anhang-Raster, nur in Tabellenform.
+
+\input{abbildungen/tag19/mut_platzierung}
+
+\paragraph{Checkpoint G — Finales Bitmap}
+Zwei Darstellungen zum Quervergleich. Links die schwarz-weiße
+Datamatrix wie ein Scanner sie sieht. Rechts dasselbe Symbol mit
+UTAH-Farbcodierung — du kannst pro UTAH alle 8~Bits prüfen.
+
+\begin{center}
+\begin{minipage}[t]{0.30\linewidth}\centering
+  \includegraphics[width=\linewidth]{abbildungen/tag19/mut.png}\\
+  \footnotesize\textit{Reines Bitmap}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.55\linewidth}\centering
+  \begin{tikzpicture}[x=7mm, y=-7mm, every node/.style={font=\tiny}]
+    \draw[black] (0, 0) rectangle (10, 10);
+    \foreach \c in {0,...,9}{ \fill[black] (\c, 9) rectangle (\c+1, 10); }
+    \foreach \r in {0,...,8}{ \fill[black] (0, \r) rectangle (1, \r+1); }
+    \foreach \c in {0, 2, 4, 6, 8}{ \fill[black] (\c, 0) rectangle (\c+1, 1); }
+    \foreach \r in {1, 3, 5, 7}{ \fill[black] (9, \r) rectangle (10, \r+1); }
+    \input{abbildungen/tag19/mut_filled_colored}
+  \end{tikzpicture}\\
+  \footnotesize\textit{UTAH-farbig, schwarze Module = Bit~1}
+\end{minipage}
+\end{center}
+
+Wenn dein handgemaltes Symbol diesem Bitmap modulweise entspricht
+\emph{und} dein Smartphone „MUT" liest: fertig. Falls nicht:
+vergleiche modulweise — unterschiedliche Bits markierst du mit
+einem dritten Stift, dann radierst und schwärzst du sie passend nach.
+
+% =============================================================
+\subsection*{Bonus „GESCHAFFT" — Lösungsweg}
+% =============================================================
+
+Größer und länger, aber rechnerisch derselbe Vorgang. 8 Daten-CW im
+C40-Modus, 10 ECC-CW, 18 CW gesamt im 14×14-Symbol.
+
+\paragraph{Checkpoint A' — C40-Triplet-Codierung}
+\texttt{GESCHAFFT} zerfällt in drei vollständige Triplets:
+\texttt{GES}, \texttt{CHA}, \texttt{FFT}. Pro Triplet:
+$\mathit{tmp} = V_1 \cdot 1600 + V_2 \cdot 40 + V_3 + 1$, dann
+$b_1 = \mathit{tmp} \gg 8$ und $b_2 = \mathit{tmp} \bmod 256$.
+
+\input{abbildungen/tag19/geschafft_c40_triplets}
+
+C40-Werte: $G{=}14, R{=}28, E{=}18, S{=}32, C{=}16, H{=}21, A{=}14$ \\
+\null\hspace{2em}$F{=}19, T{=}33$ \\
+(Erinnerung Etappe~18: Buchstabe $X$ hat Wert $14 + (X-A)$.)
+
+\textbf{Daten-CW (mit Latch 230 und Unlatch 254):}
+\[ [\,230,\,127,\,241,\,103,\,87,\,121,\,218,\,254\,] \]
+
+\paragraph{Checkpoint B' — Generator-Polynom $g_{10}(x)$}
+Zehn Aufbauschritte. Von Grad~1 bis Grad~10 wachsend:
+
+\input{abbildungen/tag19/geschafft_g_polynom}
+
+Endgültige Koeffizienten aufsteigend:
+$[28,\,24,\,185,\,166,\,223,\,248,\,116,\,255,\,110,\,61,\,1]$.
+
+\paragraph{Checkpoint C' — RS-Iterationen}
+Acht Iterationen mit je 11~Multiplikationen = 88~Stück. Bei jedem
+Eintritts-Checkpoint stimmt der Rest-Vektor — wenn deiner abweicht,
+kennst du das Iterations-Niveau, ab dem du suchen musst.
+
+\input{abbildungen/tag19/geschafft_rs_iterationen}
+
+\paragraph{Checkpoint D' — Finale Codewords}
+\textbf{ECC: $[150, 193, 110, 110, 227, 72, 183, 70, 73, 249]$}.
+Vollständige 18er-Folge:
+\[
+  [\,230,\,127,\,241,\,103,\,87,\,121,\,218,\,254,\,|
+\]
+\[
+  150,\,193,\,110,\,110,\,227,\,72,\,183,\,70,\,73,\,249\,]
+\]
+
+\paragraph{Checkpoint E' — Bit-Zerlegung}
+
+\input{abbildungen/tag19/geschafft_bitzerlegung}
+
+\paragraph{Checkpoint F' — Platzierung im 12×12-Datenbereich}
+
+\input{abbildungen/tag19/geschafft_platzierung}
+
+\paragraph{Checkpoint G' — Finales Bitmap}
+
+\begin{center}
+\begin{minipage}[t]{0.32\linewidth}\centering
+  \includegraphics[width=\linewidth]{abbildungen/tag19/geschafft.png}\\
+  \footnotesize\textit{Reines Bitmap}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.62\linewidth}\centering
+  \begin{tikzpicture}[x=5.5mm, y=-5.5mm, every node/.style={font=\tiny}]
+    \draw[black] (0, 0) rectangle (14, 14);
+    \foreach \c in {0,...,13}{ \fill[black] (\c, 13) rectangle (\c+1, 14); }
+    \foreach \r in {0,...,12}{ \fill[black] (0, \r) rectangle (1, \r+1); }
+    \foreach \c in {0, 2, 4, 6, 8, 10, 12}{
+      \fill[black] (\c, 0) rectangle (\c+1, 1);
+    }
+    \foreach \r in {1, 3, 5, 7, 9, 11}{
+      \fill[black] (13, \r) rectangle (14, \r+1);
+    }
+    \input{abbildungen/tag19/geschafft_filled_colored}
+  \end{tikzpicture}\\
+  \footnotesize\textit{UTAH-farbig, schwarze Module = Bit~1}
+\end{minipage}
+\end{center}
+
+Wenn dein handgemaltes 14×14-Symbol diesem Bitmap entspricht und das
+Smartphone „GESCHAFFT" liest, hast du im Praktikum eine Datamatrix
+\emph{komplett von Hand} erzeugt. Reed-Solomon, GF(256), Annex~F,
+C40 — alles eigene Bleistift-Arbeit. Glückwunsch.
